@@ -1,6 +1,7 @@
 package vault
 
 import (
+	"github.com/curtisnewbie/gocommon/common"
 	"github.com/curtisnewbie/gocommon/goauth"
 	"github.com/curtisnewbie/miso/core"
 	"github.com/curtisnewbie/miso/mysql"
@@ -20,11 +21,17 @@ type LoginReq struct {
 	Password string `json:"password" valid:"notEmpty"`
 }
 
+type AddUserReq struct {
+	Username string `json:"username" valid:"notEmpty"`
+	Password string `json:"password" valid:"notEmpty"`
+	RoleNo   string `json:"roleNo" valid:"notEmpty"`
+}
+
 func registerRoutes(rail core.Rail) error {
 
-	server.IPost("/open/api/login",
+	server.IPost("/open/api/user/login",
 		func(gin *gin.Context, rail core.Rail, req LoginReq) (string, error) {
-			token, err := UserLogin(rail, mysql.GetConn(), PasswordLoginReq(req))
+			token, err := UserLogin(rail, mysql.GetConn(), PasswordLoginParam(req))
 			if err != nil {
 				return "", err
 			}
@@ -33,11 +40,11 @@ func registerRoutes(rail core.Rail) error {
 			userAgent := gin.GetHeader(headerUserAgent)
 
 			if er := sendAccessLogEvnet(rail, AccessLogEvent{
-				IpAddress: remoteAddr,
-				UserAgent: userAgent,
-				UserId:    0, // TODO: remove this field
-				Username:  req.Username,
-				Url:       passwordLoginUrl,
+				IpAddress:  remoteAddr,
+				UserAgent:  userAgent,
+				UserId:     0, // TODO: remove this field
+				Username:   req.Username,
+				Url:        passwordLoginUrl,
 				AccessTime: core.Now(),
 			}); er != nil {
 				rail.Errorf("Failed to sendAccessLogEvent, username: %v, remoteAddr: %v, userAgent: %v, %v",
@@ -48,6 +55,11 @@ func registerRoutes(rail core.Rail) error {
 		},
 		goauth.PathDocExtra(goauth.PathDoc{Desc: "Login", Type: goauth.PT_PUBLIC}),
 	)
+
+	server.IPost[AddUserParam, any]("/open/api/user/add",
+		func(c *gin.Context, rail core.Rail, req AddUserParam) (any, error) {
+			return nil, AddUser(rail, mysql.GetConn(), AddUserParam(req), common.GetUser(rail))
+		})
 
 	return nil
 }

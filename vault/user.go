@@ -3,10 +3,12 @@ package vault
 import (
 	"crypto/sha256"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/curtisnewbie/gocommon/common"
+	"github.com/curtisnewbie/gocommon/goauth"
 	"github.com/curtisnewbie/miso/core"
 	"github.com/curtisnewbie/miso/jwt"
 	"gorm.io/gorm"
@@ -21,9 +23,20 @@ const (
 	UserDisabled UserDisabledType = 1
 )
 
-type PasswordLoginReq struct {
+var (
+	usernameRegexp = regexp.MustCompile(`^[a-zA-Z0-9_\-@.]{6,50}$`)
+	passwordMinLen = 8
+)
+
+type PasswordLoginParam struct {
 	Username string
 	Password string
+}
+
+type AddUserParam struct {
+	Username string `json:"username" valid:"notEmpty"`
+	Password string `json:"password" valid:"notEmpty"`
+	RoleNo   string `json:"roleNo" valid:"notEmpty"`
 }
 
 type ReviewStatusType string
@@ -36,6 +49,7 @@ type User struct {
 	Password     string
 	Salt         string
 	ReviewStatus ReviewStatusType
+	Role         string // TODO: remove this
 	RoleNo       string
 	IsDisabled   UserDisabledType
 	CreateTime   core.ETime
@@ -78,7 +92,7 @@ func loadUser(rail core.Rail, tx *gorm.DB, username string) (User, error) {
 	return user, nil
 }
 
-func UserLogin(rail core.Rail, tx *gorm.DB, req PasswordLoginReq) (string, error) {
+func UserLogin(rail core.Rail, tx *gorm.DB, req PasswordLoginParam) (string, error) {
 	user, err := userLogin(rail, tx, req.Username, req.Password)
 	if err != nil {
 		return "", err
@@ -136,7 +150,7 @@ func userLogin(rail core.Rail, tx *gorm.DB, username string, password string) (U
 		return user, nil
 	}
 
-	return User{}, core.NewWebErr("Password incorrect", fmt.Sprintf("User %v login failed, password incorrect", username))
+	return User{}, core.NewInterErr("Password incorrect", "User %v login failed, password incorrect", username)
 }
 
 func checkUserKey(rail core.Rail, tx *gorm.DB, userId int, password string) (bool, error) {
@@ -161,9 +175,13 @@ func checkPassword(encoded string, salt string, password string) bool {
 		return false
 	}
 	springSalt := extractSpringSalt(encoded) // for backward compatibility (auth-service)
-	ep := encodePassword(password + salt)
+	ep := encodePasswordSalt(password, salt)
 	provided := springSalt + ep
 	return provided == encoded
+}
+
+func encodePasswordSalt(pwd string, salt string) string {
+	return encodePassword(pwd + salt)
 }
 
 func encodePassword(text string) string {
@@ -190,4 +208,62 @@ func extractSpringSalt(encoded string) string {
 	}
 
 	return "" // illegal format, or maybe none
+}
+
+func AddUser(rail core.Rail, tx *gorm.DB, req AddUserParam, operator common.User) error {
+	resp, err := goauth.GetRoleInfo(rail, goauth.RoleInfoReq{
+		RoleNo: req.RoleNo,
+	})
+	if err != nil {
+		rail.Errorf("Failed to goauth.GetRoleInfo, roleNo: %v, %v", req.RoleNo, err)
+	}
+
+	if resp == nil {
+		return core.NewInterErr("Role not found", "Role %v is not found", req.RoleNo)
+	}
+
+	if !usernameRegexp.MatchString(req.Username) {
+		return core.NewWebErr("Username must have 6-50 characters, permitted characters include: 'a-z A-Z 0-9 . - _ @'")
+	}
+
+	if len([]rune(req.Password)) < passwordMinLen {
+		return core.NewWebErr(fmt.Sprintf("Password must have at least %v characters", passwordMinLen))
+	}
+
+	if req.Username == req.Password {
+		return core.NewWebErr("Username and password must be different")
+	}
+
+	if _, err := loadUser(rail, tx, req.Username); err == nil {
+		return core.NewWebErr("User is already registered")
+	}
+
+	user := prepUserCred(req.Password)
+	user.UserNo = core.GenIdP("UE")
+	user.Username = req.Username
+	user.Role = ""
+	user.RoleNo = req.RoleNo
+	user.CreateBy = operator.Username
+	user.CreateTime = core.Now()
+	user.IsDisabled = UserNormal
+	user.ReviewStatus = ReviewApproved
+
+	err = tx.Table("user").
+		Create(&user).
+		Error
+
+	if err != nil {
+		rail.Errorf("failed to add new user '%v', %v", req.Username, err)
+		return err
+	}
+
+	rail.Infof("New user '%v' with roleNo: %v is added by %v", req.Username, req.RoleNo, operator.Username)
+	return nil
+}
+
+func prepUserCred(pwd string) User {
+	u := User{}
+	u.Salt = core.RandStr(6)
+	u.Password = encodePasswordSalt(pwd, u.Salt)
+	return u
 }

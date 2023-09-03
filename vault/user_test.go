@@ -4,6 +4,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/curtisnewbie/gocommon/common"
+	"github.com/curtisnewbie/miso/consul"
 	"github.com/curtisnewbie/miso/core"
 	"github.com/curtisnewbie/miso/jwt"
 	"github.com/curtisnewbie/miso/mysql"
@@ -20,6 +22,8 @@ func preTest(t *testing.T) core.Rail {
 func preUserTest(t *testing.T) core.Rail {
 	rail := preTest(t)
 	core.TestIsNil(t, mysql.InitMySqlFromProp())
+	_, e := consul.GetConsulClient()
+	core.TestIsNil(t, e)
 	return rail
 }
 
@@ -60,4 +64,14 @@ func TestUserLogin(t *testing.T) {
 	decoded, err := jwt.DecodeToken(tkn)
 	core.TestIsNil(t, err)
 	t.Logf("decoded: %+v", decoded)
+}
+
+func TestAddUser(t *testing.T) {
+	rail := preUserTest(t)
+	e := AddUser(rail, mysql.GetConn(), AddUserParam{
+		Username: "dummydummy2",
+		Password: "12345678",
+		RoleNo:   "role_628043111874560208429",
+	}, common.NilUser())
+	core.TestIsNil(t, e)
 }

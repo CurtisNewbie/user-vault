@@ -42,6 +42,6 @@ type AccessLog struct {
 func SaveAccessLogEvent(rail core.Rail, tx *gorm.DB, evt AccessLogEvent) error {
 	return tx.
 		Table("access_log").
-		Create(evt).
+		Create(&evt).
 		Error
 }
