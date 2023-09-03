@@ -12,11 +12,18 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	ReviewPending  ReviewStatusType = "PENDING"
+	ReviewRejected ReviewStatusType = "REJECTED"
+	ReviewApproved ReviewStatusType = "APPROVED"
+
+	UserNormal   UserDisabledType = 0
+	UserDisabled UserDisabledType = 1
+)
+
 type PasswordLoginReq struct {
-	RemoteAddr string
-	UserAgent  string
-	Username   string
-	Password   string
+	Username string
+	Password string
 }
 
 type ReviewStatusType string
@@ -37,15 +44,6 @@ type User struct {
 	UpdateBy     string
 	IsDel        common.IS_DEL
 }
-
-const (
-	ReviewPending  ReviewStatusType = "PENDING"
-	ReviewRejected ReviewStatusType = "REJECTED"
-	ReviewApproved ReviewStatusType = "APPROVED"
-
-	UserNormal   UserDisabledType = 0
-	UserDisabled UserDisabledType = 1
-)
 
 func RemoteAddr(forwardedFor string) string {
 	addr := "unknown"
@@ -85,10 +83,10 @@ func UserLogin(rail core.Rail, tx *gorm.DB, req PasswordLoginReq) (string, error
 	if err != nil {
 		return "", err
 	}
-	return buildToken(user)
+	return buildToken(user, 15*time.Minute)
 }
 
-func buildToken(user User) (string, error) {
+func buildToken(user User, exp time.Duration) (string, error) {
 	claims := map[string]any{
 		"id":       user.Id,
 		"username": user.Username,
@@ -96,7 +94,7 @@ func buildToken(user User) (string, error) {
 		"roleno":   user.RoleNo,
 	}
 
-	return jwt.EncodeToken(claims, 15*time.Minute)
+	return jwt.EncodeToken(claims, exp)
 }
 
 func userLogin(rail core.Rail, tx *gorm.DB, username string, password string) (User, error) {

@@ -3,10 +3,10 @@ package main
 import (
 	"os"
 
-	"github.com/curtisnewbie/miso/server"
+	"github.com/curtisnewbie/user-vault/vault"
 )
 
 
 func main() {
-	server.BootstrapServer(os.Args)
+	vault.BootstrapServer(os.Args)
 }

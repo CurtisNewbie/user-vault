@@ -2,6 +2,7 @@ package vault
 
 import (
 	"testing"
+	"time"
 
 	"github.com/curtisnewbie/miso/core"
 	"github.com/curtisnewbie/miso/jwt"
@@ -9,10 +10,15 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func userPreTest(t *testing.T) core.Rail {
+func preTest(t *testing.T) core.Rail {
 	logrus.SetLevel(logrus.DebugLevel)
 	rail := core.EmptyRail()
 	core.DefaultReadConfig([]string{"configFile=../app-conf-dev.yml"}, rail)
+	return rail
+}
+
+func preUserTest(t *testing.T) core.Rail {
+	rail := preTest(t)
 	core.TestIsNil(t, mysql.InitMySqlFromProp())
 	return rail
 }
@@ -29,7 +35,7 @@ func TestCheckPassword(t *testing.T) {
 }
 
 func TestCheckUserKey(t *testing.T) {
-	rail := userPreTest(t)
+	rail := preUserTest(t)
 
 	userKey := "09uEo2EOsJOfqPLVCJitcdOn8BIfhUNrWtVPh7sZKVyF3140NJKb2mXRgisyRoBr"
 	userId := 3
@@ -39,7 +45,7 @@ func TestCheckUserKey(t *testing.T) {
 }
 
 func TestUserLogin(t *testing.T) {
-	rail := userPreTest(t)
+	rail := preUserTest(t)
 	uname := ""
 	pword := ""
 
@@ -47,7 +53,7 @@ func TestUserLogin(t *testing.T) {
 	core.TestIsNil(t, err)
 	t.Logf("user: %+v", usr)
 
-	tkn, err := buildToken(usr)
+	tkn, err := buildToken(usr, time.Minute*15)
 	core.TestIsNil(t, err)
 	t.Logf("tkn: %+v", tkn)
 
