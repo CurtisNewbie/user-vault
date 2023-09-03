@@ -33,7 +33,7 @@ type LoginReq struct {
 	Password string `json:"password" valid:"notEmpty"`
 }
 
-type AddUserReq struct {
+type AdminAddUserReq struct {
 	Username string `json:"username" valid:"notEmpty"`
 	Password string `json:"password" valid:"notEmpty"`
 	RoleNo   string `json:"roleNo" valid:"notEmpty"`
@@ -44,6 +44,12 @@ type ListUserReq struct {
 	RoleNo     *string           `json:"roleNo"`
 	IsDisabled *UserDisabledType `json:"isDisabled"`
 	Paging     core.Paging       `json:"pagingVo"`
+}
+
+type AdminUpdateUserReq struct {
+	Id         int              `json:"id"`
+	RoleNo     string           `json:"roleNo"`
+	IsDisabled UserDisabledType `json:"isDisabled"`
 }
 
 func registerRoutes(rail core.Rail) error {
@@ -77,7 +83,7 @@ func registerRoutes(rail core.Rail) error {
 
 	server.IPost[AddUserParam, any]("/open/api/user/add",
 		func(c *gin.Context, rail core.Rail, req AddUserParam) (any, error) {
-			return nil, AddUser(rail, mysql.GetConn(), AddUserParam(req), common.GetUser(rail))
+			return nil, AdminAddUser(rail, mysql.GetConn(), AddUserParam(req), common.GetUser(rail))
 		},
 		goauth.PathDocExtra(goauth.PathDoc{Desc: "Admin add user", Code: resCodeManageUser, Type: goauth.PT_PROTECTED}),
 	)
@@ -87,6 +93,13 @@ func registerRoutes(rail core.Rail) error {
 			return ListUsers(rail, mysql.GetConn(), req)
 		},
 		goauth.PathDocExtra(goauth.PathDoc{Desc: "Admin list users", Code: resCodeManageUser, Type: goauth.PT_PROTECTED}),
+	)
+
+	server.IPost[AdminUpdateUserReq, any]("/open/api/user/info/update",
+		func(c *gin.Context, rail core.Rail, req AdminUpdateUserReq) (any, error) {
+			return nil, AdminUpdateUser(rail, mysql.GetConn(), req, common.GetUser(rail))
+		},
+		goauth.PathDocExtra(goauth.PathDoc{Desc: "Admin update user info", Code: resCodeManageUser, Type: goauth.PT_PROTECTED}),
 	)
 
 	return nil

@@ -66,9 +66,9 @@ func TestUserLogin(t *testing.T) {
 	t.Logf("decoded: %+v", decoded)
 }
 
-func TestAddUser(t *testing.T) {
+func TestAdminAddUser(t *testing.T) {
 	rail := preUserTest(t)
-	e := AddUser(rail, mysql.GetConn(), AddUserParam{
+	e := AdminAddUser(rail, mysql.GetConn(), AddUserParam{
 		Username: "dummydummy2",
 		Password: "12345678",
 		RoleNo:   "role_628043111874560208429",
@@ -81,4 +81,14 @@ func TestListUsers(t *testing.T) {
 	users, err := ListUsers(rail, mysql.GetConn(), ListUserReq{})
 	core.TestIsNil(t, err)
 	t.Logf("%+v", users)
+}
+
+func TestAdminUpdateUser(t *testing.T) {
+	rail := preUserTest(t)
+	err := AdminUpdateUser(rail, mysql.GetConn(), AdminUpdateUserReq{
+		Id: 1107,
+		RoleNo: "role_628043111874560208429",
+		IsDisabled: 0,
+		}, common.NilUser())
+	core.TestIsNil(t, err)
 }

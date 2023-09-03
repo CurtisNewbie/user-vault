@@ -211,16 +211,25 @@ func extractSpringSalt(encoded string) string {
 	return "" // illegal format, or maybe none
 }
 
-func AddUser(rail core.Rail, tx *gorm.DB, req AddUserParam, operator common.User) error {
+func getRoleInfo(rail core.Rail, roleNo string) (*goauth.RoleInfoResp, error) {
 	resp, err := goauth.GetRoleInfo(rail, goauth.RoleInfoReq{
-		RoleNo: req.RoleNo,
+		RoleNo: roleNo,
 	})
 	if err != nil {
-		rail.Errorf("Failed to goauth.GetRoleInfo, roleNo: %v, %v", req.RoleNo, err)
+		rail.Errorf("Failed to goauth.GetRoleInfo, roleNo: %v, %v", roleNo, err)
+		return nil, err
 	}
 
 	if resp == nil {
-		return core.NewInterErr("Role not found", "Role %v is not found", req.RoleNo)
+		return nil, core.NewInterErr("Role not found", "Role %v is not found", roleNo)
+	}
+	return resp, nil
+}
+
+func AdminAddUser(rail core.Rail, tx *gorm.DB, req AddUserParam, operator common.User) error {
+	_, err := getRoleInfo(rail, req.RoleNo)
+	if err != nil {
+		return err
 	}
 
 	if !usernameRegexp.MatchString(req.Username) {
@@ -297,7 +306,7 @@ func ListUsers(rail core.Rail, tx *gorm.DB, req ListUserReq) (mysql.PageRes[User
 				tx = tx.Where("role_no = ?", *req.RoleNo)
 			}
 			if req.Username != nil && *req.Username != "" {
-				tx = tx.Where("username like ?", "%"+*req.Username+"%")
+				tx = tx.Where("username LIKE ?", "%"+*req.Username+"%")
 			}
 			if req.IsDisabled != nil {
 				tx = tx.Where("is_disabled = ?", *req.IsDisabled)
@@ -331,4 +340,20 @@ func ListUsers(rail core.Rail, tx *gorm.DB, req ListUserReq) (mysql.PageRes[User
 		},
 	}
 	return mysql.QueryPage[ListUserReq, UserInfo](rail, tx, qpm)
+}
+
+func AdminUpdateUser(rail core.Rail, tx *gorm.DB, req AdminUpdateUserReq, operator common.User) error {
+	if operator.UserId == req.Id {
+		return core.NewWebErr("You cannot update yourself")
+	}
+
+	_, err := getRoleInfo(rail, req.RoleNo)
+	if err != nil {
+		return err
+	}
+
+	return tx.Exec(
+		`UPDATE user SET is_disabled = ?, update_by = ?, role_no = ? WHERE id = ?`,
+		req.IsDisabled, operator.Username, req.RoleNo, req.Id,
+	).Error
 }
