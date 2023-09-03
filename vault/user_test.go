@@ -75,3 +75,10 @@ func TestAddUser(t *testing.T) {
 	}, common.NilUser())
 	core.TestIsNil(t, e)
 }
+
+func TestListUsers(t *testing.T) {
+	rail := preUserTest(t)
+	users, err := ListUsers(rail, mysql.GetConn(), ListUserReq{})
+	core.TestIsNil(t, err)
+	t.Logf("%+v", users)
+}

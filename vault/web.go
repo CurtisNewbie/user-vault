@@ -14,6 +14,18 @@ const (
 	headerUserAgent    = "User-Agent"
 
 	passwordLoginUrl = "/user-vault/open/api/user/login"
+
+	resCodeManageUser = "manage-users"
+	resNameManageUesr = "Admin Manage Users"
+
+	resCodeBasicUser = "basic-user"
+	resNameBasicUser = "Basic User Operation"
+
+	resCodeAccessLog = "access-logs"
+	resNameAccessLog = "View Access Logs"
+
+	resCodeOperateLog = "operate-logs"
+	resNameOperateLog = "View Operate Logs"
 )
 
 type LoginReq struct {
@@ -25,6 +37,13 @@ type AddUserReq struct {
 	Username string `json:"username" valid:"notEmpty"`
 	Password string `json:"password" valid:"notEmpty"`
 	RoleNo   string `json:"roleNo" valid:"notEmpty"`
+}
+
+type ListUserReq struct {
+	Username   *string           `json:"username"`
+	RoleNo     *string           `json:"roleNo"`
+	IsDisabled *UserDisabledType `json:"isDisabled"`
+	Paging     core.Paging       `json:"pagingVo"`
 }
 
 func registerRoutes(rail core.Rail) error {
@@ -53,13 +72,22 @@ func registerRoutes(rail core.Rail) error {
 
 			return token, err
 		},
-		goauth.PathDocExtra(goauth.PathDoc{Desc: "Login", Type: goauth.PT_PUBLIC}),
+		goauth.PathDocExtra(goauth.PathDoc{Desc: "User Login (password-based)", Type: goauth.PT_PUBLIC}),
 	)
 
 	server.IPost[AddUserParam, any]("/open/api/user/add",
 		func(c *gin.Context, rail core.Rail, req AddUserParam) (any, error) {
 			return nil, AddUser(rail, mysql.GetConn(), AddUserParam(req), common.GetUser(rail))
-		})
+		},
+		goauth.PathDocExtra(goauth.PathDoc{Desc: "Admin add user", Code: resCodeManageUser, Type: goauth.PT_PROTECTED}),
+	)
+
+	server.IPost[ListUserReq, mysql.PageRes[UserInfo]]("/open/api/user/list",
+		func(c *gin.Context, rail core.Rail, req ListUserReq) (mysql.PageRes[UserInfo], error) {
+			return ListUsers(rail, mysql.GetConn(), req)
+		},
+		goauth.PathDocExtra(goauth.PathDoc{Desc: "Admin list users", Code: resCodeManageUser, Type: goauth.PT_PROTECTED}),
+	)
 
 	return nil
 }

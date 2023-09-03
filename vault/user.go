@@ -11,6 +11,7 @@ import (
 	"github.com/curtisnewbie/gocommon/goauth"
 	"github.com/curtisnewbie/miso/core"
 	"github.com/curtisnewbie/miso/jwt"
+	"github.com/curtisnewbie/miso/mysql"
 	"gorm.io/gorm"
 )
 
@@ -266,4 +267,68 @@ func prepUserCred(pwd string) User {
 	u.Salt = core.RandStr(6)
 	u.Password = encodePasswordSalt(pwd, u.Salt)
 	return u
+}
+
+type UserInfo struct {
+	Id         int              `json:"id"`
+	Username   string           `json:"username"`
+	RoleName   string           `json:"roleName"`
+	RoleNo     string           `json:"roleNo"`
+	UserNo     string           `json:"userNo"`
+	IsDisabled UserDisabledType `json:"isDisabled"`
+	CreateTime core.ETime       `json:"createTime"`
+	CreateBy   string           `json:"createBy"`
+	UpdateTime core.ETime       `json:"updateTime"`
+	UpdateBy   string           `json:"updateBy"`
+	IsDel      common.IS_DEL    `json:"isDel"`
+}
+
+func ListUsers(rail core.Rail, tx *gorm.DB, req ListUserReq) (mysql.PageRes[UserInfo], error) {
+	roleInfoCache := core.LocalCache[string]{}
+
+	qpm := mysql.QueryPageParam[ListUserReq, UserInfo]{
+		Req:     req,
+		ReqPage: req.Paging,
+		AddSelectQuery: func(tx *gorm.DB) *gorm.DB {
+			return tx.Select("*")
+		},
+		ApplyConditions: func(tx *gorm.DB, req ListUserReq) *gorm.DB {
+			if req.RoleNo != nil && *req.RoleNo != "" {
+				tx = tx.Where("role_no = ?", *req.RoleNo)
+			}
+			if req.Username != nil && *req.Username != "" {
+				tx = tx.Where("username like ?", "%"+*req.Username+"%")
+			}
+			if req.IsDisabled != nil {
+				tx = tx.Where("is_disabled = ?", *req.IsDisabled)
+			}
+			return tx.Where("is_del = 0")
+		},
+		GetBaseQuery: func(tx *gorm.DB) *gorm.DB {
+			return tx.Table("user")
+		},
+		ForEach: func(ui UserInfo) UserInfo {
+			if ui.RoleNo == "" {
+				return ui
+			}
+
+			name, err := roleInfoCache.Get(ui.RoleNo, func(s string) (string, error) {
+				resp, err := goauth.GetRoleInfo(rail, goauth.RoleInfoReq{
+					RoleNo: ui.RoleNo,
+				})
+				if err != nil || resp == nil {
+					rail.Errorf("Failed to goauth.GetRoleInfo, roleNo: %v, %v", req.RoleNo, err)
+					return "", err
+				}
+				return resp.Name, nil
+			})
+
+			if err == nil {
+				ui.RoleName = name
+			}
+
+			return ui
+		},
+	}
+	return mysql.QueryPage[ListUserReq, UserInfo](rail, tx, qpm)
 }
