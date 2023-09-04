@@ -1,6 +1,6 @@
 module github.com/curtisnewbie/user-vault
 
-go 1.20.3
+go 1.20
 
 require (
 	github.com/curtisnewbie/gocommon v1.1.1-0.20230903052310-bd87d518182c
