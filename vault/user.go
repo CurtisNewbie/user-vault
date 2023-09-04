@@ -12,6 +12,7 @@ import (
 	"github.com/curtisnewbie/miso/core"
 	"github.com/curtisnewbie/miso/jwt"
 	"github.com/curtisnewbie/miso/mysql"
+	"github.com/curtisnewbie/miso/redis"
 	"gorm.io/gorm"
 )
 
@@ -37,9 +38,8 @@ type PasswordLoginParam struct {
 type AddUserParam struct {
 	Username string `json:"username" valid:"notEmpty"`
 	Password string `json:"password" valid:"notEmpty"`
-	RoleNo   string `json:"roleNo" valid:"notEmpty"`
+	RoleNo   string `json:"roleNo"`
 }
-
 type ReviewStatusType string
 type UserDisabledType int
 
@@ -151,7 +151,7 @@ func userLogin(rail core.Rail, tx *gorm.DB, username string, password string) (U
 		return user, nil
 	}
 
-	return User{}, core.NewInterErr("Password incorrect", "User %v login failed, password incorrect", username)
+	return User{}, core.NewWebErr("Password incorrect", "User %v login failed, password incorrect", username)
 }
 
 func checkUserKey(rail core.Rail, tx *gorm.DB, userId int, password string) (bool, error) {
@@ -211,6 +211,14 @@ func extractSpringSalt(encoded string) string {
 	return "" // illegal format, or maybe none
 }
 
+func getRoleName(rail core.Rail, roleNo string) (string, error) {
+	r, err := getRoleInfo(rail, roleNo)
+	if err != nil {
+		return "", err
+	}
+	return r.Name, nil
+}
+
 func getRoleInfo(rail core.Rail, roleNo string) (*goauth.RoleInfoResp, error) {
 	resp, err := goauth.GetRoleInfo(rail, goauth.RoleInfoReq{
 		RoleNo: roleNo,
@@ -221,19 +229,42 @@ func getRoleInfo(rail core.Rail, roleNo string) (*goauth.RoleInfoResp, error) {
 	}
 
 	if resp == nil {
-		return nil, core.NewInterErr("Role not found", "Role %v is not found", roleNo)
+		return nil, core.NewWebErr("Role not found", "Role %v is not found", roleNo)
 	}
 	return resp, nil
 }
 
-func AdminAddUser(rail core.Rail, tx *gorm.DB, req AddUserParam, operator common.User) error {
-	_, err := getRoleInfo(rail, req.RoleNo)
-	if err != nil {
-		return err
+func checkNewUsername(username string) error {
+	if !usernameRegexp.MatchString(username) {
+		return core.NewWebErr("Username must have 6-50 characters, permitted characters include: 'a-z A-Z 0-9 . - _ @'",
+			"Actual username: %v", username)
+	}
+	return nil
+}
+
+func checkNewPassword(password string) error {
+	len := len([]rune(password))
+	if len < passwordMinLen {
+		return core.NewWebErr(fmt.Sprintf("Password must have at least %v characters", passwordMinLen),
+			"Actual length: %v", len)
+	}
+	return nil
+}
+
+func AddUser(rail core.Rail, tx *gorm.DB, req AddUserParam, operator string) error {
+	if req.RoleNo != "" {
+		_, err := getRoleInfo(rail, req.RoleNo)
+		if err != nil {
+			return err
+		}
 	}
 
-	if !usernameRegexp.MatchString(req.Username) {
-		return core.NewWebErr("Username must have 6-50 characters, permitted characters include: 'a-z A-Z 0-9 . - _ @'")
+	if e := checkNewUsername(req.Username); e != nil {
+		return e
+	}
+
+	if e := checkNewPassword(req.Password); e != nil {
+		return e
 	}
 
 	if len([]rune(req.Password)) < passwordMinLen {
@@ -253,12 +284,12 @@ func AdminAddUser(rail core.Rail, tx *gorm.DB, req AddUserParam, operator common
 	user.Username = req.Username
 	user.Role = ""
 	user.RoleNo = req.RoleNo
-	user.CreateBy = operator.Username
+	user.CreateBy = operator
 	user.CreateTime = core.Now()
 	user.IsDisabled = UserNormal
 	user.ReviewStatus = ReviewApproved
 
-	err = tx.Table("user").
+	err := tx.Table("user").
 		Create(&user).
 		Error
 
@@ -267,7 +298,7 @@ func AdminAddUser(rail core.Rail, tx *gorm.DB, req AddUserParam, operator common
 		return err
 	}
 
-	rail.Infof("New user '%v' with roleNo: %v is added by %v", req.Username, req.RoleNo, operator.Username)
+	rail.Infof("New user '%v' with roleNo: %v is added by %v", req.Username, req.RoleNo, operator)
 	return nil
 }
 
@@ -356,4 +387,83 @@ func AdminUpdateUser(rail core.Rail, tx *gorm.DB, req AdminUpdateUserReq, operat
 		`UPDATE user SET is_disabled = ?, update_by = ?, role_no = ? WHERE id = ?`,
 		req.IsDisabled, operator.Username, req.RoleNo, req.Id,
 	).Error
+}
+
+func ReviewUserRegistration(rail core.Rail, tx *gorm.DB, req AdminReviewUserReq) error {
+	if req.ReviewStatus != ReviewRejected && req.ReviewStatus != ReviewApproved {
+		return core.NewWebErr("Illegal Argument", "ReviewStatus was neither ReviewApproved nor ReviewRejected, it was %v",
+			req.ReviewStatus)
+	}
+
+	return redis.RLockExec(rail, fmt.Sprintf("auth:user:registration:review:%v", req.UserId),
+		func() error {
+			var user User
+			t := tx.Raw(`SELECT * FROM user WHERE id = ?`, req.UserId).
+				Scan(&user)
+			if t.Error != nil {
+				rail.Errorf("Failed to find user, id = %v %v", req.UserId, t.Error)
+				return t.Error
+			}
+
+			if t.RowsAffected < 1 {
+				return core.NewWebErr("User not found", "User %v not found", req.UserId)
+			}
+
+			if user.IsDel == common.IS_DEL_Y {
+				return core.NewWebErr("User not found", "User %v is deleted", req.UserId)
+			}
+
+			if user.ReviewStatus != ReviewPending {
+				return core.NewWebErr("User's registration has already been reviewed")
+			}
+
+			isDisabled := UserDisabled
+			if req.ReviewStatus == ReviewApproved {
+				isDisabled = UserNormal
+			}
+
+			err := tx.Exec(`UPDATE user SET review_status = ?, is_disabled = ? WHERE id = ?`, req.ReviewStatus, isDisabled, req.UserId).
+				Error
+
+			if err != nil {
+				rail.Errorf("failed to update user for registration review, userId: %v, %v", req.UserId, err)
+			}
+			return err
+		},
+	)
+}
+
+func UserRegister(rail core.Rail, tx *gorm.DB, req RegisterReq) error {
+	return AddUser(rail, tx, AddUserParam{
+		Username: req.Username,
+		Password: req.Password,
+	}, "")
+}
+
+type UserInfoBrief struct {
+	Id       int    `json:"id"`
+	Username string `json:"username"`
+	RoleName string `json:"roleName"`
+	RoleNo   string `json:"roleNo"`
+	UserNo   string `json:"userNo"`
+}
+
+func LoadUserInfoBrief(rail core.Rail, tx *gorm.DB, username string) (UserInfoBrief, error) {
+	u, err := loadUser(rail, tx, username)
+	if err != nil {
+		return UserInfoBrief{}, err
+	}
+
+	roleName := ""
+	if r, err := getRoleName(rail, u.RoleNo); err == nil {
+		roleName = r
+	}
+
+	return UserInfoBrief{
+		Id:       u.Id,
+		Username: u.Username,
+		RoleName: roleName,
+		RoleNo:   u.RoleNo,
+		UserNo:   u.UserNo,
+	}, nil
 }

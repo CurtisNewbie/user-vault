@@ -9,6 +9,7 @@ import (
 	"github.com/curtisnewbie/miso/core"
 	"github.com/curtisnewbie/miso/jwt"
 	"github.com/curtisnewbie/miso/mysql"
+	"github.com/curtisnewbie/miso/redis"
 	"github.com/sirupsen/logrus"
 )
 
@@ -23,6 +24,8 @@ func preUserTest(t *testing.T) core.Rail {
 	rail := preTest(t)
 	core.TestIsNil(t, mysql.InitMySqlFromProp())
 	_, e := consul.GetConsulClient()
+	core.TestIsNil(t, e)
+	_, e = redis.InitRedisFromProp()
 	core.TestIsNil(t, e)
 	return rail
 }
@@ -68,11 +71,11 @@ func TestUserLogin(t *testing.T) {
 
 func TestAdminAddUser(t *testing.T) {
 	rail := preUserTest(t)
-	e := AdminAddUser(rail, mysql.GetConn(), AddUserParam{
+	e := AddUser(rail, mysql.GetConn(), AddUserParam{
 		Username: "dummydummy2",
 		Password: "12345678",
 		RoleNo:   "role_628043111874560208429",
-	}, common.NilUser())
+	}, "Test")
 	core.TestIsNil(t, e)
 }
 
@@ -86,9 +89,25 @@ func TestListUsers(t *testing.T) {
 func TestAdminUpdateUser(t *testing.T) {
 	rail := preUserTest(t)
 	err := AdminUpdateUser(rail, mysql.GetConn(), AdminUpdateUserReq{
-		Id: 1107,
-		RoleNo: "role_628043111874560208429",
+		Id:         1107,
+		RoleNo:     "role_628043111874560208429",
 		IsDisabled: 0,
-		}, common.NilUser())
+	}, common.NilUser())
 	core.TestIsNil(t, err)
+}
+
+func TestReviewUserRegistration(t *testing.T) {
+	rail := preUserTest(t)
+	err := ReviewUserRegistration(rail, mysql.GetConn(), AdminReviewUserReq{
+		UserId:       1107,
+		ReviewStatus: ReviewApproved,
+	})
+	core.TestIsNil(t, err)
+}
+
+func TestLoadUserInfoBrief(t *testing.T) {
+	rail := preUserTest(t)
+	uib, err := LoadUserInfoBrief(rail, mysql.GetConn(), "dummydummy2")
+	core.TestIsNil(t, err)
+	t.Logf("uib: %+v", uib)
 }
