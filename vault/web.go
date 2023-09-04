@@ -64,6 +64,14 @@ type RegisterReq struct {
 
 func registerRoutes(rail core.Rail) error {
 
+	goauth.ReportResourcesOnBootstrapped(rail, []goauth.AddResourceReq{
+		{Code: resCodeManageUser, Name: resNameManageUesr},
+		{Code: resCodeBasicUser, Name: resNameBasicUser},
+		{Code: resCodeAccessLog, Name: resNameAccessLog},
+		{Code: resCodeOperateLog, Name: resNameOperateLog},
+	})
+	goauth.ReportPathsOnBootstrapped(rail)
+
 	server.IPost("/open/api/user/login",
 		func(gin *gin.Context, rail core.Rail, req LoginReq) (string, error) {
 			token, err := UserLogin(rail, mysql.GetConn(), PasswordLoginParam(req))
