@@ -9,10 +9,7 @@ import (
 
 	"github.com/curtisnewbie/gocommon/common"
 	"github.com/curtisnewbie/gocommon/goauth"
-	"github.com/curtisnewbie/miso/core"
-	"github.com/curtisnewbie/miso/jwt"
-	"github.com/curtisnewbie/miso/mysql"
-	"github.com/curtisnewbie/miso/redis"
+	"github.com/curtisnewbie/miso/miso"
 	"gorm.io/gorm"
 )
 
@@ -53,9 +50,9 @@ type User struct {
 	Role         string // TODO: remove this
 	RoleNo       string
 	IsDisabled   UserDisabledType
-	CreateTime   core.ETime
+	CreateTime   miso.ETime
 	CreateBy     string
-	UpdateTime   core.ETime
+	UpdateTime   miso.ETime
 	UpdateBy     string
 	IsDel        common.IS_DEL
 }
@@ -72,9 +69,9 @@ func RemoteAddr(forwardedFor string) string {
 	return addr
 }
 
-func loadUser(rail core.Rail, tx *gorm.DB, username string) (User, error) {
+func loadUser(rail miso.Rail, tx *gorm.DB, username string) (User, error) {
 	if username == "" {
-		return User{}, core.NewWebErr("Username is required")
+		return User{}, miso.NewWebErr("Username is required")
 	}
 
 	var user User
@@ -87,13 +84,13 @@ func loadUser(rail core.Rail, tx *gorm.DB, username string) (User, error) {
 	}
 
 	if t.RowsAffected < 1 {
-		return User{}, core.NewWebErr("User not found", fmt.Sprintf("User %v is not found", username))
+		return User{}, miso.NewWebErr("User not found", fmt.Sprintf("User %v is not found", username))
 	}
 
 	return user, nil
 }
 
-func UserLogin(rail core.Rail, tx *gorm.DB, req PasswordLoginParam) (string, error) {
+func UserLogin(rail miso.Rail, tx *gorm.DB, req PasswordLoginParam) (string, error) {
 	user, err := userLogin(rail, tx, req.Username, req.Password)
 	if err != nil {
 		return "", err
@@ -109,16 +106,16 @@ func buildToken(user User, exp time.Duration) (string, error) {
 		"roleno":   user.RoleNo,
 	}
 
-	return jwt.EncodeToken(claims, exp)
+	return miso.JwtEncode(claims, exp)
 }
 
-func userLogin(rail core.Rail, tx *gorm.DB, username string, password string) (User, error) {
-	if core.IsBlankStr(username) {
-		return User{}, core.NewWebErr("Username is required")
+func userLogin(rail miso.Rail, tx *gorm.DB, username string, password string) (User, error) {
+	if miso.IsBlankStr(username) {
+		return User{}, miso.NewWebErr("Username is required")
 	}
 
-	if core.IsBlankStr(password) {
-		return User{}, core.NewWebErr("Password is required")
+	if miso.IsBlankStr(password) {
+		return User{}, miso.NewWebErr("Password is required")
 	}
 
 	user, err := loadUser(rail, tx, username)
@@ -127,15 +124,15 @@ func userLogin(rail core.Rail, tx *gorm.DB, username string, password string) (U
 	}
 
 	if user.ReviewStatus == ReviewPending {
-		return User{}, core.NewWebErr("Your Registration is being reviewed, please wait for approval")
+		return User{}, miso.NewWebErr("Your Registration is being reviewed, please wait for approval")
 	}
 
 	if user.ReviewStatus == ReviewRejected {
-		return User{}, core.NewWebErr("Your are not permitted to login, please contact administrator")
+		return User{}, miso.NewWebErr("Your are not permitted to login, please contact administrator")
 	}
 
 	if user.IsDisabled == UserDisabled {
-		return User{}, core.NewWebErr("User is disabled")
+		return User{}, miso.NewWebErr("User is disabled")
 	}
 
 	if checkPassword(user.Password, user.Salt, password) {
@@ -151,10 +148,10 @@ func userLogin(rail core.Rail, tx *gorm.DB, username string, password string) (U
 		return user, nil
 	}
 
-	return User{}, core.NewWebErr("Password incorrect", "User %v login failed, password incorrect", username)
+	return User{}, miso.NewWebErr("Password incorrect", "User %v login failed, password incorrect", username)
 }
 
-func checkUserKey(rail core.Rail, tx *gorm.DB, userId int, password string) (bool, error) {
+func checkUserKey(rail miso.Rail, tx *gorm.DB, userId int, password string) (bool, error) {
 	if password == "" {
 		return false, nil
 	}
@@ -162,7 +159,7 @@ func checkUserKey(rail core.Rail, tx *gorm.DB, userId int, password string) (boo
 	var id int
 	t := tx.Raw(
 		`SELECT id FROM user_key WHERE user_id = ? AND secret_key = ? AND expiration_time > ? AND is_del = '0' LIMIT 1`,
-		userId, password, core.Now(),
+		userId, password, miso.Now(),
 	).
 		Scan(&id)
 	if t.Error != nil {
@@ -211,7 +208,7 @@ func extractSpringSalt(encoded string) string {
 	return "" // illegal format, or maybe none
 }
 
-func getRoleName(rail core.Rail, roleNo string) (string, error) {
+func getRoleName(rail miso.Rail, roleNo string) (string, error) {
 	r, err := getRoleInfo(rail, roleNo)
 	if err != nil {
 		return "", err
@@ -219,7 +216,7 @@ func getRoleName(rail core.Rail, roleNo string) (string, error) {
 	return r.Name, nil
 }
 
-func getRoleInfo(rail core.Rail, roleNo string) (*goauth.RoleInfoResp, error) {
+func getRoleInfo(rail miso.Rail, roleNo string) (*goauth.RoleInfoResp, error) {
 	resp, err := goauth.GetRoleInfo(rail, goauth.RoleInfoReq{
 		RoleNo: roleNo,
 	})
@@ -229,14 +226,14 @@ func getRoleInfo(rail core.Rail, roleNo string) (*goauth.RoleInfoResp, error) {
 	}
 
 	if resp == nil {
-		return nil, core.NewWebErr("Role not found", "Role %v is not found", roleNo)
+		return nil, miso.NewWebErr("Role not found", "Role %v is not found", roleNo)
 	}
 	return resp, nil
 }
 
 func checkNewUsername(username string) error {
 	if !usernameRegexp.MatchString(username) {
-		return core.NewWebErr("Username must have 6-50 characters, permitted characters include: 'a-z A-Z 0-9 . - _ @'",
+		return miso.NewWebErr("Username must have 6-50 characters, permitted characters include: 'a-z A-Z 0-9 . - _ @'",
 			"Actual username: %v", username)
 	}
 	return nil
@@ -245,13 +242,13 @@ func checkNewUsername(username string) error {
 func checkNewPassword(password string) error {
 	len := len([]rune(password))
 	if len < passwordMinLen {
-		return core.NewWebErr(fmt.Sprintf("Password must have at least %v characters", passwordMinLen),
+		return miso.NewWebErr(fmt.Sprintf("Password must have at least %v characters", passwordMinLen),
 			"Actual length: %v", len)
 	}
 	return nil
 }
 
-func AddUser(rail core.Rail, tx *gorm.DB, req AddUserParam, operator string) error {
+func AddUser(rail miso.Rail, tx *gorm.DB, req AddUserParam, operator string) error {
 	if req.RoleNo != "" {
 		_, err := getRoleInfo(rail, req.RoleNo)
 		if err != nil {
@@ -268,24 +265,24 @@ func AddUser(rail core.Rail, tx *gorm.DB, req AddUserParam, operator string) err
 	}
 
 	if len([]rune(req.Password)) < passwordMinLen {
-		return core.NewWebErr(fmt.Sprintf("Password must have at least %v characters", passwordMinLen))
+		return miso.NewWebErr(fmt.Sprintf("Password must have at least %v characters", passwordMinLen))
 	}
 
 	if req.Username == req.Password {
-		return core.NewWebErr("Username and password must be different")
+		return miso.NewWebErr("Username and password must be different")
 	}
 
 	if _, err := loadUser(rail, tx, req.Username); err == nil {
-		return core.NewWebErr("User is already registered")
+		return miso.NewWebErr("User is already registered")
 	}
 
 	user := prepUserCred(req.Password)
-	user.UserNo = core.GenIdP("UE")
+	user.UserNo = miso.GenIdP("UE")
 	user.Username = req.Username
 	user.Role = ""
 	user.RoleNo = req.RoleNo
 	user.CreateBy = operator
-	user.CreateTime = core.Now()
+	user.CreateTime = miso.Now()
 	user.IsDisabled = UserNormal
 	user.ReviewStatus = ReviewApproved
 
@@ -304,7 +301,7 @@ func AddUser(rail core.Rail, tx *gorm.DB, req AddUserParam, operator string) err
 
 func prepUserCred(pwd string) User {
 	u := User{}
-	u.Salt = core.RandStr(6)
+	u.Salt = miso.RandStr(6)
 	u.Password = encodePasswordSalt(pwd, u.Salt)
 	return u
 }
@@ -316,17 +313,17 @@ type UserInfo struct {
 	RoleNo     string           `json:"roleNo"`
 	UserNo     string           `json:"userNo"`
 	IsDisabled UserDisabledType `json:"isDisabled"`
-	CreateTime core.ETime       `json:"createTime"`
+	CreateTime miso.ETime       `json:"createTime"`
 	CreateBy   string           `json:"createBy"`
-	UpdateTime core.ETime       `json:"updateTime"`
+	UpdateTime miso.ETime       `json:"updateTime"`
 	UpdateBy   string           `json:"updateBy"`
 	IsDel      common.IS_DEL    `json:"isDel"`
 }
 
-func ListUsers(rail core.Rail, tx *gorm.DB, req ListUserReq) (mysql.PageRes[UserInfo], error) {
-	roleInfoCache := core.LocalCache[string]{}
+func ListUsers(rail miso.Rail, tx *gorm.DB, req ListUserReq) (miso.PageRes[UserInfo], error) {
+	roleInfoCache := miso.LocalCache[string]{}
 
-	qpm := mysql.QueryPageParam[ListUserReq, UserInfo]{
+	qpm := miso.QueryPageParam[ListUserReq, UserInfo]{
 		Req:     req,
 		ReqPage: req.Paging,
 		AddSelectQuery: func(tx *gorm.DB) *gorm.DB {
@@ -370,12 +367,12 @@ func ListUsers(rail core.Rail, tx *gorm.DB, req ListUserReq) (mysql.PageRes[User
 			return ui
 		},
 	}
-	return mysql.QueryPage[ListUserReq, UserInfo](rail, tx, qpm)
+	return miso.QueryPage[ListUserReq, UserInfo](rail, tx, qpm)
 }
 
-func AdminUpdateUser(rail core.Rail, tx *gorm.DB, req AdminUpdateUserReq, operator common.User) error {
+func AdminUpdateUser(rail miso.Rail, tx *gorm.DB, req AdminUpdateUserReq, operator common.User) error {
 	if operator.UserId == req.Id {
-		return core.NewWebErr("You cannot update yourself")
+		return miso.NewWebErr("You cannot update yourself")
 	}
 
 	_, err := getRoleInfo(rail, req.RoleNo)
@@ -389,13 +386,13 @@ func AdminUpdateUser(rail core.Rail, tx *gorm.DB, req AdminUpdateUserReq, operat
 	).Error
 }
 
-func ReviewUserRegistration(rail core.Rail, tx *gorm.DB, req AdminReviewUserReq) error {
+func ReviewUserRegistration(rail miso.Rail, tx *gorm.DB, req AdminReviewUserReq) error {
 	if req.ReviewStatus != ReviewRejected && req.ReviewStatus != ReviewApproved {
-		return core.NewWebErr("Illegal Argument", "ReviewStatus was neither ReviewApproved nor ReviewRejected, it was %v",
+		return miso.NewWebErr("Illegal Argument", "ReviewStatus was neither ReviewApproved nor ReviewRejected, it was %v",
 			req.ReviewStatus)
 	}
 
-	return redis.RLockExec(rail, fmt.Sprintf("auth:user:registration:review:%v", req.UserId),
+	return miso.RLockExec(rail, fmt.Sprintf("auth:user:registration:review:%v", req.UserId),
 		func() error {
 			var user User
 			t := tx.Raw(`SELECT * FROM user WHERE id = ?`, req.UserId).
@@ -406,15 +403,15 @@ func ReviewUserRegistration(rail core.Rail, tx *gorm.DB, req AdminReviewUserReq)
 			}
 
 			if t.RowsAffected < 1 {
-				return core.NewWebErr("User not found", "User %v not found", req.UserId)
+				return miso.NewWebErr("User not found", "User %v not found", req.UserId)
 			}
 
 			if user.IsDel == common.IS_DEL_Y {
-				return core.NewWebErr("User not found", "User %v is deleted", req.UserId)
+				return miso.NewWebErr("User not found", "User %v is deleted", req.UserId)
 			}
 
 			if user.ReviewStatus != ReviewPending {
-				return core.NewWebErr("User's registration has already been reviewed")
+				return miso.NewWebErr("User's registration has already been reviewed")
 			}
 
 			isDisabled := UserDisabled
@@ -433,7 +430,7 @@ func ReviewUserRegistration(rail core.Rail, tx *gorm.DB, req AdminReviewUserReq)
 	)
 }
 
-func UserRegister(rail core.Rail, tx *gorm.DB, req RegisterReq) error {
+func UserRegister(rail miso.Rail, tx *gorm.DB, req RegisterReq) error {
 	return AddUser(rail, tx, AddUserParam{
 		Username: req.Username,
 		Password: req.Password,
@@ -448,7 +445,7 @@ type UserInfoBrief struct {
 	UserNo   string `json:"userNo"`
 }
 
-func LoadUserInfoBrief(rail core.Rail, tx *gorm.DB, username string) (UserInfoBrief, error) {
+func LoadUserInfoBrief(rail miso.Rail, tx *gorm.DB, username string) (UserInfoBrief, error) {
 	u, err := loadUser(rail, tx, username)
 	if err != nil {
 		return UserInfoBrief{}, err
