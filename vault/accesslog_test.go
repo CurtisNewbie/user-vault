@@ -3,15 +3,13 @@ package vault
 import (
 	"testing"
 
-	"github.com/curtisnewbie/miso/core"
-	"github.com/curtisnewbie/miso/mysql"
-	"github.com/curtisnewbie/miso/rabbitmq"
+	"github.com/curtisnewbie/miso/miso"
 )
 
-func preAccessLogTest(t *testing.T) core.Rail {
+func preAccessLogTest(t *testing.T) miso.Rail {
 	rail := preTest(t)
-	core.TestIsNil(t, mysql.InitMySqlFromProp())
-	core.TestIsNil(t, rabbitmq.StartRabbitMqClient(rail.Ctx))
+	miso.TestIsNil(t, miso.InitMySQLFromProp())
+	miso.TestIsNil(t, miso.StartRabbitMqClient(rail))
 	return rail
 }
 
@@ -23,8 +21,8 @@ func TestSendAccessLogEvent(t *testing.T) {
 		UserId:     0,
 		Username:   "yongj.zhuang",
 		Url:        passwordLoginUrl,
-		AccessTime: core.Now(),
+		AccessTime: miso.Now(),
 	})
 
-	core.TestIsNil(t, er)
+	miso.TestIsNil(t, er)
 }

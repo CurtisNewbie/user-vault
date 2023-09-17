@@ -3,8 +3,8 @@ module github.com/curtisnewbie/user-vault
 go 1.20
 
 require (
-	github.com/curtisnewbie/gocommon v1.1.1-0.20230903052310-bd87d518182c
-	github.com/curtisnewbie/miso v0.0.0-20230904141420-969786b9bff0
+	github.com/curtisnewbie/gocommon v1.1.1
+	github.com/curtisnewbie/miso v0.0.2
 	github.com/gin-gonic/gin v1.8.1
 	github.com/sirupsen/logrus v1.9.0
 	gorm.io/gorm v1.23.8
@@ -43,6 +43,7 @@ require (
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
+	github.com/mattn/go-sqlite3 v1.14.9 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
@@ -74,4 +75,5 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/mysql v1.3.6 // indirect
+	gorm.io/driver/sqlite v1.2.6 // indirect
 )

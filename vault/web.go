@@ -3,9 +3,7 @@ package vault
 import (
 	"github.com/curtisnewbie/gocommon/common"
 	"github.com/curtisnewbie/gocommon/goauth"
-	"github.com/curtisnewbie/miso/core"
-	"github.com/curtisnewbie/miso/mysql"
-	"github.com/curtisnewbie/miso/server"
+	"github.com/curtisnewbie/miso/miso"
 	"github.com/gin-gonic/gin"
 )
 
@@ -43,7 +41,7 @@ type ListUserReq struct {
 	Username   *string           `json:"username"`
 	RoleNo     *string           `json:"roleNo"`
 	IsDisabled *UserDisabledType `json:"isDisabled"`
-	Paging     core.Paging       `json:"pagingVo"`
+	Paging     miso.Paging       `json:"pagingVo"`
 }
 
 type AdminUpdateUserReq struct {
@@ -62,7 +60,7 @@ type RegisterReq struct {
 	Password string `json:"password" valid:"notEmpty"`
 }
 
-func registerRoutes(rail core.Rail) error {
+func registerRoutes(rail miso.Rail) error {
 
 	goauth.ReportResourcesOnBootstrapped(rail, []goauth.AddResourceReq{
 		{Code: resCodeManageUser, Name: resNameManageUesr},
@@ -72,9 +70,9 @@ func registerRoutes(rail core.Rail) error {
 	})
 	goauth.ReportPathsOnBootstrapped(rail)
 
-	server.IPost("/open/api/user/login",
-		func(gin *gin.Context, rail core.Rail, req LoginReq) (string, error) {
-			token, err := UserLogin(rail, mysql.GetConn(), PasswordLoginParam(req))
+	miso.IPost("/open/api/user/login",
+		func(gin *gin.Context, rail miso.Rail, req LoginReq) (string, error) {
+			token, err := UserLogin(rail, miso.GetMySQL(), PasswordLoginParam(req))
 			if err != nil {
 				return "", err
 			}
@@ -88,7 +86,7 @@ func registerRoutes(rail core.Rail) error {
 				UserId:     0, // TODO: remove this field
 				Username:   req.Username,
 				Url:        passwordLoginUrl,
-				AccessTime: core.Now(),
+				AccessTime: miso.Now(),
 			}); er != nil {
 				rail.Errorf("Failed to sendAccessLogEvent, username: %v, remoteAddr: %v, userAgent: %v, %v",
 					req.Username, remoteAddr, userAgent, er)
@@ -99,47 +97,47 @@ func registerRoutes(rail core.Rail) error {
 		goauth.PathDocExtra(goauth.PathDoc{Desc: "User Login (password-based)", Type: goauth.PT_PUBLIC}),
 	)
 
-	server.IPost("/open/api/user/register/request",
-		func(c *gin.Context, rail core.Rail, req RegisterReq) (any, error) {
-			return nil, UserRegister(rail, mysql.GetConn(), req)
+	miso.IPost("/open/api/user/register/request",
+		func(c *gin.Context, rail miso.Rail, req RegisterReq) (any, error) {
+			return nil, UserRegister(rail, miso.GetMySQL(), req)
 		},
 		goauth.PathDocExtra(goauth.PathDoc{Desc: "User request registration", Type: goauth.PT_PUBLIC}),
 	)
 
 	// ----------------------------------------------------------------------------------------------------
 
-	server.IPost("/open/api/user/add",
-		func(c *gin.Context, rail core.Rail, req AddUserParam) (any, error) {
-			return nil, AddUser(rail, mysql.GetConn(), AddUserParam(req), common.GetUser(rail).Username)
+	miso.IPost("/open/api/user/add",
+		func(c *gin.Context, rail miso.Rail, req AddUserParam) (any, error) {
+			return nil, AddUser(rail, miso.GetMySQL(), AddUserParam(req), common.GetUser(rail).Username)
 		},
 		goauth.PathDocExtra(goauth.PathDoc{Desc: "Admin add user", Code: resCodeManageUser, Type: goauth.PT_PROTECTED}),
 	)
 
-	server.IPost("/open/api/user/list",
-		func(c *gin.Context, rail core.Rail, req ListUserReq) (mysql.PageRes[UserInfo], error) {
-			return ListUsers(rail, mysql.GetConn(), req)
+	miso.IPost("/open/api/user/list",
+		func(c *gin.Context, rail miso.Rail, req ListUserReq) (miso.PageRes[UserInfo], error) {
+			return ListUsers(rail, miso.GetMySQL(), req)
 		},
 		goauth.PathDocExtra(goauth.PathDoc{Desc: "Admin list users", Code: resCodeManageUser, Type: goauth.PT_PROTECTED}),
 	)
 
-	server.IPost("/open/api/user/info/update",
-		func(c *gin.Context, rail core.Rail, req AdminUpdateUserReq) (any, error) {
-			return nil, AdminUpdateUser(rail, mysql.GetConn(), req, common.GetUser(rail))
+	miso.IPost("/open/api/user/info/update",
+		func(c *gin.Context, rail miso.Rail, req AdminUpdateUserReq) (any, error) {
+			return nil, AdminUpdateUser(rail, miso.GetMySQL(), req, common.GetUser(rail))
 		},
 		goauth.PathDocExtra(goauth.PathDoc{Desc: "Admin update user info", Code: resCodeManageUser, Type: goauth.PT_PROTECTED}),
 	)
 
-	server.IPost("/open/api/user/registration/review",
-		func(c *gin.Context, rail core.Rail, req AdminReviewUserReq) (any, error) {
-			return nil, ReviewUserRegistration(rail, mysql.GetConn(), req)
+	miso.IPost("/open/api/user/registration/review",
+		func(c *gin.Context, rail miso.Rail, req AdminReviewUserReq) (any, error) {
+			return nil, ReviewUserRegistration(rail, miso.GetMySQL(), req)
 		},
 		goauth.PathDocExtra(goauth.PathDoc{Desc: "Admin review user registration", Code: resCodeManageUser, Type: goauth.PT_PROTECTED}),
 	)
 
-	server.Get("/open/api/user/info",
-		func(c *gin.Context, rail core.Rail) (any, error) {
+	miso.Get("/open/api/user/info",
+		func(c *gin.Context, rail miso.Rail) (any, error) {
 			u := common.GetUser(rail)
-			return LoadUserInfoBrief(rail, mysql.GetConn(), u.Username)
+			return LoadUserInfoBrief(rail, miso.GetMySQL(), u.Username)
 		},
 		goauth.PathDocExtra(goauth.PathDoc{Desc: "User get user info", Code: resCodeBasicUser, Type: goauth.PT_PROTECTED}),
 	)
