@@ -23,7 +23,7 @@ func prepareEventBus(rail miso.Rail) error {
 		return er
 	}
 
-	miso.SubEventBus[AccessLogEvent](accessLogEventBus, 2, func(rail miso.Rail, evt AccessLogEvent) error {
+	miso.SubEventBus(accessLogEventBus, 2, func(rail miso.Rail, evt AccessLogEvent) error {
 		rail.Infof("Received AccessLogEvent: %+v", evt)
 		return SaveAccessLogEvent(rail, miso.GetMySQL(), evt)
 	})

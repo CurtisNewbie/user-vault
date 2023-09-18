@@ -56,7 +56,12 @@ func TestUserLogin(t *testing.T) {
 	miso.TestIsNil(t, err)
 	t.Logf("user: %+v", usr)
 
-	tkn, err := buildToken(usr, time.Minute*15)
+	tkn, err := buildToken(TokenUser{
+		Id:       usr.Id,
+		UserNo:   usr.UserNo,
+		Username: usr.Username,
+		RoleNo:   usr.RoleNo,
+	}, time.Minute*15)
 	miso.TestIsNil(t, err)
 	t.Logf("tkn: %+v", tkn)
 

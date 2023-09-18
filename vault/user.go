@@ -25,6 +25,8 @@ const (
 var (
 	usernameRegexp = regexp.MustCompile(`^[a-zA-Z0-9_\-@.]{6,50}$`)
 	passwordMinLen = 8
+
+	userInfoCache = miso.NewLazyObjectRCache[UserDetail](time.Hour * 1)
 )
 
 type PasswordLoginParam struct {
@@ -95,10 +97,26 @@ func UserLogin(rail miso.Rail, tx *gorm.DB, req PasswordLoginParam) (string, err
 	if err != nil {
 		return "", err
 	}
-	return buildToken(user, 15*time.Minute)
+
+	tu := TokenUser{
+		Id:       user.Id,
+		UserNo:   user.UserNo,
+		Username: user.Username,
+		RoleNo:   user.RoleNo,
+	}
+
+	rail.Debugf("buildToken %+v", tu)
+	return buildToken(tu, 15*time.Minute)
 }
 
-func buildToken(user User, exp time.Duration) (string, error) {
+type TokenUser struct {
+	Id       int
+	UserNo   string
+	Username string
+	RoleNo   string
+}
+
+func buildToken(user TokenUser, exp time.Duration) (string, error) {
 	claims := map[string]any{
 		"id":       user.Id,
 		"username": user.Username,
@@ -264,10 +282,6 @@ func AddUser(rail miso.Rail, tx *gorm.DB, req AddUserParam, operator string) err
 		return e
 	}
 
-	if len([]rune(req.Password)) < passwordMinLen {
-		return miso.NewWebErr(fmt.Sprintf("Password must have at least %v characters", passwordMinLen))
-	}
-
 	if req.Username == req.Password {
 		return miso.NewWebErr("Username and password must be different")
 	}
@@ -367,7 +381,7 @@ func ListUsers(rail miso.Rail, tx *gorm.DB, req ListUserReq) (miso.PageRes[UserI
 			return ui
 		},
 	}
-	return miso.QueryPage[ListUserReq, UserInfo](rail, tx, qpm)
+	return miso.QueryPage(rail, tx, qpm)
 }
 
 func AdminUpdateUser(rail miso.Rail, tx *gorm.DB, req AdminUpdateUserReq, operator common.User) error {
@@ -437,18 +451,67 @@ func UserRegister(rail miso.Rail, tx *gorm.DB, req RegisterReq) error {
 	}, "")
 }
 
-type UserInfoBrief struct {
-	Id       int    `json:"id"`
-	Username string `json:"username"`
-	RoleName string `json:"roleName"`
-	RoleNo   string `json:"roleNo"`
-	UserNo   string `json:"userNo"`
+type UserDetail struct {
+	Id           int    `json:"id"`
+	Username     string `json:"username"`
+	RoleName     string `json:"roleName"`
+	RoleNo       string `json:"roleNo"`
+	UserNo       string `json:"userNo"`
+	RegisterDate string `json:"registerDate"`
+	Password     string `json:"password"`
+	Salt         string `json:"salt"`
 }
 
-func LoadUserInfoBrief(rail miso.Rail, tx *gorm.DB, username string) (UserInfoBrief, error) {
-	u, err := loadUser(rail, tx, username)
+type UserInfoBrief struct {
+	Id           int    `json:"id"`
+	Username     string `json:"username"`
+	RoleName     string `json:"roleName"`
+	RoleNo       string `json:"roleNo"`
+	UserNo       string `json:"userNo"`
+	RegisterDate string `json:"registerDate"`
+}
+
+func userInfoCacheKey(username string) string {
+	return "vault:user:info:brief:" + username
+}
+
+func FetchUserBrief(rail miso.Rail, tx *gorm.DB, username string) (UserInfoBrief, error) {
+	ud, err := LoadUserBriefThrCache(rail, miso.GetMySQL(), username)
 	if err != nil {
 		return UserInfoBrief{}, err
+	}
+	return UserInfoBrief{
+		Id:           ud.Id,
+		Username:     ud.Username,
+		RoleName:     ud.RoleName,
+		RoleNo:       ud.RoleNo,
+		UserNo:       ud.UserNo,
+		RegisterDate: ud.RegisterDate,
+	}, nil
+}
+
+func LoadUserBriefThrCache(rail miso.Rail, tx *gorm.DB, username string) (UserDetail, error) {
+	key := userInfoCacheKey(username)
+	u, _, err := userInfoCache.GetElse(rail, key, func() (UserDetail, bool, error) {
+		u, err := LoadUserInfoBrief(rail, tx, username)
+		if err != nil {
+			return UserDetail{}, false, err
+		}
+
+		return u, true, nil
+	})
+	return u, err
+}
+
+func InvalidateUserInfoCache(rail miso.Rail, username string) error {
+	key := userInfoCacheKey(username)
+	return userInfoCache.Del(rail, key)
+}
+
+func LoadUserInfoBrief(rail miso.Rail, tx *gorm.DB, username string) (UserDetail, error) {
+	u, err := loadUser(rail, tx, username)
+	if err != nil {
+		return UserDetail{}, err
 	}
 
 	roleName := ""
@@ -456,11 +519,113 @@ func LoadUserInfoBrief(rail miso.Rail, tx *gorm.DB, username string) (UserInfoBr
 		roleName = r
 	}
 
-	return UserInfoBrief{
+	return UserDetail{
+		Id:           u.Id,
+		Username:     u.Username,
+		RoleName:     roleName,
+		RoleNo:       u.RoleNo,
+		UserNo:       u.UserNo,
+		RegisterDate: u.CreateTime.FormatClassic(),
+		Salt:         u.Salt,
+		Password:     u.Password,
+	}, nil
+}
+
+type UpdatePasswordReq struct {
+	PrevPassword string `json:"prevPassword" valid:"notEmpty"`
+	NewPassword  string `json:"newPassword" valid:"notEmpty"`
+}
+
+func UpdatePassword(rail miso.Rail, tx *gorm.DB, username string, req UpdatePasswordReq) error {
+	req.NewPassword = strings.TrimSpace(req.NewPassword)
+	req.PrevPassword = strings.TrimSpace(req.PrevPassword)
+
+	if req.NewPassword == req.PrevPassword {
+		return miso.NewWebErr("New password must be different")
+	}
+
+	if err := checkNewPassword(req.NewPassword); err != nil {
+		return err
+	}
+
+	if username == req.NewPassword {
+		return miso.NewWebErr("Username and password must be different")
+	}
+
+	u, err := LoadUserBriefThrCache(rail, tx, username)
+	if err != nil {
+		return miso.NewWebErr("Failed to load user info, please try again later", "Failed to LoadUserBriefThrCache, %v", err)
+	}
+
+	if !checkPassword(u.Password, u.Salt, req.PrevPassword) {
+		return miso.NewWebErr("Password incorrect")
+	}
+
+	t := tx.Exec("update user set password = ? where username = ?", encodePasswordSalt(req.NewPassword, u.Salt), username)
+	if t.Error != nil {
+		return miso.NewWebErr("Failed to update password, please try again laster", "Failed to update password, %v", t.Error)
+	}
+	return nil
+}
+
+type ExchangeTokenReq struct {
+	Token string `json:"token" valid:"notEmpty"`
+}
+
+func DecodeTokenUsername(rail miso.Rail, token string) (string, error) {
+	decoded, err := miso.JwtDecode(token)
+	if err != nil {
+		return "", miso.NewWebErr("Illegal token", "Failed to decode jwt token, %v", err)
+	}
+	username := decoded.Claims["username"]
+	un, ok := username.(string)
+	if !ok {
+		un = fmt.Sprintf("%v", username)
+	}
+	return un, nil
+}
+
+func ExchangeToken(rail miso.Rail, tx *gorm.DB, req ExchangeTokenReq) (string, error) {
+	username, err := DecodeTokenUsername(rail, req.Token)
+	if err != nil {
+		return "", err
+	}
+
+	u, err := LoadUserBriefThrCache(rail, tx, username)
+	if err != nil {
+		return "", miso.NewWebErr("Failed to exchange token, please try again later", "Failed to LoadUserBriefThrCache, %v", err)
+	}
+	tu := TokenUser{
 		Id:       u.Id,
-		Username: u.Username,
-		RoleName: roleName,
-		RoleNo:   u.RoleNo,
 		UserNo:   u.UserNo,
+		Username: u.Username,
+		RoleNo:   u.RoleNo,
+	}
+
+	rail.Debugf("buildToken %+v", tu)
+	return buildToken(tu, 15*time.Minute)
+}
+
+func GetTokenUser(rail miso.Rail, tx *gorm.DB, token string) (UserInfoBrief, error) {
+	if miso.IsBlankStr(token) {
+		return UserInfoBrief{}, miso.NewWebErr("Invalid token", "Token is blank")
+	}
+	username, err := DecodeTokenUsername(rail, token)
+	if err != nil {
+		return UserInfoBrief{}, err
+	}
+
+	u, err := LoadUserBriefThrCache(rail, tx, username)
+
+	if err != nil {
+		return UserInfoBrief{}, err
+	}
+	return UserInfoBrief{
+		Id:           u.Id,
+		Username:     u.Username,
+		RoleName:     u.RoleName,
+		RoleNo:       u.RoleNo,
+		UserNo:       u.UserNo,
+		RegisterDate: u.RegisterDate,
 	}, nil
 }

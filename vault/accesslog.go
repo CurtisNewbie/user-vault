@@ -44,3 +44,31 @@ func SaveAccessLogEvent(rail miso.Rail, tx *gorm.DB, evt AccessLogEvent) error {
 		Create(&evt).
 		Error
 }
+
+type ListedAccessLog struct {
+	Id         int        `json:"id"`
+	UserAgent  string     `json:"userAgent"`
+	IpAddress  string     `json:"ipAddress"`
+	UserId     int        `json:"userId"`
+	Username   string     `json:"username"`
+	Url        string     `json:"url"`
+	AccessTime miso.ETime `json:"accessTime"`
+}
+
+type ListAccessLogReq struct {
+	Paging miso.Paging `json:"pagingVo"`
+}
+
+func ListAccessLogs(rail miso.Rail, tx *gorm.DB, req ListAccessLogReq) (miso.PageRes[ListedAccessLog], error) {
+	qpm := miso.QueryPageParam[ListAccessLogReq, ListedAccessLog]{
+		Req: req,
+		ReqPage: req.Paging,
+		AddSelectQuery: func(tx *gorm.DB) *gorm.DB {
+			return tx.Select("id", "access_time", "ip_address", "username", "user_id", "url", "user_agent")
+		},
+		GetBaseQuery: func(tx *gorm.DB) *gorm.DB {
+			return tx.Table("access_log").Order("id desc")
+		},
+	}
+	return miso.QueryPage(rail, tx, qpm)
+}
