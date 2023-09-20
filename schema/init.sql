@@ -43,14 +43,3 @@ CREATE TABLE IF NOT EXISTS access_log (
   `user_agent` varchar(512) NOT NULL DEFAULT '' COMMENT 'User Agent',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4  COMMENT='access log';
-
-CREATE TABLE IF NOT EXIST operate_log (
-  `id` int unIF NOT EXISTS igned NOT NLL AUTO_INCREMENT COMMENT 'primary key',
-  `operate_name` varchar(255) NOT NULL COMMENT 'name of operation',
-  `operate_desc` varchar(255) NOT NULL DEFAULT '' COMMENT 'description of operation',
-  `operate_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'when the operation happens',
-  `operate_param` varchar(1000) NOT NULL COMMENT 'parameters used for the operation',
-  `username` varchar(255) NOT NULL COMMENT 'username',
-  `user_id` int unsigned NOT NULL COMMENT 'primary key of user',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='operate log';

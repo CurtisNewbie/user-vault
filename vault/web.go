@@ -181,5 +181,26 @@ func registerRoutes(rail miso.Rail) error {
 		goauth.Protected("List access logs", resCodeAccessLog),
 	)
 
+	miso.IPost("/open/api/user/key/generate",
+		func(c *gin.Context, rail miso.Rail, req GenUserKeyReq) (any, error) {
+			return nil, GenUserKey(rail, miso.GetMySQL(), req, common.GetUser(rail).Username)
+		},
+		goauth.Protected("User generate user key", resCodeBasicUser),
+	)
+
+	miso.IPost("/open/api/user/key/list",
+		func(c *gin.Context, rail miso.Rail, req ListUserKeysReq) (any, error) {
+			return ListUserKeys(rail, miso.GetMySQL(), req, common.GetUser(rail))
+		},
+		goauth.Protected("User list user keys", resCodeBasicUser),
+	)
+
+	miso.IPost("/open/api/user/key/delete",
+		func(c *gin.Context, rail miso.Rail, req DeleteUserKeyReq) (any, error) {
+			return nil, DeleteUserKey(rail, miso.GetMySQL(), req, common.GetUser(rail).UserId)
+		},
+		goauth.Protected("User delete user key", resCodeBasicUser),
+	)
+
 	return nil
 }

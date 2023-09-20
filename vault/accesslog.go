@@ -61,7 +61,7 @@ type ListAccessLogReq struct {
 
 func ListAccessLogs(rail miso.Rail, tx *gorm.DB, req ListAccessLogReq) (miso.PageRes[ListedAccessLog], error) {
 	qpm := miso.QueryPageParam[ListAccessLogReq, ListedAccessLog]{
-		Req: req,
+		Req:     req,
 		ReqPage: req.Paging,
 		AddSelectQuery: func(tx *gorm.DB) *gorm.DB {
 			return tx.Select("id", "access_time", "ip_address", "username", "user_id", "url", "user_agent")
