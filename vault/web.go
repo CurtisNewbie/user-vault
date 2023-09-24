@@ -15,9 +15,8 @@ const (
 
 	resCodeManageUser = "manage-users"
 	resNameManageUesr = "Admin Manage Users"
-
-	resCodeBasicUser = "basic-user"
-	resNameBasicUser = "Basic User Operation"
+	resCodeBasicUser  = "basic-user"
+	resNameBasicUser  = "Basic User Operation"
 
 	resCodeAccessLog = "access-logs"
 	resNameAccessLog = "View Access Logs"
@@ -71,7 +70,7 @@ func registerRoutes(rail miso.Rail) error {
 	goauth.ReportPathsOnBootstrapped(rail)
 
 	miso.IPost("/open/api/user/login",
-		func(gin *gin.Context, rail miso.Rail, req LoginReq) (string, error) {
+		func(gin *gin.Context, rail miso.Rail, req LoginReq) (any, error) {
 			token, err := UserLogin(rail, miso.GetMySQL(), PasswordLoginParam(req))
 			if err != nil {
 				return "", err
@@ -114,7 +113,7 @@ func registerRoutes(rail miso.Rail) error {
 	)
 
 	miso.IPost("/open/api/user/list",
-		func(c *gin.Context, rail miso.Rail, req ListUserReq) (miso.PageRes[UserInfo], error) {
+		func(c *gin.Context, rail miso.Rail, req ListUserReq) (any, error) {
 			return ListUsers(rail, miso.GetMySQL(), req)
 		},
 		goauth.Protected("Admin list users", resCodeManageUser),
@@ -200,6 +199,42 @@ func registerRoutes(rail miso.Rail) error {
 			return nil, DeleteUserKey(rail, miso.GetMySQL(), req, common.GetUser(rail).UserId)
 		},
 		goauth.Protected("User delete user key", resCodeBasicUser),
+	)
+
+	// ----------------------------------------------------------------------------------------------
+	//
+	// Internal endpoints
+	//
+	// ----------------------------------------------------------------------------------------------
+
+	miso.Get("/remote/user/username",
+		func(c *gin.Context, rail miso.Rail) (any, error) {
+			id := c.Query("id")
+			return FindUsername(rail, miso.GetMySQL(), id)
+		},
+	)
+
+	miso.IPost("/remote/user/info",
+		func(c *gin.Context, rail miso.Rail, req ItnFindUserReq) (any, error) {
+			return ItnFindUserInfo(rail, miso.GetMySQL(), req)
+		},
+	)
+
+	miso.Get("/remote/user/id",
+		func(c *gin.Context, rail miso.Rail) (any, error) {
+			username := c.Query("username")
+			u, err := LoadUserBriefThrCache(rail, miso.GetMySQL(), username)
+			if err != nil {
+				return nil, err
+			}
+			return u.Id, nil
+		},
+	)
+
+	miso.IPost("/remote/user/userno/username",
+		func(c *gin.Context, rail miso.Rail, req ItnUserNoToNameReq) (any, error) {
+			return ItnFindNameOfUserNo(rail, miso.GetMySQL(), req)
+		},
 	)
 
 	return nil

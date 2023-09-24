@@ -33,7 +33,7 @@ func GenUserKey(rail miso.Rail, tx *gorm.DB, req GenUserKeyReq, username string)
 	}
 
 	if !checkPassword(user.Password, user.Salt, req.Password) {
-		return miso.NewWebErr("Password incorrect, unable to generate user secret key")
+		return miso.NewErr("Password incorrect, unable to generate user secret key")
 	}
 
 	key := miso.RandStr(userKeyLen)
