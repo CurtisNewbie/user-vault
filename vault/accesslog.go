@@ -60,8 +60,7 @@ type ListAccessLogReq struct {
 }
 
 func ListAccessLogs(rail miso.Rail, tx *gorm.DB, req ListAccessLogReq) (miso.PageRes[ListedAccessLog], error) {
-	qpm := miso.QueryPageParam[ListAccessLogReq, ListedAccessLog]{
-		Req:     req,
+	qpp := miso.QueryPageParam[ListedAccessLog]{
 		ReqPage: req.Paging,
 		AddSelectQuery: func(tx *gorm.DB) *gorm.DB {
 			return tx.Select("id", "access_time", "ip_address", "username", "user_id", "url", "user_agent")
@@ -69,7 +68,6 @@ func ListAccessLogs(rail miso.Rail, tx *gorm.DB, req ListAccessLogReq) (miso.Pag
 		GetBaseQuery: func(tx *gorm.DB) *gorm.DB {
 			return tx.Table("access_log").Order("id desc")
 		},
-		ApplyConditions: func(tx *gorm.DB, req ListAccessLogReq) *gorm.DB { return tx },
 	}
-	return miso.QueryPage(rail, tx, qpm)
+	return qpp.ExecPageQuery(rail, tx)
 }

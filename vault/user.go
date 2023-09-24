@@ -343,13 +343,12 @@ type UserInfo struct {
 func ListUsers(rail miso.Rail, tx *gorm.DB, req ListUserReq) (miso.PageRes[UserInfo], error) {
 	roleInfoCache := miso.LocalCache[string]{}
 
-	qpm := miso.QueryPageParam[ListUserReq, UserInfo]{
-		Req:     req,
+	qpp := miso.QueryPageParam[UserInfo]{
 		ReqPage: req.Paging,
 		AddSelectQuery: func(tx *gorm.DB) *gorm.DB {
 			return tx.Select("*")
 		},
-		ApplyConditions: func(tx *gorm.DB, req ListUserReq) *gorm.DB {
+		ApplyConditions: func(tx *gorm.DB) *gorm.DB {
 			if req.RoleNo != nil && *req.RoleNo != "" {
 				tx = tx.Where("role_no = ?", *req.RoleNo)
 			}
@@ -387,7 +386,7 @@ func ListUsers(rail miso.Rail, tx *gorm.DB, req ListUserReq) (miso.PageRes[UserI
 			return ui
 		},
 	}
-	return miso.QueryPage(rail, tx, qpm)
+	return qpp.ExecPageQuery(rail, tx)
 }
 
 func AdminUpdateUser(rail miso.Rail, tx *gorm.DB, req AdminUpdateUserReq, operator common.User) error {
