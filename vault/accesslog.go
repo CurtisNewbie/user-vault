@@ -69,6 +69,7 @@ func ListAccessLogs(rail miso.Rail, tx *gorm.DB, req ListAccessLogReq) (miso.Pag
 		GetBaseQuery: func(tx *gorm.DB) *gorm.DB {
 			return tx.Table("access_log").Order("id desc")
 		},
+		ApplyConditions: func(tx *gorm.DB, req ListAccessLogReq) *gorm.DB { return tx },
 	}
 	return miso.QueryPage(rail, tx, qpm)
 }
