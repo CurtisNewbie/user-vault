@@ -26,7 +26,7 @@ var (
 	usernameRegexp = regexp.MustCompile(`^[a-zA-Z0-9_\-@.]{6,50}$`)
 	passwordMinLen = 8
 
-	userInfoCache = miso.NewLazyORCache[UserDetail](
+	userInfoCache = miso.NewLazyORCache(
 		"user-vault:user:info",
 		time.Hour*1,
 		func(rail miso.Rail, username string) (UserDetail, error) {
@@ -678,7 +678,7 @@ func ItnFindNameOfUserNo(rail miso.Rail, tx *gorm.DB, req ItnUserNoToNameReq) (I
 		return ItnUserNoToNameResp{}, err
 	}
 
-	mapping := miso.StrMap[UserNoToName, string](queried,
+	mapping := miso.StrMap(queried,
 		func(un UserNoToName) string {
 			return un.UserNo
 		},
