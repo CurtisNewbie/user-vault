@@ -396,7 +396,7 @@ func AdminUpdateUser(rail miso.Rail, tx *gorm.DB, req AdminUpdateUserReq, operat
 
 	_, err := getRoleInfo(rail, req.RoleNo)
 	if err != nil {
-		return err
+		return miso.NewErr("Invalid role", "failed to get role info, roleNo may be invalid, %v", err)
 	}
 
 	return tx.Exec(
