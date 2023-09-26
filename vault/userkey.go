@@ -38,7 +38,7 @@ func GenUserKey(rail miso.Rail, tx *gorm.DB, req GenUserKeyReq, username string)
 
 	key := miso.RandStr(userKeyLen)
 	return tx.Table("user_key").
-		Save(NewUserKey{
+		Create(NewUserKey{
 			Name:           req.KeyName,
 			SecretKey:      key,
 			ExpirationTime: miso.ETime(time.Now().Add(userKeyExpDur)),
