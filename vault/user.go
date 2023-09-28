@@ -67,6 +67,14 @@ type User struct {
 	IsDel        common.IS_DEL
 }
 
+func (u *User) Deleted() bool {
+	return u.IsDel == common.IS_DEL_Y
+}
+
+func (u *User) CanReview() bool {
+	return u.ReviewStatus == ReviewPending
+}
+
 func RemoteAddr(forwardedFor string) string {
 	addr := "unknown"
 
@@ -426,11 +434,11 @@ func ReviewUserRegistration(rail miso.Rail, tx *gorm.DB, req AdminReviewUserReq)
 				return miso.NewErr("User not found", "User %v not found", req.UserId)
 			}
 
-			if user.IsDel == common.IS_DEL_Y {
+			if user.Deleted() {
 				return miso.NewErr("User not found", "User %v is deleted", req.UserId)
 			}
 
-			if user.ReviewStatus != ReviewPending {
+			if !user.CanReview() {
 				return miso.NewErr("User's registration has already been reviewed")
 			}
 
