@@ -49,8 +49,8 @@ func TestCheckUserKey(t *testing.T) {
 
 func TestUserLogin(t *testing.T) {
 	rail := preUserTest(t)
-	uname := ""
-	pword := ""
+	uname := "banana"
+	pword := "12345678"
 
 	usr, err := userLogin(rail, miso.GetMySQL(), uname, pword)
 	miso.TestIsNil(t, err)
@@ -68,6 +68,12 @@ func TestUserLogin(t *testing.T) {
 	decoded, err := miso.JwtDecode(tkn)
 	miso.TestIsNil(t, err)
 	t.Logf("decoded: %+v", decoded)
+
+	tu, err := DecodeTokenUser(rail, tkn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rail.Infof("tokenUser: %+v", tu)
 }
 
 func TestAdminAddUser(t *testing.T) {

@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -564,9 +565,26 @@ type ExchangeTokenReq struct {
 	Token string `json:"token" valid:"notEmpty"`
 }
 
+func DecodeTokenUser(rail miso.Rail, token string) (TokenUser, error) {
+	tu := TokenUser{}
+	decoded, err := miso.JwtDecode(token)
+	if err != nil || !decoded.Valid {
+		return TokenUser{}, miso.NewErr("Illegal token", "Failed to decode jwt token, %v", err)
+	}
+
+	tu.Id, err = strconv.Atoi(fmt.Sprintf("%v", decoded.Claims["id"]))
+	if err != nil {
+		return tu, err
+	}
+	tu.Username = decoded.Claims["username"].(string)
+	tu.UserNo = decoded.Claims["userno"].(string)
+	tu.RoleNo = decoded.Claims["roleno"].(string)
+	return tu, nil
+}
+
 func DecodeTokenUsername(rail miso.Rail, token string) (string, error) {
 	decoded, err := miso.JwtDecode(token)
-	if err != nil {
+	if err != nil || !decoded.Valid {
 		return "", miso.NewErr("Illegal token", "Failed to decode jwt token, %v", err)
 	}
 	username := decoded.Claims["username"]
@@ -578,15 +596,11 @@ func DecodeTokenUsername(rail miso.Rail, token string) (string, error) {
 }
 
 func ExchangeToken(rail miso.Rail, tx *gorm.DB, req ExchangeTokenReq) (string, error) {
-	username, err := DecodeTokenUsername(rail, req.Token)
+	u, err := DecodeTokenUser(rail, req.Token)
 	if err != nil {
 		return "", err
 	}
 
-	u, err := LoadUserBriefThrCache(rail, tx, username)
-	if err != nil {
-		return "", miso.NewErr("Failed to exchange token, please try again later", "Failed to LoadUserBriefThrCache, %v", err)
-	}
 	tu := TokenUser{
 		Id:       u.Id,
 		UserNo:   u.UserNo,
