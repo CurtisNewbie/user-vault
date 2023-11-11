@@ -515,9 +515,9 @@ func LoadUserInfoBrief(rail miso.Rail, tx *gorm.DB, username string) (UserDetail
 		return UserDetail{}, err
 	}
 
-	roleName := ""
-	if r, err := getRoleName(rail, u.RoleNo); err == nil {
-		roleName = r
+	roleName, err := getRoleName(rail, u.RoleNo)
+	if err != nil {
+		return UserDetail{}, fmt.Errorf("failed to getRoleName, roleNo: %v, %v", u.RoleNo, err)
 	}
 
 	return UserDetail{
