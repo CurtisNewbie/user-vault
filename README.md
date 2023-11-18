@@ -12,3 +12,9 @@ This project internally uses [miso](https://github.com/curtisnewbie/miso) and [g
 - RabbitMQ
 - Consul
 - [GoAuth](http://github.com/curtisnewbie/goauth)
+
+
+## Prometheus Metrics
+
+- `user_vault_token_exchange_seconds`: histogram, used to monitor the duration of each token exchange.
+- `user_vault_fetch_user_info_seconds`: histogram, used to monitor the duration of each user info fetching.

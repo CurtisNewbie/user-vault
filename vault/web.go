@@ -133,6 +133,8 @@ func registerRoutes(rail miso.Rail) error {
 
 		miso.Get("/user/info",
 			func(c *gin.Context, rail miso.Rail) (any, error) {
+				timer := miso.NewPromTimer("user_vault_fetch_user_info")
+				defer timer.ObserveDuration()
 				u := common.GetUser(rail)
 				return LoadUserBriefThrCache(rail, miso.GetMySQL(), u.Username)
 			},
@@ -158,6 +160,8 @@ func registerRoutes(rail miso.Rail) error {
 
 		miso.IPost("/token/exchange",
 			func(c *gin.Context, rail miso.Rail, req ExchangeTokenReq) (any, error) {
+				timer := miso.NewPromTimer("user_vault_token_exchange")
+				defer timer.ObserveDuration()
 				return ExchangeToken(rail, miso.GetMySQL(), req)
 			},
 			goauth.Public("Exchange token"),
