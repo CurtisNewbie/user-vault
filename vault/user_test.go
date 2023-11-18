@@ -18,23 +18,34 @@ func preTest(t *testing.T) miso.Rail {
 
 func preUserTest(t *testing.T) miso.Rail {
 	rail := preTest(t)
-	miso.TestIsNil(t, miso.InitMySQLFromProp())
-	_, e := miso.GetConsulClient()
-	miso.TestIsNil(t, e)
-	_, e = miso.InitRedisFromProp(rail)
-	miso.TestIsNil(t, e)
+	if miso.InitMySQLFromProp() != nil {
+		t.FailNow()
+	}
+	if _, e := miso.GetConsulClient(); e != nil {
+		t.Log(e)
+		t.FailNow()
+	}
+	if _, e := miso.InitRedisFromProp(rail); e != nil {
+		t.Log(e)
+		t.FailNow()
+	}
 	return rail
 }
 
 func TestExtractSpringSalt(t *testing.T) {
 	salt := extractSpringSalt("{asdfasdfasdf}sadkfasdfasdf")
-	miso.TestEqual(t, "{asdfasdfasdf}", salt)
+	if salt != "{asdfasdfasdf}" {
+		t.Log(salt)
+		t.FailNow()
+	}
 }
 
 func TestCheckPassword(t *testing.T) {
 	pw := ""
 	ok := checkPassword("d7030adc17d5623265162432398c9d25dd14fd8cf3ddc9504b149e590cbacd73", "30689", pw)
-	miso.TestTrue(t, ok)
+	if !ok {
+		t.FailNow()
+	}
 }
 
 func TestCheckUserKey(t *testing.T) {
@@ -43,8 +54,13 @@ func TestCheckUserKey(t *testing.T) {
 	userKey := "09uEo2EOsJOfqPLVCJitcdOn8BIfhUNrWtVPh7sZKVyF3140NJKb2mXRgisyRoBr"
 	userId := 3
 	ok, err := checkUserKey(rail, miso.GetMySQL(), userId, userKey)
-	miso.TestIsNil(t, err)
-	miso.TestTrue(t, ok)
+	if err != nil {
+		t.Log(err)
+		t.FailNow()
+	}
+	if !ok {
+		t.FailNow()
+	}
 }
 
 func TestUserLogin(t *testing.T) {
@@ -53,7 +69,11 @@ func TestUserLogin(t *testing.T) {
 	pword := "12345678"
 
 	usr, err := userLogin(rail, miso.GetMySQL(), uname, pword)
-	miso.TestIsNil(t, err)
+	if err != nil {
+		t.Log(err)
+		t.FailNow()
+	}
+
 	t.Logf("user: %+v", usr)
 
 	tkn, err := buildToken(TokenUser{
@@ -62,11 +82,18 @@ func TestUserLogin(t *testing.T) {
 		Username: usr.Username,
 		RoleNo:   usr.RoleNo,
 	}, time.Minute*15)
-	miso.TestIsNil(t, err)
+	if err != nil {
+		t.Log(err)
+		t.FailNow()
+	}
 	t.Logf("tkn: %+v", tkn)
 
 	decoded, err := miso.JwtDecode(tkn)
-	miso.TestIsNil(t, err)
+	if err != nil {
+		t.Log(err)
+		t.FailNow()
+	}
+
 	t.Logf("decoded: %+v", decoded)
 
 	tu, err := DecodeTokenUser(rail, tkn)
@@ -83,13 +110,17 @@ func TestAdminAddUser(t *testing.T) {
 		Password: "12345678",
 		RoleNo:   "role_628043111874560208429",
 	}, "Test")
-	miso.TestIsNil(t, e)
+	if e != nil {
+		t.Fatal(e)
+	}
 }
 
 func TestListUsers(t *testing.T) {
 	rail := preUserTest(t)
 	users, err := ListUsers(rail, miso.GetMySQL(), ListUserReq{})
-	miso.TestIsNil(t, err)
+	if err != nil {
+		t.Fatal(err)
+	}
 	t.Logf("%+v", users)
 }
 
@@ -100,7 +131,9 @@ func TestAdminUpdateUser(t *testing.T) {
 		RoleNo:     "role_628043111874560208429",
 		IsDisabled: 0,
 	}, common.NilUser())
-	miso.TestIsNil(t, err)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestReviewUserRegistration(t *testing.T) {
@@ -109,12 +142,16 @@ func TestReviewUserRegistration(t *testing.T) {
 		UserId:       1107,
 		ReviewStatus: ReviewApproved,
 	})
-	miso.TestIsNil(t, err)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestLoadUserInfoBrief(t *testing.T) {
 	rail := preUserTest(t)
 	uib, err := LoadUserInfoBrief(rail, miso.GetMySQL(), "dummydummy2")
-	miso.TestIsNil(t, err)
+	if err != nil {
+		t.Fatal(err)
+	}
 	t.Logf("uib: %+v", uib)
 }

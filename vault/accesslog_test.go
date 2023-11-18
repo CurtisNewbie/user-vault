@@ -8,8 +8,12 @@ import (
 
 func preAccessLogTest(t *testing.T) miso.Rail {
 	rail := preTest(t)
-	miso.TestIsNil(t, miso.InitMySQLFromProp())
-	miso.TestIsNil(t, miso.StartRabbitMqClient(rail))
+	if e := miso.InitMySQLFromProp(); e != nil {
+		t.Fatal(e)
+	}
+	if e := miso.StartRabbitMqClient(rail); e != nil {
+		t.Fatal(e)
+	}
 	return rail
 }
 
@@ -24,5 +28,7 @@ func TestSendAccessLogEvent(t *testing.T) {
 		AccessTime: miso.Now(),
 	})
 
-	miso.TestIsNil(t, er)
+	if er != nil {
+		t.Fatal(er)
+	}
 }
