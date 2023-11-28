@@ -29,10 +29,12 @@ var (
 
 	userInfoCache = miso.NewLazyORCache(
 		"user-vault:user:info",
-		time.Hour*1,
 		func(rail miso.Rail, username string) (UserDetail, error) {
 			rail.Debugf("LoadUserInfoBrief, username: %v", username)
 			return LoadUserInfoBrief(rail, miso.GetMySQL(), username)
+		},
+		miso.RCacheConfig{
+			Exp: time.Hour * 1,
 		},
 	)
 )
