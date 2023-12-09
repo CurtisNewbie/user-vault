@@ -110,10 +110,10 @@ func loadUser(rail miso.Rail, tx *gorm.DB, username string) (User, error) {
 	return user, nil
 }
 
-func UserLogin(rail miso.Rail, tx *gorm.DB, req PasswordLoginParam) (string, error) {
+func UserLogin(rail miso.Rail, tx *gorm.DB, req PasswordLoginParam) (string, User, error) {
 	user, err := userLogin(rail, tx, req.Username, req.Password)
 	if err != nil {
-		return "", err
+		return "", User{}, err
 	}
 
 	tu := TokenUser{
@@ -124,7 +124,11 @@ func UserLogin(rail miso.Rail, tx *gorm.DB, req PasswordLoginParam) (string, err
 	}
 
 	rail.Debugf("buildToken %+v", tu)
-	return buildToken(tu, 15*time.Minute)
+	tkn, err := buildToken(tu, 15*time.Minute)
+	if err != nil {
+		return "", User{}, err
+	}
+	return tkn, user, nil
 }
 
 type TokenUser struct {

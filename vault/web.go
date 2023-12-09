@@ -18,9 +18,6 @@ const (
 	resCodeBasicUser  = "basic-user"
 	resNameBasicUser  = "Basic User Operation"
 
-	resCodeAccessLog = "access-logs"
-	resNameAccessLog = "View Access Logs"
-
 	resCodeOperateLog = "operate-logs"
 	resNameOperateLog = "View Operate Logs"
 )
@@ -64,7 +61,6 @@ func registerRoutes(rail miso.Rail) error {
 	goauth.ReportResourcesOnBootstrapped(rail, []goauth.AddResourceReq{
 		{Code: resCodeManageUser, Name: resNameManageUesr},
 		{Code: resCodeBasicUser, Name: resNameBasicUser},
-		{Code: resCodeAccessLog, Name: resNameAccessLog},
 		{Code: resCodeOperateLog, Name: resNameOperateLog},
 	})
 	goauth.ReportPathsOnBootstrapped(rail)
@@ -72,7 +68,7 @@ func registerRoutes(rail miso.Rail) error {
 	miso.BaseRoute("/open/api").Group(
 		miso.IPost("/user/login",
 			func(gin *gin.Context, rail miso.Rail, req LoginReq) (any, error) {
-				token, err := UserLogin(rail, miso.GetMySQL(), PasswordLoginParam(req))
+				token, user, err := UserLogin(rail, miso.GetMySQL(), PasswordLoginParam(req))
 				if err != nil {
 					return "", err
 				}
@@ -83,8 +79,8 @@ func registerRoutes(rail miso.Rail) error {
 				if er := sendAccessLogEvnet(rail, AccessLogEvent{
 					IpAddress:  remoteAddr,
 					UserAgent:  userAgent,
-					UserId:     0, // TODO: remove this field
-					Username:   req.Username,
+					UserId:     user.Id,
+					Username:   user.Username,
 					Url:        passwordLoginUrl,
 					AccessTime: miso.Now(),
 				}); er != nil {
@@ -177,9 +173,9 @@ func registerRoutes(rail miso.Rail) error {
 
 		miso.IPost("/access/history",
 			func(c *gin.Context, rail miso.Rail, req ListAccessLogReq) (any, error) {
-				return ListAccessLogs(rail, miso.GetMySQL(), req)
+				return ListAccessLogs(rail, miso.GetMySQL(), common.GetUser(rail), req)
 			},
-			goauth.Protected("List access logs", resCodeAccessLog),
+			goauth.Protected("List access logs", resCodeBasicUser),
 		),
 
 		miso.IPost("/user/key/generate",
