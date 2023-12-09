@@ -59,7 +59,6 @@ type User struct {
 	Password     string
 	Salt         string
 	ReviewStatus ReviewStatusType
-	Role         string // TODO: remove this
 	RoleNo       string
 	IsDisabled   UserDisabledType
 	CreateTime   miso.ETime
@@ -315,7 +314,6 @@ func AddUser(rail miso.Rail, tx *gorm.DB, req AddUserParam, operator string) err
 	user := prepUserCred(req.Password)
 	user.UserNo = miso.GenIdP("UE")
 	user.Username = req.Username
-	user.Role = ""
 	user.RoleNo = req.RoleNo
 	user.CreateBy = operator
 	user.CreateTime = miso.Now()
