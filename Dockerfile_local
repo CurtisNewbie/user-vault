@@ -12,4 +12,4 @@ COPY user-vault_build ./app_user-vault
 
 ENV TZ=Asia/Shanghai
 
-CMD ["./app_user-vault", "configFile=/usr/src/config/app-conf-prod.yml"]
+CMD ["./app_user-vault", "configFile=/usr/src/config/conf.yml"]

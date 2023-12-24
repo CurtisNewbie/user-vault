@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	accessLogEventBus = "user-vault.access.log"
+	accessLogEventBus = "event.bus.user-vault.access.log"
 )
 
 type AccessLogEvent struct {

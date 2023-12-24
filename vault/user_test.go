@@ -12,7 +12,7 @@ import (
 func preTest(t *testing.T) miso.Rail {
 	logrus.SetLevel(logrus.DebugLevel)
 	rail := miso.EmptyRail()
-	miso.DefaultReadConfig([]string{"configFile=../app-conf-dev.yml"}, rail)
+	miso.DefaultReadConfig([]string{"configFile=../conf.yml"}, rail)
 	return rail
 }
 

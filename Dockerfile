@@ -25,4 +25,4 @@ COPY --from=build /usr/share/zoneinfo /usr/share/zoneinfo
 
 ENV TZ=Asia/Shanghai
 
-CMD ["./main", "profile='prod'", "configFile=/usr/src/config/app-conf-prod.yml"]
+CMD ["./main", "profile='prod'", "configFile=/usr/src/config/conf.yml"]
