@@ -23,8 +23,8 @@ const (
 )
 
 var (
-	fetchUserInfoHisto = miso.NewPromHisto("user_vault_fetch_user_info_seconds")
-	tokenExchangeHisto = miso.NewPromHisto("user_vault_token_exchange_seconds")
+	fetchUserInfoHisto = miso.NewPromHisto("user_vault_fetch_user_info_duration")
+	tokenExchangeHisto = miso.NewPromHisto("user_vault_token_exchange_duration")
 )
 
 type LoginReq struct {
