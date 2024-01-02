@@ -22,6 +22,11 @@ const (
 	resNameOperateLog = "View Operate Logs"
 )
 
+var (
+	fetchUserInfoHisto = miso.NewPromHisto("user_vault_fetch_user_info_seconds")
+	tokenExchangeHisto = miso.NewPromHisto("user_vault_token_exchange_seconds")
+)
+
 type LoginReq struct {
 	Username string `json:"username" valid:"notEmpty"`
 	Password string `json:"password" valid:"notEmpty"`
@@ -192,7 +197,7 @@ func ReviewUserRegistrationEp(c *gin.Context, rail miso.Rail, req AdminReviewUse
 }
 
 func GetUserInfEp(c *gin.Context, rail miso.Rail) (any, error) {
-	timer := miso.NewPromTimer("user_vault_fetch_user_info")
+	timer := miso.NewHistTimer(fetchUserInfoHisto)
 	defer timer.ObserveDuration()
 	u := common.GetUser(rail)
 	return LoadUserBriefThrCache(rail, miso.GetMySQL(), u.Username)
@@ -209,7 +214,7 @@ func UpdatePasswordEp(c *gin.Context, rail miso.Rail, req UpdatePasswordReq) (an
 }
 
 func ExchangeTokenEp(c *gin.Context, rail miso.Rail, req ExchangeTokenReq) (any, error) {
-	timer := miso.NewPromTimer("user_vault_token_exchange")
+	timer := miso.NewHistTimer(tokenExchangeHisto)
 	defer timer.ObserveDuration()
 	return ExchangeToken(rail, miso.GetMySQL(), req)
 }
