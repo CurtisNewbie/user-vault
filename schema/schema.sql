@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS user_vault.user (
   `create_by` varchar(255) NOT NULL DEFAULT '' COMMENT 'who created this record',
   `is_del` tinyint NOT NULL DEFAULT '0' COMMENT '0-normal, 1-deleted',
   `user_no` varchar(32) NOT NULL COMMENT 'user no',
+  `role_no` varchar(32) NOT NULL DEFAULT '' COMMENT 'role no',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `user_no` (`user_no`)
