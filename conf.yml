@@ -45,4 +45,4 @@ jwt:
     issuer: "yongj.zhuang-auth-service"
 
 
-goauth.client.enabled: false
+goauth.client.enabled: true

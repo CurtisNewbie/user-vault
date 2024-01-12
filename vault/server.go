@@ -13,6 +13,7 @@ func BootstrapServer(args []string) {
 }
 
 func prepareEventBus(rail miso.Rail) error {
+	miso.NewEventBus(accessLogEventBus)
 	miso.SubEventBus(accessLogEventBus, 2, func(rail miso.Rail, evt AccessLogEvent) error {
 		rail.Infof("Received AccessLogEvent: %+v", evt)
 		return SaveAccessLogEvent(rail, miso.GetMySQL(), evt)
