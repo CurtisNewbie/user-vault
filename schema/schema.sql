@@ -1,5 +1,6 @@
+create database if not exists user_vault;
 
-CREATE TABLE IF NOT EXISTS user (
+CREATE TABLE IF NOT EXISTS user_vault.user (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
   `username` varchar(50) NOT NULL COMMENT 'username',
   `password` varchar(255) NOT NULL COMMENT 'password in hash',
@@ -17,8 +18,8 @@ CREATE TABLE IF NOT EXISTS user (
   UNIQUE KEY `user_no` (`user_no`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='User';
 
-CREATE TABLE IF NOT EXISTS user_key (
-  `id` int unIF NOT EXISTS signed NOT NULL AUTO_INCREMENT COMMENT 'primary key',
+CREATE TABLE IF NOT EXISTS user_vault.user_key (
+  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
   `user_id` int unsigned NOT NULL COMMENT 'user.id',
   `name` varchar(255) NOT NULL DEFAULT '' COMMENT 'name of the key',
   `secret_key` varchar(255) NOT NULL COMMENT 'secret key',
@@ -32,7 +33,7 @@ CREATE TABLE IF NOT EXISTS user_key (
   UNIQUE KEY `secret_key` (`secret_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT="user's key";
 
-CREATE TABLE IF NOT EXISTS access_log (
+CREATE TABLE IF NOT EXISTS user_vault.access_log (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
   `access_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'when the user signed in',
   `ip_address` varchar(255) NOT NULL COMMENT 'ip address',

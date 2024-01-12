@@ -5,8 +5,7 @@ app.name: "user-vault"
 mysql:
   enabled: true
   user: root
-  # password: 123456
-  database: fileserver
+  database: user_vault
   host: localhost
   port: 3306
 
