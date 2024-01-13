@@ -11,16 +11,8 @@ import (
 	"github.com/curtisnewbie/gocommon/common"
 	"github.com/curtisnewbie/gocommon/goauth"
 	"github.com/curtisnewbie/miso/miso"
+	"github.com/curtisnewbie/user-vault/api"
 	"gorm.io/gorm"
-)
-
-const (
-	ReviewPending  ReviewStatusType = "PENDING"
-	ReviewRejected ReviewStatusType = "REJECTED"
-	ReviewApproved ReviewStatusType = "APPROVED"
-
-	UserNormal   UserDisabledType = 0
-	UserDisabled UserDisabledType = 1
 )
 
 var (
@@ -49,8 +41,6 @@ type AddUserParam struct {
 	Password string `json:"password" valid:"notEmpty"`
 	RoleNo   string `json:"roleNo"`
 }
-type ReviewStatusType string
-type UserDisabledType int
 
 type User struct {
 	Id           int
@@ -58,9 +48,9 @@ type User struct {
 	Username     string
 	Password     string
 	Salt         string
-	ReviewStatus ReviewStatusType
+	ReviewStatus string
 	RoleNo       string
-	IsDisabled   UserDisabledType
+	IsDisabled   int
 	CreateTime   miso.ETime
 	CreateBy     string
 	UpdateTime   miso.ETime
@@ -73,7 +63,18 @@ func (u *User) Deleted() bool {
 }
 
 func (u *User) CanReview() bool {
-	return u.ReviewStatus == ReviewPending
+	return u.ReviewStatus == api.ReviewPending
+}
+
+type UserDetail struct {
+	Id           int    `json:"id"`
+	Username     string `json:"username"`
+	RoleName     string `json:"roleName"`
+	RoleNo       string `json:"roleNo"`
+	UserNo       string `json:"userNo"`
+	RegisterDate string `json:"registerDate"`
+	Password     string `json:"password"`
+	Salt         string `json:"salt"`
 }
 
 func RemoteAddr(forwardedFor string) string {
@@ -162,15 +163,15 @@ func userLogin(rail miso.Rail, tx *gorm.DB, username string, password string) (U
 		return User{}, err
 	}
 
-	if user.ReviewStatus == ReviewPending {
+	if user.ReviewStatus == api.ReviewPending {
 		return User{}, miso.NewErr("Your Registration is being reviewed, please wait for approval")
 	}
 
-	if user.ReviewStatus == ReviewRejected {
+	if user.ReviewStatus == api.ReviewRejected {
 		return User{}, miso.NewErr("Your are not permitted to login, please contact administrator")
 	}
 
-	if user.IsDisabled == UserDisabled {
+	if user.IsDisabled == api.UserDisabled {
 		return User{}, miso.NewErr("User is disabled")
 	}
 
@@ -317,8 +318,8 @@ func AddUser(rail miso.Rail, tx *gorm.DB, req AddUserParam, operator string) err
 	user.RoleNo = req.RoleNo
 	user.CreateBy = operator
 	user.CreateTime = miso.Now()
-	user.IsDisabled = UserNormal
-	user.ReviewStatus = ReviewApproved
+	user.IsDisabled = api.UserNormal
+	user.ReviewStatus = api.ReviewApproved
 
 	err := tx.Table("user").
 		Create(&user).
@@ -340,23 +341,10 @@ func prepUserCred(pwd string) User {
 	return u
 }
 
-type UserInfo struct {
-	Id         int              `json:"id"`
-	Username   string           `json:"username"`
-	RoleName   string           `json:"roleName"`
-	RoleNo     string           `json:"roleNo"`
-	UserNo     string           `json:"userNo"`
-	IsDisabled UserDisabledType `json:"isDisabled"`
-	CreateTime miso.ETime       `json:"createTime"`
-	CreateBy   string           `json:"createBy"`
-	UpdateTime miso.ETime       `json:"updateTime"`
-	UpdateBy   string           `json:"updateBy"`
-}
-
-func ListUsers(rail miso.Rail, tx *gorm.DB, req ListUserReq) (miso.PageRes[UserInfo], error) {
+func ListUsers(rail miso.Rail, tx *gorm.DB, req ListUserReq) (miso.PageRes[api.UserInfo], error) {
 	roleInfoCache := miso.LocalCache[string]{}
 
-	qpp := miso.QueryPageParam[UserInfo]{
+	qpp := miso.QueryPageParam[api.UserInfo]{
 		ReqPage: req.Paging,
 		AddSelectQuery: func(tx *gorm.DB) *gorm.DB {
 			return tx.Select("*")
@@ -376,7 +364,7 @@ func ListUsers(rail miso.Rail, tx *gorm.DB, req ListUserReq) (miso.PageRes[UserI
 		GetBaseQuery: func(tx *gorm.DB) *gorm.DB {
 			return tx.Table("user")
 		},
-		ForEach: func(ui UserInfo) UserInfo {
+		ForEach: func(ui api.UserInfo) api.UserInfo {
 			if ui.RoleNo == "" {
 				return ui
 			}
@@ -419,7 +407,7 @@ func AdminUpdateUser(rail miso.Rail, tx *gorm.DB, req AdminUpdateUserReq, operat
 }
 
 func ReviewUserRegistration(rail miso.Rail, tx *gorm.DB, req AdminReviewUserReq) error {
-	if req.ReviewStatus != ReviewRejected && req.ReviewStatus != ReviewApproved {
+	if req.ReviewStatus != api.ReviewRejected && req.ReviewStatus != api.ReviewApproved {
 		return miso.NewErr("Illegal Argument", "ReviewStatus was neither ReviewApproved nor ReviewRejected, it was %v",
 			req.ReviewStatus)
 	}
@@ -446,9 +434,9 @@ func ReviewUserRegistration(rail miso.Rail, tx *gorm.DB, req AdminReviewUserReq)
 				return miso.NewErr("User's registration has already been reviewed")
 			}
 
-			isDisabled := UserDisabled
-			if req.ReviewStatus == ReviewApproved {
-				isDisabled = UserNormal
+			isDisabled := api.UserDisabled
+			if req.ReviewStatus == api.ReviewApproved {
+				isDisabled = api.UserNormal
 			}
 
 			err := tx.Exec(`UPDATE user SET review_status = ?, is_disabled = ? WHERE id = ?`, req.ReviewStatus, isDisabled, req.UserId).
@@ -467,17 +455,6 @@ func UserRegister(rail miso.Rail, tx *gorm.DB, req RegisterReq) error {
 		Username: req.Username,
 		Password: req.Password,
 	}, "")
-}
-
-type UserDetail struct {
-	Id           int    `json:"id"`
-	Username     string `json:"username"`
-	RoleName     string `json:"roleName"`
-	RoleNo       string `json:"roleNo"`
-	UserNo       string `json:"userNo"`
-	RegisterDate string `json:"registerDate"`
-	Password     string `json:"password"`
-	Salt         string `json:"salt"`
 }
 
 type UserInfoBrief struct {
@@ -652,15 +629,9 @@ func FindUsername(rail miso.Rail, tx *gorm.DB, username string) (string, error) 
 	return "", nil
 }
 
-type ItnFindUserReq struct {
-	UserId   *int    `json:"userId"`
-	UserNo   *string `json:"userNo"`
-	Username *string `json:"username"`
-}
+func ItnFindUserInfo(rail miso.Rail, tx *gorm.DB, req api.FindUserReq) (api.UserInfo, error) {
 
-func ItnFindUserInfo(rail miso.Rail, tx *gorm.DB, req ItnFindUserReq) (UserInfo, error) {
-
-	var ui UserInfo
+	var ui api.UserInfo
 	tx = tx.Table("user")
 
 	if req.UserId != nil {
@@ -676,17 +647,9 @@ func ItnFindUserInfo(rail miso.Rail, tx *gorm.DB, req ItnFindUserReq) (UserInfo,
 	return ui, miso.NewErr("Must provide at least one parameter")
 }
 
-type ItnUserNoToNameReq struct {
-	UserNos []string `json:"userNos"`
-}
-
-type ItnUserNoToNameResp struct {
-	UserNoToUsername map[string]string `json:"userNoToUsername"`
-}
-
-func ItnFindNameOfUserNo(rail miso.Rail, tx *gorm.DB, req ItnUserNoToNameReq) (ItnUserNoToNameResp, error) {
+func ItnFindNameOfUserNo(rail miso.Rail, tx *gorm.DB, req api.FetchUsernameReq) (api.FetchUsernamesRes, error) {
 	if len(req.UserNos) < 1 {
-		return ItnUserNoToNameResp{UserNoToUsername: map[string]string{}}, nil
+		return api.FetchUsernamesRes{UserNoToUsername: map[string]string{}}, nil
 	}
 
 	type UserNoToName struct {
@@ -701,7 +664,7 @@ func ItnFindNameOfUserNo(rail miso.Rail, tx *gorm.DB, req ItnUserNoToNameReq) (I
 		Scan(&queried).
 		Error
 	if err != nil {
-		return ItnUserNoToNameResp{}, err
+		return api.FetchUsernamesRes{}, err
 	}
 
 	mapping := miso.StrMap(queried,
@@ -712,5 +675,5 @@ func ItnFindNameOfUserNo(rail miso.Rail, tx *gorm.DB, req ItnUserNoToNameReq) (I
 			return un.Username
 		},
 	)
-	return ItnUserNoToNameResp{UserNoToUsername: mapping}, nil
+	return api.FetchUsernamesRes{UserNoToUsername: mapping}, nil
 }

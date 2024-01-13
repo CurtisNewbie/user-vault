@@ -39,10 +39,7 @@ type AccessLog struct {
 }
 
 func SaveAccessLogEvent(rail miso.Rail, tx *gorm.DB, evt AccessLogEvent) error {
-	return tx.
-		Table("access_log").
-		Create(&evt).
-		Error
+	return tx.Table("access_log").Create(&evt).Error
 }
 
 type ListedAccessLog struct {
