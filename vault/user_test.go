@@ -18,10 +18,10 @@ func preTest(t *testing.T) miso.Rail {
 
 func preUserTest(t *testing.T) miso.Rail {
 	rail := preTest(t)
-	if miso.InitMySQLFromProp() != nil {
+	if miso.InitMySQLFromProp(rail) != nil {
 		t.FailNow()
 	}
-	if _, e := miso.GetConsulClient(); e != nil {
+	if e := miso.InitConsulClient(); e != nil {
 		t.Log(e)
 		t.FailNow()
 	}
