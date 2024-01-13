@@ -4,6 +4,7 @@ import (
 	"github.com/curtisnewbie/gocommon/common"
 	"github.com/curtisnewbie/gocommon/goauth"
 	"github.com/curtisnewbie/miso/miso"
+	"github.com/curtisnewbie/user-vault/api"
 	"github.com/gin-gonic/gin"
 )
 
@@ -39,21 +40,21 @@ type AdminAddUserReq struct {
 }
 
 type ListUserReq struct {
-	Username   *string           `json:"username"`
-	RoleNo     *string           `json:"roleNo"`
-	IsDisabled *UserDisabledType `json:"isDisabled"`
-	Paging     miso.Paging       `json:"pagingVo"`
+	Username   *string     `json:"username"`
+	RoleNo     *string     `json:"roleNo"`
+	IsDisabled *int        `json:"isDisabled"`
+	Paging     miso.Paging `json:"pagingVo"`
 }
 
 type AdminUpdateUserReq struct {
-	Id         int              `json:"id" valid:"positive"`
-	RoleNo     string           `json:"roleNo" valid:"notEmpty"`
-	IsDisabled UserDisabledType `json:"isDisabled"`
+	Id         int    `json:"id" valid:"positive"`
+	RoleNo     string `json:"roleNo" valid:"notEmpty"`
+	IsDisabled int    `json:"isDisabled"`
 }
 
 type AdminReviewUserReq struct {
-	UserId       int              `json:"userId" valid:"positive"`
-	ReviewStatus ReviewStatusType `json:"reviewStatus"`
+	UserId       int    `json:"userId" valid:"positive"`
+	ReviewStatus string `json:"reviewStatus"`
 }
 
 type RegisterReq struct {
@@ -127,7 +128,7 @@ func registerRoutes(rail miso.Rail) error {
 		),
 
 		miso.IPost("/user/info",
-			func(c *gin.Context, rail miso.Rail, req ItnFindUserReq) (any, error) {
+			func(c *gin.Context, rail miso.Rail, req api.FindUserReq) (any, error) {
 				return ItnFindUserInfo(rail, miso.GetMySQL(), req)
 			},
 		),
@@ -144,7 +145,7 @@ func registerRoutes(rail miso.Rail) error {
 		),
 
 		miso.IPost("/user/userno/username",
-			func(c *gin.Context, rail miso.Rail, req ItnUserNoToNameReq) (any, error) {
+			func(c *gin.Context, rail miso.Rail, req api.FetchUsernameReq) (any, error) {
 				return ItnFindNameOfUserNo(rail, miso.GetMySQL(), req)
 			},
 		),

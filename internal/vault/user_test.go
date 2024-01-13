@@ -6,6 +6,7 @@ import (
 
 	"github.com/curtisnewbie/gocommon/common"
 	"github.com/curtisnewbie/miso/miso"
+	"github.com/curtisnewbie/user-vault/api"
 	"github.com/sirupsen/logrus"
 )
 
@@ -140,7 +141,7 @@ func TestReviewUserRegistration(t *testing.T) {
 	rail := preUserTest(t)
 	err := ReviewUserRegistration(rail, miso.GetMySQL(), AdminReviewUserReq{
 		UserId:       1107,
-		ReviewStatus: ReviewApproved,
+		ReviewStatus: api.ReviewApproved,
 	})
 	if err != nil {
 		t.Fatal(err)

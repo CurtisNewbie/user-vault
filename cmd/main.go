@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/curtisnewbie/user-vault/vault"
+	"github.com/curtisnewbie/user-vault/internal/vault"
 )
 
 func main() {
