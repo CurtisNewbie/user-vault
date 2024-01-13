@@ -8,7 +8,7 @@ import (
 
 func preAccessLogTest(t *testing.T) miso.Rail {
 	rail := preTest(t)
-	if e := miso.InitMySQLFromProp(); e != nil {
+	if e := miso.InitMySQLFromProp(rail); e != nil {
 		t.Fatal(e)
 	}
 	if e := miso.StartRabbitMqClient(rail); e != nil {
