@@ -14,13 +14,8 @@ const (
 
 	passwordLoginUrl = "/user-vault/open/api/user/login"
 
-	resCodeManageUser = "manage-users"
-	resNameManageUesr = "Admin Manage Users"
-	resCodeBasicUser  = "basic-user"
-	resNameBasicUser  = "Basic User Operation"
-
-	resCodeOperateLog = "operate-logs"
-	resNameOperateLog = "View Operate Logs"
+	ResourceManagerUser = "manage-users"
+	ResourceBasicUser   = "basic-user"
 )
 
 var (
@@ -64,53 +59,72 @@ type RegisterReq struct {
 
 func registerRoutes(rail miso.Rail) error {
 
-	goauth.ReportResourcesOnBootstrapped(rail, []goauth.AddResourceReq{
-		{Code: resCodeManageUser, Name: resNameManageUesr},
-		{Code: resCodeBasicUser, Name: resNameBasicUser},
-		{Code: resCodeOperateLog, Name: resNameOperateLog},
+	goauth.ReportOnBoostrapped(rail, []goauth.AddResourceReq{
+		{Code: ResourceManagerUser, Name: "Admin Manage Users"},
+		{Code: ResourceBasicUser, Name: "Basic User Operation"},
 	})
-	goauth.ReportPathsOnBootstrapped(rail)
 
 	miso.BaseRoute("/open/api").Group(
 		miso.IPost("/user/login", UserLoginEp).
-			Extra(goauth.Public("User Login (password-based)")),
+			Desc("User Login (password-based)").
+			Public(),
+
 		miso.IPost("/user/register/request", UserReqRegisterEp).
-			Extra(goauth.Public("User request registration")),
+			Desc("User request registration").
+			Public(),
+
 		miso.IPost("/user/add", AddUserEp).
-			Extra(goauth.Protected("Admin add user", resCodeManageUser)),
+			Desc("Admin add user").
+			Resource(ResourceManagerUser),
+
 		miso.IPost("/user/list", ListUserEp).
-			Extra(goauth.Protected("Admin list users", resCodeManageUser)),
+			Desc("Admin list users").
+			Resource(ResourceManagerUser),
+
 		miso.IPost("/user/info/update", UpdateUserEp).
-			Extra(goauth.Protected("Admin update user info", resCodeManageUser)),
+			Desc("Admin update user info").
+			Resource(ResourceManagerUser),
+
 		miso.IPost("/user/registration/review", ReviewUserRegistrationEp).
-			Extra(goauth.Protected("Admin review user registration", resCodeManageUser)),
+			Desc("Admin review user registration").
+			Resource(ResourceManagerUser),
+
 		miso.Get("/user/info", GetUserInfEp).
-			Extra(goauth.Protected("User get user info", resCodeBasicUser)),
+			Desc("User get user info").
+			Resource(ResourceBasicUser),
 
 		// deprecated, we can just use /user/info instead
 		miso.Get("/user/detail", GetUserDetailEp).
-			Extra(goauth.Protected("User get user details", resCodeBasicUser)),
+			Desc("User get user details").
+			Resource(ResourceBasicUser),
 
 		miso.IPost("/user/password/update", UpdateUserEp).
-			Extra(goauth.Protected("User update password", resCodeBasicUser)),
+			Desc("User update password").
+			Resource(ResourceBasicUser),
 
 		miso.IPost("/token/exchange", ExchangeTokenEp).
-			Extra(goauth.Public("Exchange token")),
+			Desc("Exchange token").
+			Public(),
 
 		miso.Get("/token/user", GetUserTokenEp).
-			Extra(goauth.Public("Get user info by token")),
+			Desc("Get user info by token").
+			Public(),
 
 		miso.IPost("/access/history", ListAccessLogEp).
-			Extra(goauth.Protected("List access logs", resCodeBasicUser)),
+			Desc("List access logs").
+			Resource(ResourceBasicUser),
 
 		miso.IPost("/user/key/generate", GenUserKeyEp).
-			Extra(goauth.Protected("User generate user key", resCodeBasicUser)),
+			Desc("User generate user key").
+			Resource(ResourceBasicUser),
 
 		miso.IPost("/user/key/list", ListUserKeyEp).
-			Extra(goauth.Protected("User list user keys", resCodeBasicUser)),
+			Desc("User list user keys").
+			Resource(ResourceBasicUser),
 
 		miso.IPost("/user/key/delete", DeleteUserKeyEp).
-			Extra(goauth.Protected("User delete user key", resCodeBasicUser)),
+			Desc("User delete user key").
+			Resource(ResourceBasicUser),
 	)
 
 	// ----------------------------------------------------------------------------------------------
