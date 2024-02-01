@@ -19,16 +19,7 @@ var (
 	usernameRegexp = regexp.MustCompile(`^[a-zA-Z0-9_\-@.]{6,50}$`)
 	passwordMinLen = 8
 
-	userInfoCache = miso.NewLazyORCache(
-		"user-vault:user:info",
-		func(rail miso.Rail, username string) (UserDetail, error) {
-			rail.Debugf("LoadUserInfoBrief, username: %v", username)
-			return LoadUserInfoBrief(rail, miso.GetMySQL(), username)
-		},
-		miso.RCacheConfig{
-			Exp: time.Hour * 1,
-		},
-	)
+	userInfoCache = miso.NewRCache[UserDetail]("user-vault:user:info", miso.RCacheConfig{Exp: time.Hour * 1})
 )
 
 type PasswordLoginParam struct {
@@ -483,7 +474,10 @@ func FetchUserBrief(rail miso.Rail, tx *gorm.DB, username string) (UserInfoBrief
 
 func LoadUserBriefThrCache(rail miso.Rail, tx *gorm.DB, username string) (UserDetail, error) {
 	rail.Debugf("LoadUserBriefThrCache, username: %v", username)
-	return userInfoCache.Get(rail, username)
+	return userInfoCache.Get(rail, username, func(rail miso.Rail, username string) (UserDetail, error) {
+		rail.Debugf("LoadUserInfoBrief, username: %v", username)
+		return LoadUserInfoBrief(rail, miso.GetMySQL(), username)
+	})
 }
 
 func InvalidateUserInfoCache(rail miso.Rail, username string) error {
