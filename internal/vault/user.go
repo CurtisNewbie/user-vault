@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/curtisnewbie/gocommon/common"
-	"github.com/curtisnewbie/gocommon/goauth"
 	"github.com/curtisnewbie/miso/miso"
 	"github.com/curtisnewbie/user-vault/api"
 	"gorm.io/gorm"
@@ -247,8 +246,8 @@ func getRoleName(rail miso.Rail, roleNo string) (string, error) {
 	return r.Name, nil
 }
 
-func getRoleInfo(rail miso.Rail, roleNo string) (*goauth.RoleInfoResp, error) {
-	resp, err := goauth.GetRoleInfo(rail, goauth.RoleInfoReq{
+func getRoleInfo(rail miso.Rail, roleNo string) (*RoleInfoResp, error) {
+	resp, err := GetRoleInfo(rail, RoleInfoReq{
 		RoleNo: roleNo,
 	})
 	if err != nil {
@@ -361,7 +360,7 @@ func ListUsers(rail miso.Rail, tx *gorm.DB, req ListUserReq) (miso.PageRes[api.U
 			}
 
 			name, err := roleInfoCache.Get(ui.RoleNo, func(s string) (string, error) {
-				resp, err := goauth.GetRoleInfo(rail, goauth.RoleInfoReq{
+				resp, err := GetRoleInfo(rail, RoleInfoReq{
 					RoleNo: ui.RoleNo,
 				})
 				if err != nil || resp == nil {
