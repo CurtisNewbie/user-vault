@@ -134,35 +134,11 @@ func registerRoutes(rail miso.Rail) error {
 	// ----------------------------------------------------------------------------------------------
 
 	miso.BaseRoute("/remote").Group(
-		miso.Get("/user/username",
-			func(c *gin.Context, rail miso.Rail) (any, error) {
-				id := c.Query("id")
-				return FindUsername(rail, miso.GetMySQL(), id)
-			},
-		),
-
-		miso.IPost("/user/info",
-			func(c *gin.Context, rail miso.Rail, req api.FindUserReq) (any, error) {
-				return ItnFindUserInfo(rail, miso.GetMySQL(), req)
-			},
-		),
-
-		miso.Get("/user/id",
-			func(c *gin.Context, rail miso.Rail) (any, error) {
-				username := c.Query("username")
-				u, err := LoadUserBriefThrCache(rail, miso.GetMySQL(), username)
-				if err != nil {
-					return nil, err
-				}
-				return u.Id, nil
-			},
-		),
-
-		miso.IPost("/user/userno/username",
-			func(c *gin.Context, rail miso.Rail, req api.FetchUsernameReq) (any, error) {
-				return ItnFindNameOfUserNo(rail, miso.GetMySQL(), req)
-			},
-		),
+		miso.Get("/user/username", ItnFetchNameByIdEp),
+		miso.IPost("/user/info", ItnFetchUserInfoEp),
+		miso.Get("/user/id", ItnFetchUserIdEp),
+		miso.IPost("/user/userno/username", ItnFetchNameByUserNoEp),
+		miso.IPost("/user/list/with-role", ItnFetchUsersWithRoleEp),
 	)
 	return nil
 }
@@ -253,4 +229,29 @@ func ListUserKeyEp(c *gin.Context, rail miso.Rail, req ListUserKeysReq) (any, er
 
 func DeleteUserKeyEp(c *gin.Context, rail miso.Rail, req DeleteUserKeyReq) (any, error) {
 	return nil, DeleteUserKey(rail, miso.GetMySQL(), req, common.GetUser(rail).UserId)
+}
+
+func ItnFetchNameByUserNoEp(c *gin.Context, rail miso.Rail, req api.FetchNameByUserNoReq) (any, error) {
+	return ItnFindNameOfUserNo(rail, miso.GetMySQL(), req)
+}
+
+func ItnFetchUsersWithRoleEp(c *gin.Context, rail miso.Rail, req api.FetchUsersWithRoleReq) (any, error) {
+	return ItnFindUsersWithRole(rail, miso.GetMySQL(), req)
+}
+
+func ItnFetchUserIdEp(c *gin.Context, rail miso.Rail) (any, error) {
+	username := c.Query("username")
+	u, err := LoadUserBriefThrCache(rail, miso.GetMySQL(), username)
+	if err != nil {
+		return nil, err
+	}
+	return u.Id, nil
+}
+
+func ItnFetchUserInfoEp(c *gin.Context, rail miso.Rail, req api.FindUserReq) (any, error) {
+	return ItnFindUserInfo(rail, miso.GetMySQL(), req)
+}
+
+func ItnFetchNameByIdEp(c *gin.Context, rail miso.Rail) (any, error) {
+	return FindUsername(rail, miso.GetMySQL(), c.Query("id"))
 }

@@ -40,9 +40,18 @@ func TestFindUserId(t *testing.T) {
 func TestFetchUsernames(t *testing.T) {
 	// miso.SetLogLevel("debug")
 	rail := _apiPreTest(t)
-	res, err := FetchUsernames(rail, FetchUsernameReq{
+	res, err := FetchUsernames(rail, FetchNameByUserNoReq{
 		UserNos: []string{"UE1049787455160320075953"},
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("res: %+v", res)
+}
+
+func TestFetchUsersWithRole(t *testing.T) {
+	rail := _apiPreTest(t)
+	res, err := FetchUsersWithRole(rail, FetchUsersWithRoleReq{RoleNo: "role_554107924873216177918"})
 	if err != nil {
 		t.Fatal(err)
 	}

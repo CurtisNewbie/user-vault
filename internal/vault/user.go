@@ -640,7 +640,7 @@ func ItnFindUserInfo(rail miso.Rail, tx *gorm.DB, req api.FindUserReq) (api.User
 	return ui, miso.NewErr("Must provide at least one parameter")
 }
 
-func ItnFindNameOfUserNo(rail miso.Rail, tx *gorm.DB, req api.FetchUsernameReq) (api.FetchUsernamesRes, error) {
+func ItnFindNameOfUserNo(rail miso.Rail, tx *gorm.DB, req api.FetchNameByUserNoReq) (api.FetchUsernamesRes, error) {
 	if len(req.UserNos) < 1 {
 		return api.FetchUsernamesRes{UserNoToUsername: map[string]string{}}, nil
 	}
@@ -669,4 +669,15 @@ func ItnFindNameOfUserNo(rail miso.Rail, tx *gorm.DB, req api.FetchUsernameReq) 
 		},
 	)
 	return api.FetchUsernamesRes{UserNoToUsername: mapping}, nil
+}
+
+func ItnFindUsersWithRole(rail miso.Rail, db *gorm.DB, req api.FetchUsersWithRoleReq) ([]api.UserInfo, error) {
+	var users []api.UserInfo
+	err := db.Table("user").
+		Where("role_no = ?", req.RoleNo).
+		Scan(&users).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to list users with roleNo: %v, %w", req.RoleNo, err)
+	}
+	return users, nil
 }

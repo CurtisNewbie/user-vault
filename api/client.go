@@ -50,7 +50,7 @@ func FindUserId(rail miso.Rail, username string) (int, error) {
 	return r.Res()
 }
 
-type FetchUsernameReq struct {
+type FetchNameByUserNoReq struct {
 	UserNos []string `json:"userNos"`
 }
 
@@ -58,7 +58,7 @@ type FetchUsernamesRes struct {
 	UserNoToUsername map[string]string `json:"userNoToUsername"`
 }
 
-func FetchUsernames(rail miso.Rail, req FetchUsernameReq) (FetchUsernamesRes, error) {
+func FetchUsernames(rail miso.Rail, req FetchNameByUserNoReq) (FetchUsernamesRes, error) {
 	var r miso.GnResp[FetchUsernamesRes]
 	err := miso.NewDynTClient(rail, "/remote/user/userno/username", "user-vault").
 		Require2xx().
@@ -66,6 +66,22 @@ func FetchUsernames(rail miso.Rail, req FetchUsernameReq) (FetchUsernamesRes, er
 		Json(&r)
 	if err != nil {
 		return FetchUsernamesRes{}, fmt.Errorf("failed to fetch usernames (user-vault), %v", err)
+	}
+	return r.Res()
+}
+
+type FetchUsersWithRoleReq struct {
+	RoleNo string `valid:"notEmpty"`
+}
+
+func FetchUsersWithRole(rail miso.Rail, req FetchUsersWithRoleReq) ([]UserInfo, error) {
+	var r miso.GnResp[[]UserInfo]
+	err := miso.NewDynTClient(rail, "/remote/user/list/with-role", "user-vault").
+		Require2xx().
+		PostJson(req).
+		Json(&r)
+	if err != nil {
+		return nil, fmt.Errorf("failed to ListUsersWithRole, %w", err)
 	}
 	return r.Res()
 }
