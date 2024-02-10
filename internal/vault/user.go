@@ -87,9 +87,10 @@ func loadUser(rail miso.Rail, tx *gorm.DB, username string) (User, error) {
 
 	var user User
 	t := tx.Raw(`
-		SELECT user.*, role.name AS role_name FROM user 
-		LEFT JOIN role using role_no
-		WHERE username = ? and is_del = 0
+		SELECT u.*, r.name AS role_name
+		FROM user u
+		LEFT JOIN role r using (role_no)
+		WHERE u.username = ? and u.is_del = 0
 	`, username).
 		Scan(&user)
 
@@ -314,49 +315,25 @@ func prepUserCred(pwd string) User {
 }
 
 func ListUsers(rail miso.Rail, tx *gorm.DB, req ListUserReq) (miso.PageRes[api.UserInfo], error) {
-	roleInfoCache := miso.LocalCache[string]{}
-
 	qpp := miso.QueryPageParam[api.UserInfo]{
 		ReqPage: req.Paging,
 		AddSelectQuery: func(tx *gorm.DB) *gorm.DB {
-			return tx.Select("*")
+			return tx.Select("u.*, r.name as role_name")
 		},
 		ApplyConditions: func(tx *gorm.DB) *gorm.DB {
 			if req.RoleNo != nil && *req.RoleNo != "" {
-				tx = tx.Where("role_no = ?", *req.RoleNo)
+				tx = tx.Where("u.role_no = ?", *req.RoleNo)
 			}
 			if req.Username != nil && *req.Username != "" {
-				tx = tx.Where("username LIKE ?", "%"+*req.Username+"%")
+				tx = tx.Where("u.username LIKE ?", "%"+*req.Username+"%")
 			}
 			if req.IsDisabled != nil {
-				tx = tx.Where("is_disabled = ?", *req.IsDisabled)
+				tx = tx.Where("u.is_disabled = ?", *req.IsDisabled)
 			}
-			return tx.Where("is_del = 0")
+			return tx.Where("u.is_del = 0")
 		},
 		GetBaseQuery: func(tx *gorm.DB) *gorm.DB {
-			return tx.Table("user")
-		},
-		ForEach: func(ui api.UserInfo) api.UserInfo {
-			if ui.RoleNo == "" {
-				return ui
-			}
-
-			name, err := roleInfoCache.Get(ui.RoleNo, func(s string) (string, error) {
-				resp, err := GetRoleInfo(rail, RoleInfoReq{
-					RoleNo: ui.RoleNo,
-				})
-				if err != nil {
-					rail.Errorf("Failed to GetRoleInfo, roleNo: %v, %v", req.RoleNo, err)
-					return "", err
-				}
-				return resp.Name, nil
-			})
-
-			if err == nil {
-				ui.RoleName = name
-			}
-
-			return ui
+			return tx.Table("user u").Joins("LEFT JOIN role r USING(role_no)")
 		},
 	}
 	return qpp.ExecPageQuery(rail, tx)
