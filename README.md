@@ -6,7 +6,7 @@ This project internally uses [miso](https://github.com/curtisnewbie/miso) and [g
 
 ## Authentication Concepts
 
-A user is uniquely identified with a username and one or more password(s). Once a user is authenticated, a JWT token is generated that can be used to prove one's identity within a time limit. Normally, some gateway services will validate each request's JWT token without the need to request user-vault service, e.g., [github.com/curtisnewbie/gatekeeper](https://github.com/curtisnewbie/gatekeeper). 
+A user is uniquely identified with a username and password(s). Once a user is authenticated, a JWT token is generated that can be used to prove one's identity within a time limit. Normally, some gateway services will validate each request's JWT token without the need to request user-vault service, e.g., [github.com/curtisnewbie/gatekeeper](https://github.com/curtisnewbie/gatekeeper).
 
 ## Authorization Concepts
 
@@ -36,7 +36,7 @@ user-vault is designed to work with a gateway service (e.g., [gatekeeper](https:
 - `user_vault_token_exchange_duration`: histogram, used to monitor the duration of each token exchange, time is measured in milliseconds.
 - `user_vault_fetch_user_info_duration`: histogram, used to monitor the duration of each user info fetching, time is measured in milliseconds.
 
-## Initial Setup 
+## Initial Setup
 
 The first admin role:
 
