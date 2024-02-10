@@ -81,7 +81,7 @@ func RemoteAddr(forwardedFor string) string {
 
 func loadUser(rail miso.Rail, tx *gorm.DB, username string) (User, error) {
 	if username == "" {
-		return User{}, miso.NewErr("Username is required")
+		return User{}, miso.NewErrf("Username is required")
 	}
 
 	var user User
@@ -94,7 +94,7 @@ func loadUser(rail miso.Rail, tx *gorm.DB, username string) (User, error) {
 	}
 
 	if t.RowsAffected < 1 {
-		return User{}, miso.NewErr("User not found", fmt.Sprintf("User %v is not found", username))
+		return User{}, miso.NewErrf("User not found").WithInternalMsg("User %v is not found", username)
 	}
 
 	return user, nil
@@ -141,11 +141,11 @@ func buildToken(user TokenUser, exp time.Duration) (string, error) {
 
 func userLogin(rail miso.Rail, tx *gorm.DB, username string, password string) (User, error) {
 	if miso.IsBlankStr(username) {
-		return User{}, miso.NewErr("Username is required")
+		return User{}, miso.NewErrf("Username is required")
 	}
 
 	if miso.IsBlankStr(password) {
-		return User{}, miso.NewErr("Password is required")
+		return User{}, miso.NewErrf("Password is required")
 	}
 
 	user, err := loadUser(rail, tx, username)
@@ -154,15 +154,15 @@ func userLogin(rail miso.Rail, tx *gorm.DB, username string, password string) (U
 	}
 
 	if user.ReviewStatus == api.ReviewPending {
-		return User{}, miso.NewErr("Your Registration is being reviewed, please wait for approval")
+		return User{}, miso.NewErrf("Your Registration is being reviewed, please wait for approval")
 	}
 
 	if user.ReviewStatus == api.ReviewRejected {
-		return User{}, miso.NewErr("Your are not permitted to login, please contact administrator")
+		return User{}, miso.NewErrf("Your are not permitted to login, please contact administrator")
 	}
 
 	if user.IsDisabled == api.UserDisabled {
-		return User{}, miso.NewErr("User is disabled")
+		return User{}, miso.NewErrf("User is disabled")
 	}
 
 	if checkPassword(user.Password, user.Salt, password) {
@@ -178,7 +178,7 @@ func userLogin(rail miso.Rail, tx *gorm.DB, username string, password string) (U
 		return user, nil
 	}
 
-	return User{}, miso.NewErr("Password incorrect", "User %v login failed, password incorrect", username)
+	return User{}, miso.NewErrf("Password incorrect").WithInternalMsg("User %v login failed, password incorrect", username)
 }
 
 func checkUserKey(rail miso.Rail, tx *gorm.DB, userId int, password string) (bool, error) {
@@ -256,15 +256,15 @@ func getRoleInfo(rail miso.Rail, roleNo string) (*RoleInfoResp, error) {
 	}
 
 	if resp == nil {
-		return nil, miso.NewErr("Role not found", "Role %v is not found", roleNo)
+		return nil, miso.NewErrf("Role not found").WithInternalMsg("Role %v is not found", roleNo)
 	}
 	return resp, nil
 }
 
 func checkNewUsername(username string) error {
 	if !usernameRegexp.MatchString(username) {
-		return miso.NewErr("Username must have 6-50 characters, permitted characters include: 'a-z A-Z 0-9 . - _ @'",
-			"Actual username: %v", username)
+		return miso.NewErrf("Username must have 6-50 characters, permitted characters include: 'a-z A-Z 0-9 . - _ @'").
+			WithInternalMsg("Actual username: %v", username)
 	}
 	return nil
 }
@@ -272,8 +272,8 @@ func checkNewUsername(username string) error {
 func checkNewPassword(password string) error {
 	len := len([]rune(password))
 	if len < passwordMinLen {
-		return miso.NewErr(fmt.Sprintf("Password must have at least %v characters", passwordMinLen),
-			"Actual length: %v", len)
+		return miso.NewErrf("Password must have at least %v characters", passwordMinLen).
+			WithInternalMsg("Actual length: %v", len)
 	}
 	return nil
 }
@@ -295,11 +295,11 @@ func AddUser(rail miso.Rail, tx *gorm.DB, req AddUserParam, operator string) err
 	}
 
 	if req.Username == req.Password {
-		return miso.NewErr("Username and password must be different")
+		return miso.NewErrf("Username and password must be different")
 	}
 
 	if _, err := loadUser(rail, tx, req.Username); err == nil {
-		return miso.NewErr("User is already registered")
+		return miso.NewErrf("User is already registered")
 	}
 
 	user := prepUserCred(req.Password)
@@ -382,12 +382,12 @@ func ListUsers(rail miso.Rail, tx *gorm.DB, req ListUserReq) (miso.PageRes[api.U
 
 func AdminUpdateUser(rail miso.Rail, tx *gorm.DB, req AdminUpdateUserReq, operator common.User) error {
 	if operator.UserId == req.Id {
-		return miso.NewErr("You cannot update yourself")
+		return miso.NewErrf("You cannot update yourself")
 	}
 
 	_, err := getRoleInfo(rail, req.RoleNo)
 	if err != nil {
-		return miso.NewErr("Invalid role", "failed to get role info, roleNo may be invalid, %v", err)
+		return miso.NewErrf("Invalid role").WithInternalMsg("failed to get role info, roleNo may be invalid, %v", err)
 	}
 
 	return tx.Exec(
@@ -398,8 +398,8 @@ func AdminUpdateUser(rail miso.Rail, tx *gorm.DB, req AdminUpdateUserReq, operat
 
 func ReviewUserRegistration(rail miso.Rail, tx *gorm.DB, req AdminReviewUserReq) error {
 	if req.ReviewStatus != api.ReviewRejected && req.ReviewStatus != api.ReviewApproved {
-		return miso.NewErr("Illegal Argument", "ReviewStatus was neither ReviewApproved nor ReviewRejected, it was %v",
-			req.ReviewStatus)
+		return miso.NewErrf("Illegal Argument").
+			WithInternalMsg("ReviewStatus was neither ReviewApproved nor ReviewRejected, it was %v", req.ReviewStatus)
 	}
 
 	return miso.RLockExec(rail, fmt.Sprintf("auth:user:registration:review:%v", req.UserId),
@@ -413,15 +413,15 @@ func ReviewUserRegistration(rail miso.Rail, tx *gorm.DB, req AdminReviewUserReq)
 			}
 
 			if t.RowsAffected < 1 {
-				return miso.NewErr("User not found", "User %v not found", req.UserId)
+				return miso.NewErrf("User not found").WithInternalMsg("User %v not found", req.UserId)
 			}
 
 			if user.Deleted() {
-				return miso.NewErr("User not found", "User %v is deleted", req.UserId)
+				return miso.NewErrf("User not found").WithInternalMsg("User %v is deleted", req.UserId)
 			}
 
 			if !user.CanReview() {
-				return miso.NewErr("User's registration has already been reviewed")
+				return miso.NewErrf("User's registration has already been reviewed")
 			}
 
 			isDisabled := api.UserDisabled
@@ -473,7 +473,7 @@ func FetchUserBrief(rail miso.Rail, tx *gorm.DB, username string) (UserInfoBrief
 
 func LoadUserBriefThrCache(rail miso.Rail, tx *gorm.DB, username string) (UserDetail, error) {
 	rail.Debugf("LoadUserBriefThrCache, username: %v", username)
-	return userInfoCache.Get(rail, username, func(rail miso.Rail, username string) (UserDetail, error) {
+	return userInfoCache.Get(rail, username, func() (UserDetail, error) {
 		rail.Debugf("LoadUserInfoBrief, username: %v", username)
 		return LoadUserInfoBrief(rail, miso.GetMySQL(), username)
 	})
@@ -516,7 +516,7 @@ func UpdatePassword(rail miso.Rail, tx *gorm.DB, username string, req UpdatePass
 	req.PrevPassword = strings.TrimSpace(req.PrevPassword)
 
 	if req.NewPassword == req.PrevPassword {
-		return miso.NewErr("New password must be different")
+		return miso.NewErrf("New password must be different")
 	}
 
 	if err := checkNewPassword(req.NewPassword); err != nil {
@@ -524,21 +524,23 @@ func UpdatePassword(rail miso.Rail, tx *gorm.DB, username string, req UpdatePass
 	}
 
 	if username == req.NewPassword {
-		return miso.NewErr("Username and password must be different")
+		return miso.NewErrf("Username and password must be different")
 	}
 
 	u, err := LoadUserBriefThrCache(rail, tx, username)
 	if err != nil {
-		return miso.NewErr("Failed to load user info, please try again later", "Failed to LoadUserBriefThrCache, %v", err)
+		return miso.NewErrf("Failed to load user info, please try again later").
+			WithInternalMsg("Failed to LoadUserBriefThrCache, %v", err)
 	}
 
 	if !checkPassword(u.Password, u.Salt, req.PrevPassword) {
-		return miso.NewErr("Password incorrect")
+		return miso.NewErrf("Password incorrect")
 	}
 
 	t := tx.Exec("update user set password = ? where username = ?", encodePasswordSalt(req.NewPassword, u.Salt), username)
 	if t.Error != nil {
-		return miso.NewErr("Failed to update password, please try again laster", "Failed to update password, %v", t.Error)
+		return miso.NewErrf("Failed to update password, please try again laster").
+			WithInternalMsg("Failed to update password, %v", t.Error)
 	}
 	return nil
 }
@@ -551,7 +553,7 @@ func DecodeTokenUser(rail miso.Rail, token string) (TokenUser, error) {
 	tu := TokenUser{}
 	decoded, err := miso.JwtDecode(token)
 	if err != nil || !decoded.Valid {
-		return TokenUser{}, miso.NewErr("Illegal token", "Failed to decode jwt token, %v", err)
+		return TokenUser{}, miso.NewErrf("Illegal token").WithInternalMsg("Failed to decode jwt token, %v", err)
 	}
 
 	tu.Id, err = strconv.Atoi(fmt.Sprintf("%v", decoded.Claims["id"]))
@@ -567,7 +569,7 @@ func DecodeTokenUser(rail miso.Rail, token string) (TokenUser, error) {
 func DecodeTokenUsername(rail miso.Rail, token string) (string, error) {
 	decoded, err := miso.JwtDecode(token)
 	if err != nil || !decoded.Valid {
-		return "", miso.NewErr("Illegal token", "Failed to decode jwt token, %v", err)
+		return "", miso.NewErrf("Illegal token").WithInternalMsg("Failed to decode jwt token, %v", err)
 	}
 	username := decoded.Claims["username"]
 	un, ok := username.(string)
@@ -596,7 +598,7 @@ func ExchangeToken(rail miso.Rail, tx *gorm.DB, req ExchangeTokenReq) (string, e
 
 func GetTokenUser(rail miso.Rail, tx *gorm.DB, token string) (UserInfoBrief, error) {
 	if miso.IsBlankStr(token) {
-		return UserInfoBrief{}, miso.NewErr("Invalid token", "Token is blank")
+		return UserInfoBrief{}, miso.NewErrf("Invalid token").WithInternalMsg("Token is blank")
 	}
 	username, err := DecodeTokenUsername(rail, token)
 	if err != nil {
@@ -637,7 +639,7 @@ func ItnFindUserInfo(rail miso.Rail, tx *gorm.DB, req api.FindUserReq) (api.User
 		return ui, tx.Where("username = ?", *req.Username).Scan(&ui).Error
 	}
 
-	return ui, miso.NewErr("Must provide at least one parameter")
+	return ui, miso.NewErrf("Must provide at least one parameter")
 }
 
 func ItnFindNameOfUserNo(rail miso.Rail, tx *gorm.DB, req api.FetchNameByUserNoReq) (api.FetchUsernamesRes, error) {

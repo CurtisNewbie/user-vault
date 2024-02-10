@@ -15,32 +15,21 @@ type RoleInfoResp struct {
 	Name   string `json:"name"`
 }
 
-// Retrieve role information
 func GetRoleInfo(rail miso.Rail, req RoleInfoReq) (*RoleInfoResp, error) {
-	tr := miso.NewDynTClient(rail, "/remote/role/info", "goauth").
-		EnableTracing().
-		PostJson(req)
-
-	if tr.Err != nil {
-		return nil, tr.Err
-	}
-
-	if err := tr.Require2xx(); err != nil {
+	var res miso.GnResp[*RoleInfoResp]
+	err := miso.NewDynTClient(rail, "/remote/role/info", "goauth").
+		PostJson(req).
+		Json(&res)
+	if err != nil {
 		return nil, err
 	}
 
-	r, e := miso.ReadGnResp[*RoleInfoResp](tr)
-	if e != nil {
-		return nil, e
+	rir, err := res.Res()
+	if err != nil {
+		return nil, err
 	}
-
-	if r.Error {
-		return nil, r.Err()
-	}
-
-	if r.Data == nil {
+	if rir == nil {
 		return nil, errors.New("data is nil, unable to retrieve RoleInfoResp")
 	}
-
-	return r.Data, nil
+	return rir, nil
 }
