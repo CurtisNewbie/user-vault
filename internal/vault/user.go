@@ -40,6 +40,7 @@ type User struct {
 	Salt         string
 	ReviewStatus string
 	RoleNo       string
+	RoleName     string
 	IsDisabled   int
 	CreateTime   miso.ETime
 	CreateBy     string
@@ -85,7 +86,11 @@ func loadUser(rail miso.Rail, tx *gorm.DB, username string) (User, error) {
 	}
 
 	var user User
-	t := tx.Raw(`SELECT * FROM user WHERE username = ? and is_del = 0`, username).
+	t := tx.Raw(`
+		SELECT user.*, role.name AS role_name FROM user 
+		LEFT JOIN role using role_no
+		WHERE username = ? and is_del = 0
+	`, username).
 		Scan(&user)
 
 	if t.Error != nil {
@@ -238,29 +243,6 @@ func extractSpringSalt(encoded string) string {
 	return "" // illegal format, or maybe none
 }
 
-func getRoleName(rail miso.Rail, roleNo string) (string, error) {
-	r, err := getRoleInfo(rail, roleNo)
-	if err != nil {
-		return "", err
-	}
-	return r.Name, nil
-}
-
-func getRoleInfo(rail miso.Rail, roleNo string) (*RoleInfoResp, error) {
-	resp, err := GetRoleInfo(rail, RoleInfoReq{
-		RoleNo: roleNo,
-	})
-	if err != nil {
-		rail.Errorf("Failed to goauth.GetRoleInfo, roleNo: %v, %v", roleNo, err)
-		return nil, err
-	}
-
-	if resp == nil {
-		return nil, miso.NewErrf("Role not found").WithInternalMsg("Role %v is not found", roleNo)
-	}
-	return resp, nil
-}
-
 func checkNewUsername(username string) error {
 	if !usernameRegexp.MatchString(username) {
 		return miso.NewErrf("Username must have 6-50 characters, permitted characters include: 'a-z A-Z 0-9 . - _ @'").
@@ -280,7 +262,7 @@ func checkNewPassword(password string) error {
 
 func AddUser(rail miso.Rail, tx *gorm.DB, req AddUserParam, operator string) error {
 	if req.RoleNo != "" {
-		_, err := getRoleInfo(rail, req.RoleNo)
+		_, err := GetRoleInfo(rail, RoleInfoReq{req.RoleNo})
 		if err != nil {
 			return err
 		}
@@ -363,8 +345,8 @@ func ListUsers(rail miso.Rail, tx *gorm.DB, req ListUserReq) (miso.PageRes[api.U
 				resp, err := GetRoleInfo(rail, RoleInfoReq{
 					RoleNo: ui.RoleNo,
 				})
-				if err != nil || resp == nil {
-					rail.Errorf("Failed to goauth.GetRoleInfo, roleNo: %v, %v", req.RoleNo, err)
+				if err != nil {
+					rail.Errorf("Failed to GetRoleInfo, roleNo: %v, %v", req.RoleNo, err)
 					return "", err
 				}
 				return resp.Name, nil
@@ -385,7 +367,7 @@ func AdminUpdateUser(rail miso.Rail, tx *gorm.DB, req AdminUpdateUserReq, operat
 		return miso.NewErrf("You cannot update yourself")
 	}
 
-	_, err := getRoleInfo(rail, req.RoleNo)
+	_, err := GetRoleInfo(rail, RoleInfoReq{req.RoleNo})
 	if err != nil {
 		return miso.NewErrf("Invalid role").WithInternalMsg("failed to get role info, roleNo may be invalid, %v", err)
 	}
@@ -489,15 +471,10 @@ func LoadUserInfoBrief(rail miso.Rail, tx *gorm.DB, username string) (UserDetail
 		return UserDetail{}, err
 	}
 
-	roleName, err := getRoleName(rail, u.RoleNo)
-	if err != nil {
-		return UserDetail{}, fmt.Errorf("failed to getRoleName, roleNo: %v, %v", u.RoleNo, err)
-	}
-
 	return UserDetail{
 		Id:           u.Id,
 		Username:     u.Username,
-		RoleName:     roleName,
+		RoleName:     u.RoleName,
 		RoleNo:       u.RoleNo,
 		UserNo:       u.UserNo,
 		RegisterDate: u.CreateTime.FormatClassic(),

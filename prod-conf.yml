@@ -33,11 +33,8 @@ server:
 consul:
   enabled: true
   consulAddress: consul:8500
-  healthCheckUrl: /health
 
 logging.rolling.file: "/usr/src/logs/${app.name}.log"
-
-goauth.client.enabled: true
 
 jwt:
   key:
@@ -45,3 +42,9 @@ jwt:
     private: ${jwt-module.privateKey}
     issuer: "yongj.zhuang-auth-service"
 
+monitor:
+  - service: "logbot"
+  - service: "vfm"
+  - service: "docindexer"
+  - service: "fstore"
+  - service: "postbox"

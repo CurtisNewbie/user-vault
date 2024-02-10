@@ -7,17 +7,9 @@ import (
 
 func BootstrapServer(args []string) {
 	common.LoadBuiltinPropagationKeys()
-	miso.PreServerBootstrap(prepareEventBus)
-	miso.PreServerBootstrap(registerRoutes)
+	miso.PreServerBootstrap(RegisterRoutes)
+	miso.PreServerBootstrap(ScheduleTasks)
+	miso.PreServerBootstrap(SubEventBus)
+	miso.PostServerBootstrapped(CreateMonitoredServiceWatches)
 	miso.BootstrapServer(args)
-}
-
-func prepareEventBus(rail miso.Rail) error {
-	miso.NewEventBus(accessLogEventBus)
-	miso.SubEventBus(accessLogEventBus, 2, func(rail miso.Rail, evt AccessLogEvent) error {
-		rail.Infof("Received AccessLogEvent: %+v", evt)
-		return SaveAccessLogEvent(rail, miso.GetMySQL(), evt)
-	})
-
-	return nil
 }
