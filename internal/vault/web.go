@@ -1,6 +1,7 @@
 package vault
 
 import (
+	"reflect"
 	"strings"
 
 	"github.com/curtisnewbie/gocommon/common"
@@ -61,21 +62,73 @@ type RegisterReq struct {
 	Password string `json:"password" valid:"notEmpty"`
 }
 
+func RegisterInternalPathResourcesOnBootstrapped() {
+
+	miso.PostServerBootstrapped(func(rail miso.Rail) error {
+
+		res := []goauth.AddResourceReq{
+			{Code: ResourceManageResources, Name: "Manage Resources Access"},
+			{Code: ResourceManagerUser, Name: "Admin Manage Users"},
+			{Code: ResourceBasicUser, Name: "Basic User Operation"},
+		}
+		user := common.NilUser()
+
+		app := miso.GetPropStr(miso.PropAppName)
+		for _, res := range res {
+			if res.Code == "" || res.Name == "" {
+				continue
+			}
+			if e := CreateResourceIfNotExist(rail, CreateResReq(res), user); e != nil {
+				return e
+			}
+		}
+
+		routes := miso.GetHttpRoutes()
+		for _, route := range routes {
+			if route.Url == "" {
+				continue
+			}
+			var routeType = PtProtected
+			if route.Scope == miso.ScopePublic {
+				routeType = PtPublic
+			}
+
+			url := route.Url
+			if !strings.HasPrefix(url, "/") {
+				url = "/" + url
+			}
+
+			r := CreatePathReq{
+				Method:  route.Method,
+				Group:   app,
+				Url:     "/" + app + url,
+				Type:    routeType,
+				Desc:    route.Desc,
+				ResCode: route.Resource,
+			}
+			if err := CreatePathIfNotExist(rail, r, user); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
 func RegisterRoutes(rail miso.Rail) error {
 
 	RegisterInternalPathResourcesOnBootstrapped()
 
 	miso.BaseRoute("/open/api").Group(
 		miso.IPost("/user/login", UserLoginEp).
-			Desc("User Login (password-based)").
+			Desc("User Login using password").
 			Public(),
 
 		miso.IPost("/user/register/request", UserReqRegisterEp).
-			Desc("User request registration").
+			Desc("User request registration, approval needed").
 			Public(),
 
 		miso.IPost("/user/add", AddUserEp).
-			Desc("Admin add user").
+			Desc("Admin create new user").
 			Resource(ResourceManagerUser),
 
 		miso.IPost("/user/list", ListUserEp).
@@ -112,7 +165,7 @@ func RegisterRoutes(rail miso.Rail) error {
 			Public(),
 
 		miso.IPost("/access/history", ListAccessLogEp).
-			Desc("List access logs").
+			Desc("User list access logs").
 			Resource(ResourceBasicUser),
 
 		miso.IPost("/user/key/generate", GenUserKeyEp).
@@ -126,82 +179,76 @@ func RegisterRoutes(rail miso.Rail) error {
 		miso.IPost("/user/key/delete", DeleteUserKeyEp).
 			Desc("User delete user key").
 			Resource(ResourceBasicUser),
-	)
 
-	miso.BaseRoute("/open/api/resource").Group(
-		miso.IPost("/add", CreateResourceIfNotExistEp).
+		miso.IPost("/resource/add", CreateResourceIfNotExistEp).
 			Desc("Admin add resource").
 			Resource(ResourceManageResources),
 
-		miso.IPost("/remove", DeleteResourceEp).
+		miso.IPost("/resource/remove", DeleteResourceEp).
 			Desc("Admin remove resource").
 			Resource(ResourceManageResources),
 
-		miso.Get("/brief/candidates", ListResourceCandidatesForRoleEp).
+		miso.Get("/resource/brief/candidates", ListResourceCandidatesForRoleEp).
 			Desc("List all resource candidates for role").
 			Resource(ResourceManageResources),
 
-		miso.IPost("/list", ListResourcesEp).
+		miso.IPost("/resource/list", ListResourcesEp).
 			Desc("Admin list resources").
 			Resource(ResourceManageResources),
 
-		miso.Get("/brief/user", ListAllResBriefsOfRoleEp).
+		miso.Get("/resource/brief/user", ListAllResBriefsOfRoleEp).
 			Desc("List resources of current user").
 			Public(),
 
-		miso.Get("/brief/all", ListAllResBriefsEp).
+		miso.Get("/resource/brief/all", ListAllResBriefsEp).
 			Desc("List all resource brief info").
 			Public(),
-	)
 
-	miso.BaseRoute("/open/api/role").Group(
-		miso.IPost("/resource/add", AddResToRoleIfNotExistEp).
+		miso.IPost("/role/resource/add", AddResToRoleIfNotExistEp).
 			Desc("Admin add resource to role").
 			Resource(ResourceManageResources),
 
-		miso.IPost("/resource/remove", RemoveResFromRoleEp).
+		miso.IPost("/role/resource/remove", RemoveResFromRoleEp).
 			Desc("Admin remove resource from role").
 			Resource(ResourceManageResources),
 
-		miso.IPost("/add", AddRoleEp).
+		miso.IPost("/role/add", AddRoleEp).
 			Desc("Admin add role").
 			Resource(ResourceManageResources),
 
-		miso.IPost("/list", ListRolesEp).
+		miso.IPost("/role/list", ListRolesEp).
 			Desc("Admin list roles").
 			Resource(ResourceManageResources),
 
-		miso.Get("/brief/all", ListAllRoleBriefsEp).
+		miso.Get("/role/brief/all", ListAllRoleBriefsEp).
 			Desc("Admin list role brief info").
 			Resource(ResourceManageResources),
 
-		miso.IPost("/resource/list", ListRoleResEp).
+		miso.IPost("/role/resource/list", ListRoleResEp).
 			Desc("Admin list resources of role").
 			Resource(ResourceManageResources),
 
-		miso.IPost("/info", GetRoleInfoEp).
+		miso.IPost("/role/info", GetRoleInfoEp).
 			Desc("Get role info").
 			Public(),
-	)
 
-	miso.BaseRoute("/open/api/path").Group(
-		miso.IPost("/list", ListPathsEp).
+		miso.IPost("/path/list", ListPathsEp).
 			Desc("Admin list paths").
 			Resource(ResourceManageResources),
 
-		miso.IPost("/resource/bind", BindPathResEp).
+		miso.IPost("/path/resource/bind", BindPathResEp).
 			Desc("Admin bind resource to path").
 			Resource(ResourceManageResources),
 
-		miso.IPost("/resource/unbind", UnbindPathResEp).
+		miso.IPost("/path/resource/unbind", UnbindPathResEp).
 			Desc("Admin unbind resource and path").
 			Resource(ResourceManageResources),
 
-		miso.IPost("/delete", DeletePathEp).
+		miso.IPost("/path/delete", DeletePathEp).
 			Desc("Admin delete path").
 			Resource(ResourceManageResources),
 
-		miso.IPost("/update", UpdatePathEp).
+		miso.IPost("/path/update", UpdatePathEp).
 			Desc("Admin update path").
 			Resource(ResourceManageResources),
 	)
@@ -213,33 +260,15 @@ func RegisterRoutes(rail miso.Rail) error {
 	// ----------------------------------------------------------------------------------------------
 
 	miso.BaseRoute("/remote").Group(
-		miso.Get("/user/username", ItnFetchNameByIdEp),
-		miso.IPost("/user/info", ItnFetchUserInfoEp),
+		miso.Get("/user/username", ItnFetchNameByIdEp).DocQueryParam("id", "id of user").Desc("Fetch username of user with the id"),
+		miso.IPost("/user/info", ItnFetchUserInfoEp).DocJsonReq(reflect.TypeOf(api.FindUserReq{})),
 		miso.Get("/user/id", ItnFetchUserIdEp),
 		miso.IPost("/user/userno/username", ItnFetchNameByUserNoEp),
 		miso.IPost("/user/list/with-role", ItnFetchUsersWithRoleEp),
-
-		miso.IPost("/resource/add",
-			func(c *gin.Context, rail miso.Rail, req CreateResReq) (any, error) {
-				user := common.GetUser(rail)
-				return nil, CreateResourceIfNotExist(rail, req, user)
-			}),
-		miso.IPost("/path/resource/access-test",
-			func(c *gin.Context, rail miso.Rail, req TestResAccessReq) (any, error) {
-				timer := miso.NewHistTimer(resourceAccessCheckHisto)
-				defer timer.ObserveDuration()
-
-				return TestResourceAccess(rail, req)
-			}),
-		miso.IPost("/path/add",
-			func(c *gin.Context, rail miso.Rail, req CreatePathReq) (any, error) {
-				user := common.GetUser(rail)
-				return nil, CreatePathIfNotExist(rail, req, user)
-			}),
-		miso.IPost("/role/info",
-			func(c *gin.Context, rail miso.Rail, req RoleInfoReq) (any, error) {
-				return GetRoleInfo(rail, req)
-			}),
+		miso.IPost("/resource/add", ItnAddResourceEp),
+		miso.IPost("/path/resource/access-test", CheckResourceAccessEp),
+		miso.IPost("/path/add", ReportPathEp),
+		miso.IPost("/role/info", ItnGetRoleInfoEp),
 	)
 	return nil
 }
@@ -444,54 +473,22 @@ func UpdatePathEp(c *gin.Context, ec miso.Rail, req UpdatePathReq) (any, error) 
 	return nil, UpdatePath(ec, req)
 }
 
-func RegisterInternalPathResourcesOnBootstrapped() {
+func ItnAddResourceEp(c *gin.Context, rail miso.Rail, req CreateResReq) (any, error) {
+	user := common.GetUser(rail)
+	return nil, CreateResourceIfNotExist(rail, req, user)
+}
 
-	miso.PostServerBootstrapped(func(rail miso.Rail) error {
+func CheckResourceAccessEp(c *gin.Context, rail miso.Rail, req TestResAccessReq) (any, error) {
+	timer := miso.NewHistTimer(resourceAccessCheckHisto)
+	defer timer.ObserveDuration()
+	return TestResourceAccess(rail, req)
+}
 
-		res := []goauth.AddResourceReq{
-			{Code: ResourceManageResources, Name: "Manage Resources Access"},
-			{Code: ResourceManagerUser, Name: "Admin Manage Users"},
-			{Code: ResourceBasicUser, Name: "Basic User Operation"},
-		}
-		user := common.NilUser()
+func ReportPathEp(c *gin.Context, rail miso.Rail, req CreatePathReq) (any, error) {
+	user := common.GetUser(rail)
+	return nil, CreatePathIfNotExist(rail, req, user)
+}
 
-		app := miso.GetPropStr(miso.PropAppName)
-		for _, res := range res {
-			if res.Code == "" || res.Name == "" {
-				continue
-			}
-			if e := CreateResourceIfNotExist(rail, CreateResReq(res), user); e != nil {
-				return e
-			}
-		}
-
-		routes := miso.GetHttpRoutes()
-		for _, route := range routes {
-			if route.Url == "" {
-				continue
-			}
-			var routeType = PtProtected
-			if route.Scope == miso.ScopePublic {
-				routeType = PtPublic
-			}
-
-			url := route.Url
-			if !strings.HasPrefix(url, "/") {
-				url = "/" + url
-			}
-
-			r := CreatePathReq{
-				Method:  route.Method,
-				Group:   app,
-				Url:     "/" + app + url,
-				Type:    routeType,
-				Desc:    route.Desc,
-				ResCode: route.Resource,
-			}
-			if err := CreatePathIfNotExist(rail, r, user); err != nil {
-				return err
-			}
-		}
-		return nil
-	})
+func ItnGetRoleInfoEp(c *gin.Context, rail miso.Rail, req RoleInfoReq) (any, error) {
+	return GetRoleInfo(rail, req)
 }
