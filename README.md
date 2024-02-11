@@ -36,6 +36,10 @@ user-vault is designed to work with a gateway service (e.g., [gatekeeper](https:
 - `user_vault_token_exchange_duration`: histogram, used to monitor the duration of each token exchange, time is measured in milliseconds.
 - `user_vault_fetch_user_info_duration`: histogram, used to monitor the duration of each user info fetching, time is measured in milliseconds.
 
+## Documentation
+
+- [API Endpoints](./doc/api.md)
+
 ## Initial Setup
 
 The first admin role:

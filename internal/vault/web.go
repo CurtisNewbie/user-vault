@@ -229,7 +229,7 @@ func RegisterRoutes(rail miso.Rail) error {
 				token := c.Query("token")
 				return GetTokenUser(rail, miso.GetMySQL(), token)
 			}).
-			Desc("Get user info by token. This endpoint is expected to be accessible ").
+			Desc("Get user info by token. This endpoint is expected to be accessible publicly").
 			Public().
 			DocQueryParam("token", "jwt token").
 			DocJsonResp(miso.GnResp[UserInfoBrief]{}),
