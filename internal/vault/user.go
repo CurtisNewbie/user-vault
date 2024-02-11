@@ -574,10 +574,6 @@ func GetTokenUser(rail miso.Rail, tx *gorm.DB, token string) (UserInfoBrief, err
 	}, nil
 }
 
-func FindUsername(rail miso.Rail, tx *gorm.DB, username string) (string, error) {
-	return "", nil
-}
-
 func ItnFindUserInfo(rail miso.Rail, tx *gorm.DB, req api.FindUserReq) (api.UserInfo, error) {
 
 	var ui api.UserInfo
