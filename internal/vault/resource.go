@@ -435,7 +435,7 @@ func GetRoleInfo(ec miso.Rail, req RoleInfoReq) (RoleInfoResp, error) {
 		}
 
 		if tx.RowsAffected < 1 {
-			return resp, miso.NewErrf(ErrCodeRoleNotFound, "Role not found")
+			return resp, miso.NewErrf("Role not found").WithCode(ErrCodeRoleNotFound)
 		}
 		return resp, nil
 	})
