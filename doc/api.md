@@ -2,9 +2,10 @@
 
 - POST /open/api/user/login
   - Description: User Login using password, a JWT token is generated and returned
+  - Expected Access Scope: PUBLIC
   - JSON Request:
-    - "username": (string)
-    - "password": (string)
+    - "username": (string) 
+    - "password": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -12,9 +13,10 @@
     - "data": (string) response data
 - POST /open/api/user/register/request
   - Description: User request registration, approval needed
+  - Expected Access Scope: PUBLIC
   - JSON Request:
-    - "username": (string)
-    - "password": (string)
+    - "username": (string) 
+    - "password": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -22,9 +24,9 @@
 - POST /open/api/user/add
   - Description: Admin create new user
   - JSON Request:
-    - "username": (string)
-    - "password": (string)
-    - "roleNo": (string)
+    - "username": (string) 
+    - "password": (string) 
+    - "roleNo": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -32,10 +34,10 @@
 - POST /open/api/user/list
   - Description: Admin list users
   - JSON Request:
-    - "username": (*string)
-    - "roleNo": (*string)
-    - "isDisabled": (*int)
-    - "pagingVo": (Paging)
+    - "username": (*string) 
+    - "roleNo": (*string) 
+    - "isDisabled": (*int) 
+    - "pagingVo": (Paging) 
       - "limit": (int) page limit
       - "page": (int) page number, 1-based
       - "total": (int) total count
@@ -49,22 +51,22 @@
         - "page": (int) page number, 1-based
         - "total": (int) total count
       - "payload": ([]api.UserInfo) payload values in current page
-        - "id": (int)
-        - "username": (string)
-        - "roleName": (string)
-        - "roleNo": (string)
-        - "userNo": (string)
-        - "isDisabled": (int)
-        - "createTime": (int64)
-        - "createBy": (string)
-        - "updateTime": (int64)
-        - "updateBy": (string)
+        - "id": (int) 
+        - "username": (string) 
+        - "roleName": (string) 
+        - "roleNo": (string) 
+        - "userNo": (string) 
+        - "isDisabled": (int) 
+        - "createTime": (int64) 
+        - "createBy": (string) 
+        - "updateTime": (int64) 
+        - "updateBy": (string) 
 - POST /open/api/user/info/update
   - Description: Admin update user info
   - JSON Request:
-    - "id": (int)
-    - "roleNo": (string)
-    - "isDisabled": (int)
+    - "id": (int) 
+    - "roleNo": (string) 
+    - "isDisabled": (int) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -72,8 +74,8 @@
 - POST /open/api/user/registration/review
   - Description: Admin review user registration
   - JSON Request:
-    - "userId": (int)
-    - "reviewStatus": (string)
+    - "userId": (int) 
+    - "reviewStatus": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -85,27 +87,28 @@
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": (UserDetail) response data
-      - "id": (int)
-      - "username": (string)
-      - "roleName": (string)
-      - "roleNo": (string)
-      - "userNo": (string)
-      - "registerDate": (string)
-      - "password": (string)
-      - "salt": (string)
+      - "id": (int) 
+      - "username": (string) 
+      - "roleName": (string) 
+      - "roleNo": (string) 
+      - "userNo": (string) 
+      - "registerDate": (string) 
+      - "password": (string) 
+      - "salt": (string) 
 - POST /open/api/user/password/update
   - Description: User update password
   - JSON Request:
-    - "prevPassword": (string)
-    - "newPassword": (string)
+    - "prevPassword": (string) 
+    - "newPassword": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
     - "error": (bool) whether the request was successful
 - POST /open/api/token/exchange
   - Description: Exchange token
+  - Expected Access Scope: PUBLIC
   - JSON Request:
-    - "token": (string)
+    - "token": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -113,6 +116,7 @@
     - "data": (string) response data
 - GET /open/api/token/user
   - Description: Get user info by token. This endpoint is expected to be accessible publicly
+  - Expected Access Scope: PUBLIC
   - Query Parameter: "token"
     - Description: jwt token
   - JSON Response:
@@ -120,16 +124,16 @@
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": (UserInfoBrief) response data
-      - "id": (int)
-      - "username": (string)
-      - "roleName": (string)
-      - "roleNo": (string)
-      - "userNo": (string)
-      - "registerDate": (string)
+      - "id": (int) 
+      - "username": (string) 
+      - "roleName": (string) 
+      - "roleNo": (string) 
+      - "userNo": (string) 
+      - "registerDate": (string) 
 - POST /open/api/access/history
   - Description: User list access logs
   - JSON Request:
-    - "pagingVo": (Paging)
+    - "pagingVo": (Paging) 
       - "limit": (int) page limit
       - "page": (int) page number, 1-based
       - "total": (int) total count
@@ -143,17 +147,17 @@
         - "page": (int) page number, 1-based
         - "total": (int) total count
       - "payload": ([]vault.ListedAccessLog) payload values in current page
-        - "id": (int)
-        - "userAgent": (string)
-        - "ipAddress": (string)
-        - "username": (string)
-        - "url": (string)
-        - "accessTime": (int64)
+        - "id": (int) 
+        - "userAgent": (string) 
+        - "ipAddress": (string) 
+        - "username": (string) 
+        - "url": (string) 
+        - "accessTime": (int64) 
 - POST /open/api/user/key/generate
   - Description: User generate user key
   - JSON Request:
-    - "password": (string)
-    - "keyName": (string)
+    - "password": (string) 
+    - "keyName": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -161,11 +165,11 @@
 - POST /open/api/user/key/list
   - Description: User list user keys
   - JSON Request:
-    - "pagingVo": (Paging)
+    - "pagingVo": (Paging) 
       - "limit": (int) page limit
       - "page": (int) page number, 1-based
       - "total": (int) total count
-    - "name": (string)
+    - "name": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -176,15 +180,15 @@
         - "page": (int) page number, 1-based
         - "total": (int) total count
       - "payload": ([]vault.ListedUserKey) payload values in current page
-        - "id": (int)
-        - "secretKey": (string)
-        - "name": (string)
-        - "expirationTime": (int64)
-        - "createTime": (int64)
+        - "id": (int) 
+        - "secretKey": (string) 
+        - "name": (string) 
+        - "expirationTime": (int64) 
+        - "createTime": (int64) 
 - POST /open/api/user/key/delete
   - Description: User delete user key
   - JSON Request:
-    - "userKeyId": (int)
+    - "userKeyId": (int) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -192,8 +196,8 @@
 - POST /open/api/resource/add
   - Description: Admin add resource
   - JSON Request:
-    - "name": (string)
-    - "code": (string)
+    - "name": (string) 
+    - "code": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -201,7 +205,7 @@
 - POST /open/api/resource/remove
   - Description: Admin remove resource
   - JSON Request:
-    - "resCode": (string)
+    - "resCode": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -215,12 +219,12 @@
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": ([]vault.ResBrief) response data
-      - "code": (string)
-      - "name": (string)
+      - "code": (string) 
+      - "name": (string) 
 - POST /open/api/resource/list
   - Description: Admin list resources
   - JSON Request:
-    - "pagingVo": (Paging)
+    - "pagingVo": (Paging) 
       - "limit": (int) page limit
       - "page": (int) page number, 1-based
       - "total": (int) total count
@@ -229,41 +233,43 @@
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": (ListResResp) response data
-      - "pagingVo": (Paging)
+      - "pagingVo": (Paging) 
         - "limit": (int) page limit
         - "page": (int) page number, 1-based
         - "total": (int) total count
-      - "payload": ([]vault.WRes)
-        - "id": (int)
-        - "code": (string)
-        - "name": (string)
-        - "createTime": (int64)
-        - "createBy": (string)
-        - "updateTime": (int64)
-        - "updateBy": (string)
+      - "payload": ([]vault.WRes) 
+        - "id": (int) 
+        - "code": (string) 
+        - "name": (string) 
+        - "createTime": (int64) 
+        - "createBy": (string) 
+        - "updateTime": (int64) 
+        - "updateBy": (string) 
 - GET /open/api/resource/brief/user
   - Description: List resources that are accessible to current user
+  - Expected Access Scope: PUBLIC
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": ([]vault.ResBrief) response data
-      - "code": (string)
-      - "name": (string)
+      - "code": (string) 
+      - "name": (string) 
 - GET /open/api/resource/brief/all
   - Description: List all resource brief info
+  - Expected Access Scope: PUBLIC
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": ([]vault.ResBrief) response data
-      - "code": (string)
-      - "name": (string)
+      - "code": (string) 
+      - "name": (string) 
 - POST /open/api/role/resource/add
   - Description: Admin add resource to role
   - JSON Request:
-    - "roleNo": (string)
-    - "resCode": (string)
+    - "roleNo": (string) 
+    - "resCode": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -271,8 +277,8 @@
 - POST /open/api/role/resource/remove
   - Description: Admin remove resource from role
   - JSON Request:
-    - "roleNo": (string)
-    - "resCode": (string)
+    - "roleNo": (string) 
+    - "resCode": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -280,7 +286,7 @@
 - POST /open/api/role/add
   - Description: Admin add role
   - JSON Request:
-    - "name": (string)
+    - "name": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -288,7 +294,7 @@
 - POST /open/api/role/list
   - Description: Admin list roles
   - JSON Request:
-    - "pagingVo": (Paging)
+    - "pagingVo": (Paging) 
       - "limit": (int) page limit
       - "page": (int) page number, 1-based
       - "total": (int) total count
@@ -297,15 +303,15 @@
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": (ListRoleResp) response data
-      - "payload": ([]vault.WRole)
-        - "id": (int)
-        - "roleNo": (string)
-        - "name": (string)
-        - "createTime": (int64)
-        - "createBy": (string)
-        - "updateTime": (int64)
-        - "updateBy": (string)
-      - "pagingVo": (Paging)
+      - "payload": ([]vault.WRole) 
+        - "id": (int) 
+        - "roleNo": (string) 
+        - "name": (string) 
+        - "createTime": (int64) 
+        - "createBy": (string) 
+        - "updateTime": (int64) 
+        - "updateBy": (string) 
+      - "pagingVo": (Paging) 
         - "limit": (int) page limit
         - "page": (int) page number, 1-based
         - "total": (int) total count
@@ -316,53 +322,54 @@
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": ([]vault.RoleBrief) response data
-      - "roleNo": (string)
-      - "name": (string)
+      - "roleNo": (string) 
+      - "name": (string) 
 - POST /open/api/role/resource/list
   - Description: Admin list resources of role
   - JSON Request:
-    - "pagingVo": (Paging)
+    - "pagingVo": (Paging) 
       - "limit": (int) page limit
       - "page": (int) page number, 1-based
       - "total": (int) total count
-    - "roleNo": (string)
+    - "roleNo": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": (ListRoleResResp) response data
-      - "pagingVo": (Paging)
+      - "pagingVo": (Paging) 
         - "limit": (int) page limit
         - "page": (int) page number, 1-based
         - "total": (int) total count
-      - "payload": ([]vault.ListedRoleRes)
-        - "id": (int)
-        - "resCode": (string)
-        - "resName": (string)
-        - "createTime": (Time)
-          - "wall": (uint64)
-          - "ext": (int64)
-          - "loc": (*time.Location)
-        - "createBy": (string)
+      - "payload": ([]vault.ListedRoleRes) 
+        - "id": (int) 
+        - "resCode": (string) 
+        - "resName": (string) 
+        - "createTime": (Time) 
+          - "wall": (uint64) 
+          - "ext": (int64) 
+          - "loc": (*time.Location) 
+        - "createBy": (string) 
 - POST /open/api/role/info
   - Description: Get role info
+  - Expected Access Scope: PUBLIC
   - JSON Request:
-    - "roleNo": (string)
+    - "roleNo": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": (RoleInfoResp) response data
-      - "roleNo": (string)
-      - "name": (string)
+      - "roleNo": (string) 
+      - "name": (string) 
 - POST /open/api/path/list
   - Description: Admin list paths
   - JSON Request:
-    - "resCode": (string)
-    - "pgroup": (string)
-    - "url": (string)
-    - "ptype": (PathType)
-    - "pagingVo": (Paging)
+    - "resCode": (string) 
+    - "pgroup": (string) 
+    - "url": (string) 
+    - "ptype": (PathType) 
+    - "pagingVo": (Paging) 
       - "limit": (int) page limit
       - "page": (int) page number, 1-based
       - "total": (int) total count
@@ -371,27 +378,27 @@
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": (ListPathResp) response data
-      - "pagingVo": (Paging)
+      - "pagingVo": (Paging) 
         - "limit": (int) page limit
         - "page": (int) page number, 1-based
         - "total": (int) total count
-      - "payload": ([]vault.WPath)
-        - "id": (int)
-        - "pgroup": (string)
-        - "pathNo": (string)
-        - "method": (string)
-        - "desc": (string)
-        - "url": (string)
-        - "ptype": (PathType)
-        - "createTime": (int64)
-        - "createBy": (string)
-        - "updateTime": (int64)
-        - "updateBy": (string)
+      - "payload": ([]vault.WPath) 
+        - "id": (int) 
+        - "pgroup": (string) 
+        - "pathNo": (string) 
+        - "method": (string) 
+        - "desc": (string) 
+        - "url": (string) 
+        - "ptype": (PathType) 
+        - "createTime": (int64) 
+        - "createBy": (string) 
+        - "updateTime": (int64) 
+        - "updateBy": (string) 
 - POST /open/api/path/resource/bind
   - Description: Admin bind resource to path
   - JSON Request:
-    - "pathNo": (string)
-    - "resCode": (string)
+    - "pathNo": (string) 
+    - "resCode": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -399,8 +406,8 @@
 - POST /open/api/path/resource/unbind
   - Description: Admin unbind resource and path
   - JSON Request:
-    - "pathNo": (string)
-    - "resCode": (string)
+    - "pathNo": (string) 
+    - "resCode": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -408,7 +415,7 @@
 - POST /open/api/path/delete
   - Description: Admin delete path
   - JSON Request:
-    - "pathNo": (string)
+    - "pathNo": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -416,9 +423,9 @@
 - POST /open/api/path/update
   - Description: Admin update path
   - JSON Request:
-    - "type": (PathType)
-    - "pathNo": (string)
-    - "group": (string)
+    - "type": (PathType) 
+    - "pathNo": (string) 
+    - "group": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -426,24 +433,24 @@
 - POST /remote/user/info
   - Description: Fetch user info
   - JSON Request:
-    - "userId": (*int)
-    - "userNo": (*string)
-    - "username": (*string)
+    - "userId": (*int) 
+    - "userNo": (*string) 
+    - "username": (*string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": (UserInfo) response data
-      - "id": (int)
-      - "username": (string)
-      - "roleName": (string)
-      - "roleNo": (string)
-      - "userNo": (string)
-      - "isDisabled": (int)
-      - "createTime": (int64)
-      - "createBy": (string)
-      - "updateTime": (int64)
-      - "updateBy": (string)
+      - "id": (int) 
+      - "username": (string) 
+      - "roleName": (string) 
+      - "roleNo": (string) 
+      - "userNo": (string) 
+      - "isDisabled": (int) 
+      - "createTime": (int64) 
+      - "createBy": (string) 
+      - "updateTime": (int64) 
+      - "updateBy": (string) 
 - GET /remote/user/id
   - Description: Fetch id of user with the username
   - Query Parameter: "username"
@@ -456,37 +463,37 @@
 - POST /remote/user/userno/username
   - Description: Fetch usernames of users with the userNos
   - JSON Request:
-    - "userNos": ([]string)
+    - "userNos": ([]string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": (FetchUsernamesRes) response data
-      - "userNoToUsername": (map[string]string)
+      - "userNoToUsername": (map[string]string) 
 - POST /remote/user/list/with-role
   - Description: Fetch user info of users with the role
   - JSON Request:
-    - "roleNo": (string)
+    - "roleNo": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": ([]api.UserInfo) response data
-      - "id": (int)
-      - "username": (string)
-      - "roleName": (string)
-      - "roleNo": (string)
-      - "userNo": (string)
-      - "isDisabled": (int)
-      - "createTime": (int64)
-      - "createBy": (string)
-      - "updateTime": (int64)
-      - "updateBy": (string)
+      - "id": (int) 
+      - "username": (string) 
+      - "roleName": (string) 
+      - "roleNo": (string) 
+      - "userNo": (string) 
+      - "isDisabled": (int) 
+      - "createTime": (int64) 
+      - "createBy": (string) 
+      - "updateTime": (int64) 
+      - "updateBy": (string) 
 - POST /remote/resource/add
   - Description: Report resource. This endpoint should be used internally by another backend service.
   - JSON Request:
-    - "name": (string)
-    - "code": (string)
+    - "name": (string) 
+    - "code": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -494,24 +501,24 @@
 - POST /remote/path/resource/access-test
   - Description: Validate resource access
   - JSON Request:
-    - "roleNo": (string)
-    - "url": (string)
-    - "method": (string)
+    - "roleNo": (string) 
+    - "url": (string) 
+    - "method": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": (TestResAccessResp) response data
-      - "valid": (bool)
+      - "valid": (bool) 
 - POST /remote/path/add
   - Description: Report endpoint
   - JSON Request:
-    - "type": (PathType)
-    - "url": (string)
-    - "group": (string)
-    - "method": (string)
-    - "desc": (string)
-    - "resCode": (string)
+    - "type": (PathType) 
+    - "url": (string) 
+    - "group": (string) 
+    - "method": (string) 
+    - "desc": (string) 
+    - "resCode": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -519,12 +526,18 @@
 - POST /remote/role/info
   - Description: Get role info
   - JSON Request:
-    - "roleNo": (string)
+    - "roleNo": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": (RoleInfoResp) response data
-      - "roleNo": (string)
-      - "name": (string)
+      - "roleNo": (string) 
+      - "name": (string) 
 - GET /metrics
+  - Description: Collect prometheus metrics information
+  - Header Parameter: "Authorization"
+    - Description: Basic authorization if enabled
+- GET /doc/api
+  - Description: Serve the generated API documentation webpage
+  - Expected Access Scope: PUBLIC
