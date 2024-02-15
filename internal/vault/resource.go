@@ -543,7 +543,7 @@ func CreatePathIfNotExist(rail miso.Rail, req CreatePathReq, user common.User) e
 			return false, tx.Error
 		}
 
-		rail.Infof("Created path (%s) '{%s}'", pathNo, req.Url)
+		rail.Infof("Created path (%s) '%s {%s}'", pathNo, req.Method, req.Url)
 
 		if err := pathNoCache.Put(rail, pathNo, "1"); err != nil {
 			rail.Errorf("failed to store pathNoCache, %v, %v", pathNo, err)
