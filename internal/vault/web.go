@@ -3,8 +3,8 @@ package vault
 import (
 	"strings"
 
+	"github.com/curtisnewbie/gocommon/auth"
 	"github.com/curtisnewbie/gocommon/common"
-	"github.com/curtisnewbie/gocommon/goauth"
 	"github.com/curtisnewbie/miso/miso"
 	"github.com/curtisnewbie/user-vault/api"
 	"github.com/gin-gonic/gin"
@@ -65,7 +65,7 @@ func RegisterInternalPathResourcesOnBootstrapped() {
 
 	miso.PostServerBootstrapped(func(rail miso.Rail) error {
 
-		res := []goauth.AddResourceReq{
+		res := []auth.Resource{
 			{Code: ResourceManageResources, Name: "Manage Resources Access"},
 			{Code: ResourceManagerUser, Name: "Admin Manage Users"},
 			{Code: ResourceBasicUser, Name: "Basic User Operation"},
