@@ -86,15 +86,13 @@
     - "errorCode": (string) error code
     - "msg": (string) message
     - "error": (bool) whether the request was successful
-    - "data": (UserDetail) response data
+    - "data": (UserInfoRes) response data
       - "id": (int) 
       - "username": (string) 
       - "roleName": (string) 
       - "roleNo": (string) 
       - "userNo": (string) 
       - "registerDate": (string) 
-      - "password": (string) 
-      - "salt": (string) 
 - POST /open/api/user/password/update
   - Description: User update password
   - JSON Request:

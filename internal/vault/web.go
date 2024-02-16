@@ -61,6 +61,15 @@ type RegisterReq struct {
 	Password string `json:"password" valid:"notEmpty"`
 }
 
+type UserInfoRes struct {
+	Id           int
+	Username     string
+	RoleName     string
+	RoleNo       string
+	UserNo       string
+	RegisterDate string
+}
+
 func RegisterInternalPathResourcesOnBootstrapped() {
 
 	miso.PostServerBootstrapped(func(rail miso.Rail) error {
@@ -197,11 +206,22 @@ func RegisterRoutes(rail miso.Rail) error {
 				timer := miso.NewHistTimer(fetchUserInfoHisto)
 				defer timer.ObserveDuration()
 				u := common.GetUser(rail)
-				return LoadUserBriefThrCache(rail, miso.GetMySQL(), u.Username)
+				res, err := LoadUserBriefThrCache(rail, miso.GetMySQL(), u.Username)
+				if err != nil {
+					return nil, err
+				}
+				return UserInfoRes{
+					Id:           res.Id,
+					Username:     res.Username,
+					RoleName:     res.RoleName,
+					RoleNo:       res.RoleNo,
+					UserNo:       res.UserNo,
+					RegisterDate: res.RegisterDate,
+				}, nil
 			}).
 			Desc("User get user info").
 			Resource(ResourceBasicUser).
-			DocJsonResp(miso.GnResp[UserDetail]{}),
+			DocJsonResp(miso.GnResp[UserInfoRes]{}),
 
 		miso.IPost("/user/password/update",
 			func(c *gin.Context, rail miso.Rail, req UpdatePasswordReq) (any, error) {
