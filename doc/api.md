@@ -452,7 +452,7 @@
 - GET /remote/user/id
   - Description: Fetch id of user with the username
   - Query Parameter: "username"
-    - Description: username of user
+    - Description: Username
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -509,7 +509,7 @@
     - "data": (TestResAccessResp) response data
       - "valid": (bool) 
 - POST /remote/path/add
-  - Description: Report endpoint
+  - Description: Report endpoint info
   - JSON Request:
     - "type": (PathType) 
     - "url": (string) 
@@ -521,17 +521,6 @@
     - "errorCode": (string) error code
     - "msg": (string) message
     - "error": (bool) whether the request was successful
-- POST /remote/role/info
-  - Description: Get role info
-  - JSON Request:
-    - "roleNo": (string) 
-  - JSON Response:
-    - "errorCode": (string) error code
-    - "msg": (string) message
-    - "error": (bool) whether the request was successful
-    - "data": (RoleInfoResp) response data
-      - "roleNo": (string) 
-      - "name": (string) 
 - GET /metrics
   - Description: Collect prometheus metrics information
   - Header Parameter: "Authorization"

@@ -10,6 +10,7 @@ import (
 
 	"github.com/curtisnewbie/gocommon/common"
 	"github.com/curtisnewbie/miso/miso"
+	"github.com/curtisnewbie/user-vault/api"
 	"gorm.io/gorm"
 )
 
@@ -17,7 +18,7 @@ var (
 	permitted = TestResAccessResp{Valid: true}
 	forbidden = TestResAccessResp{Valid: false}
 
-	roleInfoCache = miso.NewRCache[RoleInfoResp]("user-vault:role:info", miso.RCacheConfig{Exp: 10 * time.Minute, NoSync: true})
+	roleInfoCache = miso.NewRCache[api.RoleInfoResp]("user-vault:role:info", miso.RCacheConfig{Exp: 10 * time.Minute, NoSync: true})
 
 	// cache for url's resource, url -> CachedUrlRes
 	urlResCache = miso.NewRCache[CachedUrlRes]("user-vault:url:res:v2", miso.RCacheConfig{Exp: 30 * time.Minute})
@@ -239,17 +240,8 @@ type ListedRoleRes struct {
 	CreateBy   string    `json:"createBy"`
 }
 
-type RoleInfoReq struct {
-	RoleNo string `json:"roleNo" validation:"notEmpty"`
-}
-
 type GenResScriptReq struct {
 	ResCodes []string `json:"resCodes" validation:"notEmpty"`
-}
-
-type RoleInfoResp struct {
-	RoleNo string `json:"roleNo"`
-	Name   string `json:"name"`
 }
 
 type UpdatePathReq struct {
@@ -426,9 +418,9 @@ func loadOnePathResCacheAsync(ec miso.Rail, pathNo string) {
 	}(ec, pathNo)
 }
 
-func GetRoleInfo(ec miso.Rail, req RoleInfoReq) (RoleInfoResp, error) {
-	resp, err := roleInfoCache.Get(ec, req.RoleNo, func() (RoleInfoResp, error) {
-		var resp RoleInfoResp
+func GetRoleInfo(ec miso.Rail, req api.RoleInfoReq) (api.RoleInfoResp, error) {
+	resp, err := roleInfoCache.Get(ec, req.RoleNo, func() (api.RoleInfoResp, error) {
+		var resp api.RoleInfoResp
 		tx := miso.GetMySQL().Raw("select role_no, name from role where role_no = ?", req.RoleNo).Scan(&resp)
 		if tx.Error != nil {
 			return resp, tx.Error

@@ -5,6 +5,7 @@ import (
 
 	"github.com/curtisnewbie/gocommon/common"
 	"github.com/curtisnewbie/miso/miso"
+	"github.com/curtisnewbie/user-vault/api"
 )
 
 func before(t *testing.T) {
@@ -35,7 +36,7 @@ func TestUpdatePath(t *testing.T) {
 func TestGetRoleInfo(t *testing.T) {
 	before(t)
 
-	req := RoleInfoReq{
+	req := api.RoleInfoReq{
 		RoleNo: "role_554107924873216177918",
 	}
 	resp, e := GetRoleInfo(miso.EmptyRail(), req)

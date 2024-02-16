@@ -57,3 +57,12 @@ func TestFetchUsersWithRole(t *testing.T) {
 	}
 	t.Logf("res: %+v", res)
 }
+
+func TestGetRoleInfo(t *testing.T) {
+	rail := _apiPreTest(t)
+	res, err := GetRoleInfo(rail, "role_554107924873216177918")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("res: %+v", res)
+}

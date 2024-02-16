@@ -263,7 +263,7 @@ func checkNewPassword(password string) error {
 
 func AddUser(rail miso.Rail, tx *gorm.DB, req AddUserParam, operator string) error {
 	if req.RoleNo != "" {
-		_, err := GetRoleInfo(rail, RoleInfoReq{req.RoleNo})
+		_, err := GetRoleInfo(rail, api.RoleInfoReq{RoleNo: req.RoleNo})
 		if err != nil {
 			return err
 		}
@@ -344,7 +344,7 @@ func AdminUpdateUser(rail miso.Rail, tx *gorm.DB, req AdminUpdateUserReq, operat
 		return miso.NewErrf("You cannot update yourself")
 	}
 
-	_, err := GetRoleInfo(rail, RoleInfoReq{req.RoleNo})
+	_, err := GetRoleInfo(rail, api.RoleInfoReq{RoleNo: req.RoleNo})
 	if err != nil {
 		return miso.NewErrf("Invalid role").WithInternalMsg("failed to get role info, roleNo may be invalid, %v", err)
 	}
