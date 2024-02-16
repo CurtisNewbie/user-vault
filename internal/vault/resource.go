@@ -363,7 +363,7 @@ func ListAllResBriefsOfRole(ec miso.Rail, roleNo string) ([]ResBrief, error) {
 	return res, nil
 }
 
-func ListAllResBriefs(ec miso.Rail) ([]ResBrief, error) {
+func ListAllResBriefs(rail miso.Rail) ([]ResBrief, error) {
 	var res []ResBrief
 	tx := miso.GetMySQL().Raw("select name, code from resource").Scan(&res)
 	if tx.Error != nil {
@@ -726,10 +726,10 @@ func RemoveResFromRole(ec miso.Rail, req RemoveRoleResReq) error {
 	return e
 }
 
-func AddResToRoleIfNotExist(ec miso.Rail, req AddRoleResReq, user common.User) error {
+func AddResToRoleIfNotExist(rail miso.Rail, req AddRoleResReq, user common.User) error {
 
-	res, e := miso.RLockRun(ec, "user-vault:role:"+req.RoleNo, func() (any, error) { // lock for role
-		return lockResourceGlobal(ec, func() (any, error) {
+	res, e := miso.RLockRun(rail, "user-vault:role:"+req.RoleNo, func() (any, error) { // lock for role
+		return lockResourceGlobal(rail, func() (any, error) {
 			// check if resource exist
 			var resId int
 			tx := miso.GetMySQL().Raw(`select id from resource where code = ?`, req.ResCode).Scan(&resId)
@@ -770,7 +770,7 @@ func AddResToRoleIfNotExist(ec miso.Rail, req AddRoleResReq, user common.User) e
 	}
 
 	if isAdded := res.(bool); isAdded {
-		e = _loadResOfRole(ec, req.RoleNo)
+		e = _loadResOfRole(rail, req.RoleNo)
 	}
 
 	return e

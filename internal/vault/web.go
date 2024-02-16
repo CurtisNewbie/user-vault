@@ -70,6 +70,18 @@ type UserInfoRes struct {
 	RegisterDate string
 }
 
+type GetTokenUserReq struct {
+	Token string `form:"token" desc:"jwt token"`
+}
+
+type ListResCandidatesReq struct {
+	RoleNo string `form:"roleNo" desc:"Role No"`
+}
+
+type FetchUserIdByNameReq struct {
+	Username string `form:"username" desc:"Username"`
+}
+
 func RegisterInternalPathResourcesOnBootstrapped() {
 
 	miso.PostServerBootstrapped(func(rail miso.Rail) error {
@@ -126,12 +138,13 @@ func RegisterRoutes(rail miso.Rail) error {
 
 	RegisterInternalPathResourcesOnBootstrapped()
 
-	miso.BaseRoute("/open/api").Group(
+	miso.GroupRoute("/open/api",
+
 		miso.IPost("/user/login",
-			func(gin *gin.Context, rail miso.Rail, req LoginReq) (any, error) {
+			func(gin *gin.Context, rail miso.Rail, req LoginReq) (miso.GnResp[string], error) {
 				token, user, err := UserLogin(rail, miso.GetMySQL(), PasswordLoginParam(req))
 				if err != nil {
-					return "", err
+					return miso.WrapGnResp("", err)
 				}
 
 				remoteAddr := RemoteAddr(gin.GetHeader(headerForwardedFor))
@@ -148,314 +161,253 @@ func RegisterRoutes(rail miso.Rail) error {
 					rail.Errorf("Failed to sendAccessLogEvent, username: %v, remoteAddr: %v, userAgent: %v, %v",
 						req.Username, remoteAddr, userAgent, er)
 				}
-
-				return token, err
+				return miso.WrapGnResp(token, err)
 			}).
 			Desc("User Login using password, a JWT token is generated and returned").
-			Public().
-			DocJsonReq(LoginReq{}).
-			DocJsonResp(miso.GnResp[string]{}),
+			Public(),
 
 		miso.IPost("/user/register/request",
-			func(c *gin.Context, rail miso.Rail, req RegisterReq) (any, error) {
-				return nil, UserRegister(rail, miso.GetMySQL(), req)
+			func(c *gin.Context, rail miso.Rail, req RegisterReq) (miso.GnResp[miso.Void], error) {
+				return miso.VoidResp(), UserRegister(rail, miso.GetMySQL(), req)
 			}).
 			Desc("User request registration, approval needed").
-			Public().
-			DocJsonReq(RegisterReq{}).
-			DocJsonResp(miso.GnResp[miso.Void]{}),
+			Public(),
 
 		miso.IPost("/user/add",
-			func(c *gin.Context, rail miso.Rail, req AddUserParam) (any, error) {
-				return nil, AddUser(rail, miso.GetMySQL(), AddUserParam(req), common.GetUser(rail).Username)
+			func(c *gin.Context, rail miso.Rail, req AddUserParam) (miso.GnResp[miso.Void], error) {
+				return miso.VoidResp(), AddUser(rail, miso.GetMySQL(), AddUserParam(req), common.GetUser(rail).Username)
 			}).
 			Desc("Admin create new user").
-			Resource(ResourceManagerUser).
-			DocJsonReq(AddUserParam{}).
-			DocJsonResp(miso.GnResp[miso.Void]{}),
+			Resource(ResourceManagerUser),
 
 		miso.IPost("/user/list",
-			func(c *gin.Context, rail miso.Rail, req ListUserReq) (any, error) {
-				return ListUsers(rail, miso.GetMySQL(), req)
+			func(c *gin.Context, rail miso.Rail, req ListUserReq) (miso.GnResp[miso.PageRes[api.UserInfo]], error) {
+				return miso.WrapGnResp(ListUsers(rail, miso.GetMySQL(), req))
 			}).
 			Desc("Admin list users").
-			Resource(ResourceManagerUser).
-			DocJsonReq(ListUserReq{}).
-			DocJsonResp(miso.GnResp[miso.PageRes[api.UserInfo]]{}),
+			Resource(ResourceManagerUser),
 
 		miso.IPost("/user/info/update",
-			func(c *gin.Context, rail miso.Rail, req AdminUpdateUserReq) (any, error) {
-				return nil, AdminUpdateUser(rail, miso.GetMySQL(), req, common.GetUser(rail))
+			func(c *gin.Context, rail miso.Rail, req AdminUpdateUserReq) (miso.GnResp[miso.Void], error) {
+				return miso.VoidResp(), AdminUpdateUser(rail, miso.GetMySQL(), req, common.GetUser(rail))
 			}).
 			Desc("Admin update user info").
-			Resource(ResourceManagerUser).
-			DocJsonReq(AdminUpdateUserReq{}).
-			DocJsonResp(miso.GnResp[miso.Void]{}),
+			Resource(ResourceManagerUser),
 
 		miso.IPost("/user/registration/review",
-			func(c *gin.Context, rail miso.Rail, req AdminReviewUserReq) (any, error) {
-				return nil, ReviewUserRegistration(rail, miso.GetMySQL(), req)
+			func(c *gin.Context, rail miso.Rail, req AdminReviewUserReq) (miso.GnResp[miso.Void], error) {
+				return miso.VoidResp(), ReviewUserRegistration(rail, miso.GetMySQL(), req)
 			}).
 			Desc("Admin review user registration").
-			Resource(ResourceManagerUser).
-			DocJsonReq(AdminReviewUserReq{}).
-			DocJsonResp(miso.GnResp[miso.Void]{}),
+			Resource(ResourceManagerUser),
 
 		miso.Get("/user/info",
-			func(c *gin.Context, rail miso.Rail) (any, error) {
+			func(c *gin.Context, rail miso.Rail) (miso.GnResp[UserInfoRes], error) {
 				timer := miso.NewHistTimer(fetchUserInfoHisto)
 				defer timer.ObserveDuration()
 				u := common.GetUser(rail)
 				res, err := LoadUserBriefThrCache(rail, miso.GetMySQL(), u.Username)
+
 				if err != nil {
-					return nil, err
+					return miso.GnResp[UserInfoRes]{}, err
 				}
-				return UserInfoRes{
+
+				return miso.OkGnResp(UserInfoRes{
 					Id:           res.Id,
 					Username:     res.Username,
 					RoleName:     res.RoleName,
 					RoleNo:       res.RoleNo,
 					UserNo:       res.UserNo,
 					RegisterDate: res.RegisterDate,
-				}, nil
+				}), nil
 			}).
 			Desc("User get user info").
-			Resource(ResourceBasicUser).
-			DocJsonResp(miso.GnResp[UserInfoRes]{}),
+			Resource(ResourceBasicUser),
 
 		miso.IPost("/user/password/update",
-			func(c *gin.Context, rail miso.Rail, req UpdatePasswordReq) (any, error) {
+			func(c *gin.Context, rail miso.Rail, req UpdatePasswordReq) (miso.GnResp[miso.Void], error) {
 				u := common.GetUser(rail)
-				return nil, UpdatePassword(rail, miso.GetMySQL(), u.Username, req)
+				return miso.VoidResp(), UpdatePassword(rail, miso.GetMySQL(), u.Username, req)
 			}).
 			Desc("User update password").
-			Resource(ResourceBasicUser).
-			DocJsonReq(UpdatePasswordReq{}).
-			DocJsonResp(miso.GnResp[miso.Void]{}),
+			Resource(ResourceBasicUser),
 
 		miso.IPost("/token/exchange",
-			func(c *gin.Context, rail miso.Rail, req ExchangeTokenReq) (any, error) {
+			func(c *gin.Context, rail miso.Rail, req ExchangeTokenReq) (miso.GnResp[string], error) {
 				timer := miso.NewHistTimer(tokenExchangeHisto)
 				defer timer.ObserveDuration()
-				return ExchangeToken(rail, miso.GetMySQL(), req)
+				return miso.WrapGnResp(ExchangeToken(rail, miso.GetMySQL(), req))
 			}).
 			Desc("Exchange token").
-			Public().
-			DocJsonReq(ExchangeTokenReq{}).
-			DocJsonResp(miso.GnResp[string]{}),
+			Public(),
 
-		miso.Get("/token/user",
-			func(c *gin.Context, rail miso.Rail) (any, error) {
-				token := c.Query("token")
-				return GetTokenUser(rail, miso.GetMySQL(), token)
+		miso.IGet("/token/user",
+			func(c *gin.Context, rail miso.Rail, req GetTokenUserReq) (miso.GnResp[UserInfoBrief], error) {
+				return miso.WrapGnResp(GetTokenUser(rail, miso.GetMySQL(), req.Token))
 			}).
 			Desc("Get user info by token. This endpoint is expected to be accessible publicly").
-			Public().
-			DocQueryParam("token", "jwt token").
-			DocJsonResp(miso.GnResp[UserInfoBrief]{}),
+			Public(),
 
 		miso.IPost("/access/history",
-			func(c *gin.Context, rail miso.Rail, req ListAccessLogReq) (any, error) {
-				return ListAccessLogs(rail, miso.GetMySQL(), common.GetUser(rail), req)
+			func(c *gin.Context, rail miso.Rail, req ListAccessLogReq) (miso.GnResp[miso.PageRes[ListedAccessLog]], error) {
+				return miso.WrapGnResp(ListAccessLogs(rail, miso.GetMySQL(), common.GetUser(rail), req))
 			}).
 			Desc("User list access logs").
-			Resource(ResourceBasicUser).
-			DocJsonReq(ListAccessLogReq{}).
-			DocJsonResp(miso.GnResp[miso.PageRes[ListedAccessLog]]{}),
+			Resource(ResourceBasicUser),
 
 		miso.IPost("/user/key/generate",
-			func(c *gin.Context, rail miso.Rail, req GenUserKeyReq) (any, error) {
-				return nil, GenUserKey(rail, miso.GetMySQL(), req, common.GetUser(rail).Username)
+			func(c *gin.Context, rail miso.Rail, req GenUserKeyReq) (miso.GnResp[miso.Void], error) {
+				return miso.VoidResp(), GenUserKey(rail, miso.GetMySQL(), req, common.GetUser(rail).Username)
 			}).
 			Desc("User generate user key").
-			Resource(ResourceBasicUser).
-			DocJsonReq(GenUserKeyReq{}).
-			DocJsonResp(miso.GnResp[miso.Void]{}),
+			Resource(ResourceBasicUser),
 
 		miso.IPost("/user/key/list",
-			func(c *gin.Context, rail miso.Rail, req ListUserKeysReq) (any, error) {
-				return ListUserKeys(rail, miso.GetMySQL(), req, common.GetUser(rail))
+			func(c *gin.Context, rail miso.Rail, req ListUserKeysReq) (miso.GnResp[miso.PageRes[ListedUserKey]], error) {
+				return miso.WrapGnResp(ListUserKeys(rail, miso.GetMySQL(), req, common.GetUser(rail)))
 			}).
 			Desc("User list user keys").
-			Resource(ResourceBasicUser).
-			DocJsonReq(ListUserKeysReq{}).
-			DocJsonResp(miso.GnResp[miso.PageRes[ListedUserKey]]{}),
+			Resource(ResourceBasicUser),
 
 		miso.IPost("/user/key/delete",
-			func(c *gin.Context, rail miso.Rail, req DeleteUserKeyReq) (any, error) {
-				return nil, DeleteUserKey(rail, miso.GetMySQL(), req, common.GetUser(rail).UserId)
+			func(c *gin.Context, rail miso.Rail, req DeleteUserKeyReq) (miso.GnResp[miso.Void], error) {
+				return miso.VoidResp(), DeleteUserKey(rail, miso.GetMySQL(), req, common.GetUser(rail).UserId)
 			}).
 			Desc("User delete user key").
-			Resource(ResourceBasicUser).
-			DocJsonReq(DeleteUserKeyReq{}).
-			DocJsonResp(miso.GnResp[miso.Void]{}),
+			Resource(ResourceBasicUser),
 
 		miso.IPost("/resource/add",
-			func(c *gin.Context, ec miso.Rail, req CreateResReq) (any, error) {
-				user := common.GetUser(ec)
-				return nil, CreateResourceIfNotExist(ec, req, user)
+			func(c *gin.Context, rail miso.Rail, req CreateResReq) (miso.GnResp[miso.Void], error) {
+				user := common.GetUser(rail)
+				return miso.VoidResp(), CreateResourceIfNotExist(rail, req, user)
 			}).
 			Desc("Admin add resource").
-			Resource(ResourceManageResources).
-			DocJsonReq(CreateResReq{}).
-			DocJsonResp(miso.GnResp[miso.Void]{}),
+			Resource(ResourceManageResources),
 
 		miso.IPost("/resource/remove",
-			func(c *gin.Context, ec miso.Rail, req DeleteResourceReq) (any, error) {
-				return nil, DeleteResource(ec, req)
+			func(c *gin.Context, rail miso.Rail, req DeleteResourceReq) (miso.GnResp[miso.Void], error) {
+				return miso.VoidResp(), DeleteResource(rail, req)
 			}).
 			Desc("Admin remove resource").
-			Resource(ResourceManageResources).
-			DocJsonReq(DeleteResourceReq{}).
-			DocJsonResp(miso.GnResp[miso.Void]{}),
+			Resource(ResourceManageResources),
 
-		miso.Get("/resource/brief/candidates",
-			func(c *gin.Context, ec miso.Rail) (any, error) {
-				roleNo := c.Query("roleNo")
-				return ListResourceCandidatesForRole(ec, roleNo)
+		miso.IGet("/resource/brief/candidates",
+			func(c *gin.Context, rail miso.Rail, req ListResCandidatesReq) (miso.GnResp[[]ResBrief], error) {
+				return miso.WrapGnResp(ListResourceCandidatesForRole(rail, req.RoleNo))
 			}).
 			Desc("List all resource candidates for role").
-			Resource(ResourceManageResources).
-			DocQueryParam("roleNo", "Role No").
-			DocJsonResp(miso.GnResp[[]ResBrief]{}),
+			Resource(ResourceManageResources),
 
 		miso.IPost("/resource/list",
-			func(c *gin.Context, ec miso.Rail, req ListResReq) (any, error) {
-				return ListResources(ec, req)
+			func(c *gin.Context, rail miso.Rail, req ListResReq) (miso.GnResp[ListResResp], error) {
+				return miso.WrapGnResp(ListResources(rail, req))
 			}).
 			Desc("Admin list resources").
-			Resource(ResourceManageResources).
-			DocJsonReq(ListResReq{}).
-			DocJsonResp(miso.GnResp[ListResResp]{}),
+			Resource(ResourceManageResources),
 
 		miso.Get("/resource/brief/user",
-			func(c *gin.Context, ec miso.Rail) (any, error) {
-				u := common.GetUser(ec)
+			func(c *gin.Context, rail miso.Rail) (miso.GnResp[[]ResBrief], error) {
+				u := common.GetUser(rail)
 				if u.IsNil {
-					return []ResBrief{}, nil
+					return miso.OkGnResp([]ResBrief{}), nil
 				}
-				return ListAllResBriefsOfRole(ec, u.RoleNo)
+				return miso.WrapGnResp(ListAllResBriefsOfRole(rail, u.RoleNo))
 			}).
 			Desc("List resources that are accessible to current user").
-			Public().
-			DocJsonResp(miso.GnResp[[]ResBrief]{}),
+			Public(),
 
 		miso.Get("/resource/brief/all",
-			func(c *gin.Context, ec miso.Rail) (any, error) {
-				return ListAllResBriefs(ec)
+			func(c *gin.Context, rail miso.Rail) (miso.GnResp[[]ResBrief], error) {
+				return miso.WrapGnResp(ListAllResBriefs(rail))
 			}).
 			Desc("List all resource brief info").
-			Public().
-			DocJsonResp(miso.GnResp[[]ResBrief]{}),
+			Public(),
 
 		miso.IPost("/role/resource/add",
-			func(c *gin.Context, ec miso.Rail, req AddRoleResReq) (any, error) {
-				user := common.GetUser(ec)
-				return nil, AddResToRoleIfNotExist(ec, req, user)
+			func(c *gin.Context, rail miso.Rail, req AddRoleResReq) (miso.GnResp[miso.Void], error) {
+				user := common.GetUser(rail)
+				return miso.VoidResp(), AddResToRoleIfNotExist(rail, req, user)
 			}).
 			Desc("Admin add resource to role").
-			Resource(ResourceManageResources).
-			DocJsonReq(AddRoleResReq{}).
-			DocJsonResp(miso.GnResp[miso.Void]{}),
+			Resource(ResourceManageResources),
 
 		miso.IPost("/role/resource/remove",
-			func(c *gin.Context, ec miso.Rail, req RemoveRoleResReq) (any, error) {
-				return nil, RemoveResFromRole(ec, req)
+			func(c *gin.Context, rail miso.Rail, req RemoveRoleResReq) (miso.GnResp[miso.Void], error) {
+				return miso.VoidResp(), RemoveResFromRole(rail, req)
 			}).
 			Desc("Admin remove resource from role").
-			Resource(ResourceManageResources).
-			DocJsonReq(RemoveRoleResReq{}).
-			DocJsonResp(miso.GnResp[miso.Void]{}),
+			Resource(ResourceManageResources),
 
 		miso.IPost("/role/add",
-			func(c *gin.Context, ec miso.Rail, req AddRoleReq) (any, error) {
-				user := common.GetUser(ec)
-				return nil, AddRole(ec, req, user)
+			func(c *gin.Context, rail miso.Rail, req AddRoleReq) (miso.GnResp[miso.Void], error) {
+				user := common.GetUser(rail)
+				return miso.VoidResp(), AddRole(rail, req, user)
 			}).
 			Desc("Admin add role").
-			Resource(ResourceManageResources).
-			DocJsonReq(AddRoleReq{}).
-			DocJsonResp(miso.GnResp[miso.Void]{}),
+			Resource(ResourceManageResources),
 
 		miso.IPost("/role/list",
-			func(c *gin.Context, ec miso.Rail, req ListRoleReq) (any, error) {
-				return ListRoles(ec, req)
+			func(c *gin.Context, rail miso.Rail, req ListRoleReq) (miso.GnResp[ListRoleResp], error) {
+				return miso.WrapGnResp(ListRoles(rail, req))
 			}).
 			Desc("Admin list roles").
-			Resource(ResourceManageResources).
-			DocJsonReq(ListRoleReq{}).
-			DocJsonResp(miso.GnResp[ListRoleResp]{}),
+			Resource(ResourceManageResources),
 
 		miso.Get("/role/brief/all",
-			func(c *gin.Context, ec miso.Rail) (any, error) {
-				return ListAllRoleBriefs(ec)
+			func(c *gin.Context, rail miso.Rail) (miso.GnResp[[]RoleBrief], error) {
+				return miso.WrapGnResp(ListAllRoleBriefs(rail))
 			}).
 			Desc("Admin list role brief info").
-			Resource(ResourceManageResources).
-			DocJsonResp(miso.GnResp[[]RoleBrief]{}),
+			Resource(ResourceManageResources),
 
 		miso.IPost("/role/resource/list",
-			func(c *gin.Context, ec miso.Rail, req ListRoleResReq) (any, error) {
-				return ListRoleRes(ec, req)
+			func(c *gin.Context, rail miso.Rail, req ListRoleResReq) (miso.GnResp[ListRoleResResp], error) {
+				return miso.WrapGnResp(ListRoleRes(rail, req))
 			}).
 			Desc("Admin list resources of role").
-			Resource(ResourceManageResources).
-			DocJsonReq(ListRoleResReq{}).
-			DocJsonResp(miso.GnResp[ListRoleResResp]{}),
+			Resource(ResourceManageResources),
 
 		miso.IPost("/role/info",
-			func(c *gin.Context, ec miso.Rail, req RoleInfoReq) (any, error) {
-				return GetRoleInfo(ec, req)
+			func(c *gin.Context, rail miso.Rail, req RoleInfoReq) (miso.GnResp[RoleInfoResp], error) {
+				return miso.WrapGnResp(GetRoleInfo(rail, req))
 			}).
 			Desc("Get role info").
-			Public().
-			DocJsonReq(RoleInfoReq{}).
-			DocJsonResp(miso.GnResp[RoleInfoResp]{}),
+			Public(),
 
 		miso.IPost("/path/list",
-			func(c *gin.Context, ec miso.Rail, req ListPathReq) (any, error) {
-				return ListPaths(ec, req)
+			func(c *gin.Context, rail miso.Rail, req ListPathReq) (miso.GnResp[ListPathResp], error) {
+				return miso.WrapGnResp(ListPaths(rail, req))
 			}).
 			Desc("Admin list paths").
-			Resource(ResourceManageResources).
-			DocJsonReq(ListPathReq{}).
-			DocJsonResp(miso.GnResp[ListPathResp]{}),
+			Resource(ResourceManageResources),
 
 		miso.IPost("/path/resource/bind",
-			func(c *gin.Context, ec miso.Rail, req BindPathResReq) (any, error) {
-				return nil, BindPathRes(ec, req)
+			func(c *gin.Context, rail miso.Rail, req BindPathResReq) (miso.GnResp[miso.Void], error) {
+				return miso.VoidResp(), BindPathRes(rail, req)
 			}).
 			Desc("Admin bind resource to path").
-			Resource(ResourceManageResources).
-			DocJsonReq(BindPathResReq{}).
-			DocJsonResp(miso.GnResp[miso.Void]{}),
+			Resource(ResourceManageResources),
 
 		miso.IPost("/path/resource/unbind",
-			func(c *gin.Context, ec miso.Rail, req UnbindPathResReq) (any, error) {
-				return nil, UnbindPathRes(ec, req)
+			func(c *gin.Context, rail miso.Rail, req UnbindPathResReq) (miso.GnResp[miso.Void], error) {
+				return miso.VoidResp(), UnbindPathRes(rail, req)
 			}).
 			Desc("Admin unbind resource and path").
-			Resource(ResourceManageResources).
-			DocJsonReq(UnbindPathResReq{}).
-			DocJsonResp(miso.GnResp[miso.Void]{}),
+			Resource(ResourceManageResources),
 
 		miso.IPost("/path/delete",
-			func(c *gin.Context, ec miso.Rail, req DeletePathReq) (any, error) {
-				return nil, DeletePath(ec, req)
+			func(c *gin.Context, rail miso.Rail, req DeletePathReq) (miso.GnResp[miso.Void], error) {
+				return miso.VoidResp(), DeletePath(rail, req)
 			}).
 			Desc("Admin delete path").
-			Resource(ResourceManageResources).
-			DocJsonReq(DeletePathReq{}).
-			DocJsonResp(miso.GnResp[miso.Void]{}),
+			Resource(ResourceManageResources),
 
 		miso.IPost("/path/update",
-			func(c *gin.Context, ec miso.Rail, req UpdatePathReq) (any, error) {
-				return nil, UpdatePath(ec, req)
+			func(c *gin.Context, rail miso.Rail, req UpdatePathReq) (miso.GnResp[miso.Void], error) {
+				return miso.VoidResp(), UpdatePath(rail, req)
 			}).
 			Desc("Admin update path").
-			Resource(ResourceManageResources).
-			DocJsonReq(UpdatePathReq{}).
-			DocJsonResp(miso.GnResp[miso.Void]{}),
+			Resource(ResourceManageResources),
 	)
 
 	// ----------------------------------------------------------------------------------------------
@@ -467,77 +419,57 @@ func RegisterRoutes(rail miso.Rail) error {
 	miso.BaseRoute("/remote").Group(
 
 		miso.IPost("/user/info",
-			func(c *gin.Context, rail miso.Rail, req api.FindUserReq) (any, error) {
-				return ItnFindUserInfo(rail, miso.GetMySQL(), req)
+			func(c *gin.Context, rail miso.Rail, req api.FindUserReq) (miso.GnResp[api.UserInfo], error) {
+				return miso.WrapGnResp(ItnFindUserInfo(rail, miso.GetMySQL(), req))
 			}).
-			Desc("Fetch user info").
-			DocJsonReq(api.FindUserReq{}).
-			DocJsonResp(miso.GnResp[api.UserInfo]{}),
+			Desc("Fetch user info"),
 
-		miso.Get("/user/id",
-			func(c *gin.Context, rail miso.Rail) (any, error) {
-				username := c.Query("username")
-				u, err := LoadUserBriefThrCache(rail, miso.GetMySQL(), username)
-				if err != nil {
-					return nil, err
-				}
-				return u.Id, nil
+		miso.IGet("/user/id",
+			func(c *gin.Context, rail miso.Rail, req FetchUserIdByNameReq) (miso.GnResp[int], error) {
+				u, err := LoadUserBriefThrCache(rail, miso.GetMySQL(), req.Username)
+				return miso.WrapGnResp(u.Id, err)
 			}).
-			Desc("Fetch id of user with the username").
-			DocQueryParam("username", "username of user").
-			DocJsonResp(miso.GnResp[int]{}),
+			Desc("Fetch id of user with the username"),
 
 		miso.IPost("/user/userno/username",
-			func(c *gin.Context, rail miso.Rail, req api.FetchNameByUserNoReq) (any, error) {
-				return ItnFindNameOfUserNo(rail, miso.GetMySQL(), req)
+			func(c *gin.Context, rail miso.Rail, req api.FetchNameByUserNoReq) (miso.GnResp[api.FetchUsernamesRes], error) {
+				return miso.WrapGnResp(ItnFindNameOfUserNo(rail, miso.GetMySQL(), req))
 			}).
-			Desc("Fetch usernames of users with the userNos").
-			DocJsonReq(api.FetchNameByUserNoReq{}).
-			DocJsonResp(miso.GnResp[api.FetchUsernamesRes]{}),
+			Desc("Fetch usernames of users with the userNos"),
 
 		miso.IPost("/user/list/with-role",
-			func(c *gin.Context, rail miso.Rail, req api.FetchUsersWithRoleReq) (any, error) {
-				return ItnFindUsersWithRole(rail, miso.GetMySQL(), req)
+			func(c *gin.Context, rail miso.Rail, req api.FetchUsersWithRoleReq) (miso.GnResp[[]api.UserInfo], error) {
+				return miso.WrapGnResp(ItnFindUsersWithRole(rail, miso.GetMySQL(), req))
 			}).
-			Desc("Fetch user info of users with the role").
-			DocJsonReq(api.FetchUsersWithRoleReq{}).
-			DocJsonResp(miso.GnResp[[]api.UserInfo]{}),
+			Desc("Fetch user info of users with the role"),
 
 		miso.IPost("/resource/add",
-			func(c *gin.Context, rail miso.Rail, req CreateResReq) (any, error) {
+			func(c *gin.Context, rail miso.Rail, req CreateResReq) (miso.GnResp[miso.Void], error) {
 				user := common.GetUser(rail)
-				return nil, CreateResourceIfNotExist(rail, req, user)
+				return miso.VoidResp(), CreateResourceIfNotExist(rail, req, user)
 			}).
-			Desc("Report resource. This endpoint should be used internally by another backend service.").
-			DocJsonReq(CreateResReq{}).
-			DocJsonResp(miso.GnResp[miso.Void]{}),
+			Desc("Report resource. This endpoint should be used internally by another backend service."),
 
 		miso.IPost("/path/resource/access-test",
-			func(c *gin.Context, rail miso.Rail, req TestResAccessReq) (any, error) {
+			func(c *gin.Context, rail miso.Rail, req TestResAccessReq) (miso.GnResp[TestResAccessResp], error) {
 				timer := miso.NewHistTimer(resourceAccessCheckHisto)
 				defer timer.ObserveDuration()
-				return TestResourceAccess(rail, req)
+				return miso.WrapGnResp(TestResourceAccess(rail, req))
 			}).
-			Desc("Validate resource access").
-			DocJsonReq(TestResAccessReq{}).
-			DocJsonResp(miso.GnResp[TestResAccessResp]{}),
+			Desc("Validate resource access"),
 
 		miso.IPost("/path/add",
-			func(c *gin.Context, rail miso.Rail, req CreatePathReq) (any, error) {
+			func(c *gin.Context, rail miso.Rail, req CreatePathReq) (miso.GnResp[miso.Void], error) {
 				user := common.GetUser(rail)
-				return nil, CreatePathIfNotExist(rail, req, user)
+				return miso.VoidResp(), CreatePathIfNotExist(rail, req, user)
 			}).
-			Desc("Report endpoint").
-			DocJsonReq(CreatePathReq{}).
-			DocJsonResp(miso.GnResp[miso.Void]{}),
+			Desc("Report endpoint"),
 
 		miso.IPost("/role/info",
-			func(c *gin.Context, rail miso.Rail, req RoleInfoReq) (any, error) {
-				return GetRoleInfo(rail, req)
+			func(c *gin.Context, rail miso.Rail, req RoleInfoReq) (miso.GnResp[RoleInfoResp], error) {
+				return miso.WrapGnResp(GetRoleInfo(rail, req))
 			}).
-			Desc("Get role info").
-			DocJsonReq(RoleInfoReq{}).
-			DocJsonResp(miso.GnResp[RoleInfoResp]{}),
+			Desc("Get role info"),
 	)
 	return nil
 }
