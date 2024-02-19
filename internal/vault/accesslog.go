@@ -46,6 +46,7 @@ type ListedAccessLog struct {
 	Username   string     `json:"username"`
 	Url        string     `json:"url"`
 	AccessTime miso.ETime `json:"accessTime"`
+	Success    bool
 }
 
 type ListAccessLogReq struct {
@@ -56,10 +57,10 @@ func ListAccessLogs(rail miso.Rail, tx *gorm.DB, user common.User, req ListAcces
 	qpp := miso.QueryPageParam[ListedAccessLog]{
 		ReqPage: req.Paging,
 		AddSelectQuery: func(tx *gorm.DB) *gorm.DB {
-			return tx.Select("id", "access_time", "ip_address", "username", "url", "user_agent")
+			return tx.Select("id", "access_time", "ip_address", "username", "url", "user_agent", "success")
 		},
 		GetBaseQuery: func(tx *gorm.DB) *gorm.DB {
-			return tx.Table("access_log").Order("id desc").Where("user_id = ?", user.UserId)
+			return tx.Table("access_log").Order("id desc").Where("username = ?", user.Username)
 		},
 	}
 	return qpp.ExecPageQuery(rail, tx)

@@ -313,7 +313,7 @@ func UserLoginEp(gin *gin.Context, rail miso.Rail, req LoginReq) (string, error)
 		IpAddress:  remoteAddr,
 		UserAgent:  userAgent,
 		UserId:     user.Id,
-		Username:   user.Username,
+		Username:   req.Username,
 		Url:        passwordLoginUrl,
 		Success:    err == nil,
 		AccessTime: miso.Now(),

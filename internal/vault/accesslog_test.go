@@ -26,6 +26,7 @@ func TestSendAccessLogEvent(t *testing.T) {
 		Username:   "yongj.zhuang",
 		Url:        passwordLoginUrl,
 		AccessTime: miso.Now(),
+		Success:    true,
 	})
 
 	if er != nil {
