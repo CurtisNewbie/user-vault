@@ -233,11 +233,11 @@ type ListRoleResResp struct {
 }
 
 type ListedRoleRes struct {
-	Id         int       `json:"id"`
-	ResCode    string    `json:"resCode"`
-	ResName    string    `json:"resName"`
-	CreateTime time.Time `json:"createTime"`
-	CreateBy   string    `json:"createBy"`
+	Id         int        `json:"id"`
+	ResCode    string     `json:"resCode"`
+	ResName    string     `json:"resName"`
+	CreateTime miso.ETime `json:"createTime"`
+	CreateBy   string     `json:"createBy"`
 }
 
 type GenResScriptReq struct {
