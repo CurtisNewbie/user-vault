@@ -637,10 +637,10 @@ func ItnFindUsersWithRole(rail miso.Rail, db *gorm.DB, req api.FetchUsersWithRol
 func FindUserWithRes(rail miso.Rail, db *gorm.DB, req api.FetchUserWithResourceReq) ([]api.UserInfo, error) {
 	var users []api.UserInfo
 	err := db.Raw(`
-		select u.* from user u
+		select u.*, r.name role_name from user u
 		left join role r on u.role_no = r.role_no
 		left join role_resource rr on r.role_no = rr.role_no
-		where rr.res_code = ?`, req.ResourceCode).
+		where rr.res_code = ? or r.role_no = ?`, req.ResourceCode, DefaultAdminRoleNo).
 		Scan(&users).
 		Error
 	return users, err
