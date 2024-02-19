@@ -54,7 +54,7 @@ func TestCreatePathIfNotExist(t *testing.T) {
 		Url:   "/goauth/open/api/role/resource/add",
 		Group: "goauth",
 	}
-	e := CreatePathIfNotExist(miso.EmptyRail(), req, common.NilUser())
+	e := CreatePath(miso.EmptyRail(), req, common.NilUser())
 	if e != nil {
 		t.Fatal(e)
 	}

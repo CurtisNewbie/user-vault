@@ -26,15 +26,5 @@ func ScheduleTasks(rail miso.Rail) error {
 	if err != nil {
 		return err
 	}
-	err = miso.ScheduleDistributedTask(miso.Job{
-		Cron:                   "*/15 * * * *",
-		CronWithSeconds:        false,
-		Name:                   "LoadResCodeCacheTask",
-		TriggeredOnBoostrapped: true,
-		Run:                    LoadResCodeCache,
-	})
-	if err != nil {
-		return err
-	}
 	return nil
 }

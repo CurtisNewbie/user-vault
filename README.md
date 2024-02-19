@@ -16,7 +16,7 @@ A role is merely a role name with a bunch resources bound to it. A resource indi
 
 Services can report their resources and endpoints to user-vault synchronously using user-vault's http endpoints. However, user-vault prefers to collect resources and endpoints information from backend services using a poll-based mechanism.
 
-Beckend services are expected to declare a REST endpoint `GET /auth/resource` to expose their paths and resources information. If configured (in user-vault), user-vault will continually monitor these services by sending HTTP requests to these endpoints in every minute or when the service instance changes (notified by consul).
+Beckend services are expected to declare a REST endpoint `GET /auth/resource` to expose their paths and resources information. If configured (in user-vault), user-vault will continually monitor these services by sending HTTP requests to these endpoints in every 5 minute or whenever the service instance changes (notified by consul).
 
 <img src="./doc/user-vault_polling_mechanism.png" height="250px"></img>
 

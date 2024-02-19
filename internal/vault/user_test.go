@@ -106,11 +106,12 @@ func TestUserLogin(t *testing.T) {
 
 func TestAdminAddUser(t *testing.T) {
 	rail := preUserTest(t)
-	e := AddUser(rail, miso.GetMySQL(), AddUserParam{
-		Username: "dummydummy2",
-		Password: "12345678",
-		RoleNo:   "role_628043111874560208429",
-	}, "Test")
+	e := NewUser(rail, miso.GetMySQL(), CreateUserParam{
+		Username:     "dummydummy2",
+		Password:     "12345678",
+		RoleNo:       "role_628043111874560208429",
+		ReviewStatus: api.ReviewApproved,
+	})
 	if e != nil {
 		t.Fatal(e)
 	}

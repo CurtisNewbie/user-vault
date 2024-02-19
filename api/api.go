@@ -9,16 +9,17 @@ type FindUserReq struct {
 }
 
 type UserInfo struct {
-	Id         int        `json:"id"`
-	Username   string     `json:"username"`
-	RoleName   string     `json:"roleName"`
-	RoleNo     string     `json:"roleNo"`
-	UserNo     string     `json:"userNo"`
-	IsDisabled int        `json:"isDisabled"`
-	CreateTime miso.ETime `json:"createTime"`
-	CreateBy   string     `json:"createBy"`
-	UpdateTime miso.ETime `json:"updateTime"`
-	UpdateBy   string     `json:"updateBy"`
+	Id           int
+	Username     string
+	RoleName     string
+	RoleNo       string
+	UserNo       string
+	ReviewStatus string
+	IsDisabled   int
+	CreateTime   miso.ETime
+	CreateBy     string
+	UpdateTime   miso.ETime
+	UpdateBy     string
 }
 
 type FetchNameByUserNoReq struct {

@@ -14,7 +14,6 @@ const (
 
 var (
 	monitorServiceTickser = []*miso.TickRunner{}
-	monitorPool           = miso.NewAsyncPool(500, 10)
 )
 
 type MonitorConf struct {
@@ -82,7 +81,7 @@ func QueryResourcePathAsync(rail miso.Rail, server miso.Server, m MonitoredServi
 				}
 			}
 			for _, r := range res.Paths {
-				if err := CreatePathIfNotExist(rail, r, user); err != nil {
+				if err := CreatePath(rail, r, user); err != nil {
 					rail.Errorf("failed to create path, req: %+v, %v", r, err)
 				}
 			}
@@ -114,7 +113,7 @@ func CreateMonitoredServiceWatch(rail miso.Rail, m MonitoredService) error {
 		return fmt.Errorf("failed to subscribe server chagnes, service: %v, %v", m.Service, err)
 	}
 
-	tr := miso.NewTickRuner(time.Minute*1, func() {
+	tr := miso.NewTickRuner(time.Minute*5, func() {
 		TriggerResourcePathCollection(miso.EmptyRail(), m)
 	})
 	monitorServiceTickser = append(monitorServiceTickser, tr)

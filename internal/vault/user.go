@@ -10,6 +10,7 @@ import (
 
 	"github.com/curtisnewbie/gocommon/common"
 	"github.com/curtisnewbie/miso/miso"
+	postbox "github.com/curtisnewbie/postbox/api"
 	"github.com/curtisnewbie/user-vault/api"
 	"gorm.io/gorm"
 )
@@ -160,7 +161,7 @@ func userLogin(rail miso.Rail, tx *gorm.DB, username string, password string) (U
 	}
 
 	if user.ReviewStatus == api.ReviewPending {
-		return User{}, miso.NewErrf("Your Registration is being reviewed, please wait for approval")
+		return User{}, miso.NewErrf("Your registration is being reviewed, please wait for approval")
 	}
 
 	if user.ReviewStatus == api.ReviewRejected {
@@ -261,7 +262,15 @@ func checkNewPassword(password string) error {
 	return nil
 }
 
-func AddUser(rail miso.Rail, tx *gorm.DB, req AddUserParam, operator string) error {
+type CreateUserParam struct {
+	Username     string
+	Password     string
+	RoleNo       string
+	ReviewStatus string
+	Operator     string
+}
+
+func NewUser(rail miso.Rail, tx *gorm.DB, req CreateUserParam) error {
 	if req.RoleNo != "" {
 		_, err := GetRoleInfo(rail, api.RoleInfoReq{RoleNo: req.RoleNo})
 		if err != nil {
@@ -289,26 +298,38 @@ func AddUser(rail miso.Rail, tx *gorm.DB, req AddUserParam, operator string) err
 	user.UserNo = miso.GenIdP("UE")
 	user.Username = req.Username
 	user.RoleNo = req.RoleNo
-	user.CreateBy = operator
+	user.CreateBy = req.Operator
 	user.CreateTime = miso.Now()
 	user.IsDisabled = api.UserNormal
-	user.ReviewStatus = api.ReviewApproved
+	user.ReviewStatus = req.ReviewStatus
 
-	err := tx.Table("user").
-		Create(&user).
-		Error
-
-	if err != nil {
+	if err := tx.Table("user").Create(&user).Error; err != nil {
 		rail.Errorf("failed to add new user '%v', %v", req.Username, err)
 		return err
 	}
 
-	rail.Infof("New user '%v' with roleNo: %v is added by %v", req.Username, req.RoleNo, operator)
+	rail.Infof("New user '%v' with roleNo: %v is added by %v", req.Username, req.RoleNo, req.Operator)
 	return nil
 }
 
-func prepUserCred(pwd string) User {
-	u := User{}
+type NewUserParam struct {
+	Id           int
+	UserNo       string
+	Username     string
+	Password     string
+	Salt         string
+	ReviewStatus string
+	RoleNo       string
+	IsDisabled   int
+	CreateTime   miso.ETime
+	CreateBy     string
+	UpdateTime   miso.ETime
+	UpdateBy     string
+	IsDel        common.IS_DEL
+}
+
+func prepUserCred(pwd string) NewUserParam {
+	u := NewUserParam{}
 	u.Salt = miso.RandStr(6)
 	u.Password = encodePasswordSalt(pwd, u.Salt)
 	return u
@@ -344,9 +365,11 @@ func AdminUpdateUser(rail miso.Rail, tx *gorm.DB, req AdminUpdateUserReq, operat
 		return miso.NewErrf("You cannot update yourself")
 	}
 
-	_, err := GetRoleInfo(rail, api.RoleInfoReq{RoleNo: req.RoleNo})
-	if err != nil {
-		return miso.NewErrf("Invalid role").WithInternalMsg("failed to get role info, roleNo may be invalid, %v", err)
+	if req.RoleNo != "" {
+		_, err := GetRoleInfo(rail, api.RoleInfoReq{RoleNo: req.RoleNo})
+		if err != nil {
+			return miso.NewErrf("Invalid role").WithInternalMsg("failed to get role info, roleNo may be invalid, %v", err)
+		}
 	}
 
 	return tx.Exec(
@@ -399,11 +422,37 @@ func ReviewUserRegistration(rail miso.Rail, tx *gorm.DB, req AdminReviewUserReq)
 	)
 }
 
-func UserRegister(rail miso.Rail, tx *gorm.DB, req RegisterReq) error {
-	return AddUser(rail, tx, AddUserParam{
-		Username: req.Username,
-		Password: req.Password,
-	}, "")
+func UserRegister(rail miso.Rail, db *gorm.DB, req RegisterReq) error {
+	if err := NewUser(rail, db, CreateUserParam{
+		Username:     req.Username,
+		Password:     req.Password,
+		ReviewStatus: api.ReviewPending,
+	}); err != nil {
+		return err
+	}
+
+	commonPool.Go(func() {
+		rail = rail.NextSpan()
+		users, err := FindUserWithRes(rail, db, api.FetchUserWithResourceReq{ResourceCode: ResourceManagerUser})
+		if err != nil {
+			rail.Errorf("failed to FindUserWithRes for UserRegister, notification not created, %v", err)
+			return
+		}
+		un := make([]string, 0, len(users))
+		for _, u := range users {
+			un = append(un, u.UserNo)
+		}
+		err = postbox.CreateNotification(rail, postbox.CreateNotificationReq{
+			Title:           fmt.Sprintf("Review user %v's registration", req.Username),
+			Message:         fmt.Sprintf("Please review new user %v's registration. A role should be assigned for the new user.", req.Username),
+			ReceiverUserNos: un,
+		})
+		if err != nil {
+			rail.Errorf("failed to create notification for UserRegister, %v", err)
+		}
+	})
+
+	return nil
 }
 
 type UserInfoBrief struct {

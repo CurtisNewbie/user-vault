@@ -47,7 +47,7 @@ type ListUserReq struct {
 
 type AdminUpdateUserReq struct {
 	Id         int    `json:"id" valid:"positive"`
-	RoleNo     string `json:"roleNo" valid:"notEmpty"`
+	RoleNo     string `json:"roleNo"`
 	IsDisabled int    `json:"isDisabled"`
 }
 
@@ -126,7 +126,7 @@ func RegisterInternalPathResourcesOnBootstrapped() {
 				Desc:    route.Desc,
 				ResCode: route.Resource,
 			}
-			if err := CreatePathIfNotExist(rail, r, user); err != nil {
+			if err := CreatePath(rail, r, user); err != nil {
 				return err
 			}
 		}
@@ -166,7 +166,7 @@ func RegisterRoutes(rail miso.Rail) error {
 
 		miso.Get("/user/info", UserGetUserInfoEp).
 			Desc("User get user info").
-			Resource(ResourceBasicUser),
+			Public(),
 
 		miso.IPost("/user/password/update", UserUpdatePasswordEp).
 			Desc("User update password").
@@ -334,7 +334,12 @@ func UserRegisterEp(c *gin.Context, rail miso.Rail, req RegisterReq) (any, error
 }
 
 func AdminAddUserEp(c *gin.Context, rail miso.Rail, req AddUserParam) (any, error) {
-	return nil, AddUser(rail, miso.GetMySQL(), AddUserParam(req), common.GetUser(rail).Username)
+	return nil, NewUser(rail, miso.GetMySQL(), CreateUserParam{
+		Username:     req.Username,
+		Password:     req.Password,
+		RoleNo:       req.RoleNo,
+		ReviewStatus: api.ReviewApproved,
+	})
 }
 
 func AdminListUsersEp(c *gin.Context, rail miso.Rail, req ListUserReq) (miso.PageRes[api.UserInfo], error) {
@@ -353,6 +358,10 @@ func UserGetUserInfoEp(c *gin.Context, rail miso.Rail) (UserInfoRes, error) {
 	timer := miso.NewHistTimer(fetchUserInfoHisto)
 	defer timer.ObserveDuration()
 	u := common.GetUser(rail)
+	if u.UserNo == "" {
+		return UserInfoRes{}, nil
+	}
+
 	res, err := LoadUserBriefThrCache(rail, miso.GetMySQL(), u.Username)
 
 	if err != nil {
@@ -509,7 +518,7 @@ func ItnCheckResourceAccessEp(c *gin.Context, rail miso.Rail, req TestResAccessR
 
 func ItnReportPathEp(c *gin.Context, rail miso.Rail, req CreatePathReq) (any, error) {
 	user := common.GetUser(rail)
-	return nil, CreatePathIfNotExist(rail, req, user)
+	return nil, CreatePath(rail, req, user)
 }
 
 func ItnFindUserWithResourceEp(c *gin.Context, rail miso.Rail, req api.FetchUserWithResourceReq) ([]api.UserInfo, error) {
