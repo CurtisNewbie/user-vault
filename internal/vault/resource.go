@@ -33,14 +33,12 @@ var (
 	resCodeCache = miso.NewRCache[string]("user-vault:rescode:cache", miso.RCacheConfig{Exp: 30 * time.Minute, NoSync: true})
 )
 
-type PathType string
-
 const (
 	// default roleno for admin
 	DefaultAdminRoleNo = "role_554107924873216177918"
 
-	PtProtected PathType = "PROTECTED"
-	PtPublic    PathType = "PUBLIC"
+	PathTypeProtected string = "PROTECTED"
+	PathTypePublic    string = "PUBLIC"
 )
 
 type PathRes struct {
@@ -54,14 +52,14 @@ type PathRes struct {
 }
 
 type ExtendedPathRes struct {
-	Id         int      // id
-	Pgroup     string   // path group
-	PathNo     string   // path no
-	ResCode    string   // resource code
-	Desc       string   // description
-	Url        string   // url
-	Method     string   // http method
-	Ptype      PathType // path type: PROTECTED, PUBLIC
+	Id         int    // id
+	Pgroup     string // path group
+	PathNo     string // path no
+	ResCode    string // resource code
+	Desc       string // description
+	Url        string // url
+	Method     string // http method
+	Ptype      string // path type: PROTECTED, PUBLIC
 	CreateTime miso.ETime
 	CreateBy   string
 	UpdateTime miso.ETime
@@ -69,13 +67,13 @@ type ExtendedPathRes struct {
 }
 
 type EPath struct {
-	Id         int      // id
-	Pgroup     string   // path group
-	PathNo     string   // path no
-	Desc       string   // description
-	Url        string   // url
-	Method     string   // method
-	Ptype      PathType // path type: PROTECTED, PUBLIC
+	Id         int    // id
+	Pgroup     string // path group
+	PathNo     string // path no
+	Desc       string // description
+	Url        string // url
+	Method     string // method
+	Ptype      string // path type: PROTECTED, PUBLIC
 	CreateTime miso.ETime
 	CreateBy   string
 	UpdateTime miso.ETime
@@ -123,13 +121,13 @@ type WRole struct {
 }
 
 type CachedUrlRes struct {
-	Id      int      // id
-	Pgroup  string   // path group
-	PathNo  string   // path no
-	ResCode string   // resource code
-	Url     string   // url
-	Method  string   // http method
-	Ptype   PathType // path type: PROTECTED, PUBLIC
+	Id      int    // id
+	Pgroup  string // path group
+	PathNo  string // path no
+	ResCode string // resource code
+	Url     string // url
+	Method  string // http method
+	Ptype   string // path type: PROTECTED, PUBLIC
 }
 
 type ResBrief struct {
@@ -169,7 +167,7 @@ type ListPathReq struct {
 	ResCode string      `json:"resCode"`
 	Pgroup  string      `json:"pgroup"`
 	Url     string      `json:"url"`
-	Ptype   PathType    `json:"ptype"`
+	Ptype   string      `json:"ptype" desc:"path type: 'PROTECTED' - authorization required, 'PUBLIC' - publicly accessible"`
 	Paging  miso.Paging `json:"pagingVo"`
 }
 
@@ -180,7 +178,7 @@ type WPath struct {
 	Method     string     `json:"method"`
 	Desc       string     `json:"desc"`
 	Url        string     `json:"url"`
-	Ptype      PathType   `json:"ptype"`
+	Ptype      string     `json:"ptype" desc:"path type: 'PROTECTED' - authorization required, 'PUBLIC' - publicly accessible"`
 	CreateTime miso.ETime `json:"createTime"`
 	CreateBy   string     `json:"createBy"`
 	UpdateTime miso.ETime `json:"updateTime"`
@@ -245,18 +243,18 @@ type GenResScriptReq struct {
 }
 
 type UpdatePathReq struct {
-	Type   PathType `json:"type" validation:"notEmpty"`
-	PathNo string   `json:"pathNo" validation:"notEmpty"`
-	Group  string   `json:"group" validation:"notEmpty,maxLen:20"`
+	Type   string `json:"type" validation:"notEmpty" desc:"path type: 'PROTECTED' - authorization required, 'PUBLIC' - publicly accessible"`
+	PathNo string `json:"pathNo" validation:"notEmpty"`
+	Group  string `json:"group" validation:"notEmpty,maxLen:20"`
 }
 
 type CreatePathReq struct {
-	Type    PathType `json:"type" validation:"notEmpty"`
-	Url     string   `json:"url" validation:"notEmpty,maxLen:128"`
-	Group   string   `json:"group" validation:"notEmpty,maxLen:20"`
-	Method  string   `json:"method" validation:"notEmpty,maxLen:10"`
-	Desc    string   `json:"desc" validation:"maxLen:255"`
-	ResCode string   `json:"resCode"`
+	Type    string `json:"type" validation:"notEmpty" desc:"path type: 'PROTECTED' - authorization required, 'PUBLIC' - publicly accessible"`
+	Url     string `json:"url" validation:"notEmpty,maxLen:128"`
+	Group   string `json:"group" validation:"notEmpty,maxLen:20"`
+	Method  string `json:"method" validation:"notEmpty,maxLen:10"`
+	Desc    string `json:"desc" validation:"maxLen:255"`
+	ResCode string `json:"resCode"`
 }
 
 type DeletePathReq struct {
@@ -389,6 +387,7 @@ func ListResources(ec miso.Rail, req ListResReq) (ListResResp, error) {
 }
 
 func UpdatePath(ec miso.Rail, req UpdatePathReq) error {
+	// TODO: validate the ptype value
 	_, e := lockPath(ec, req.PathNo, func() (any, error) {
 		tx := miso.GetMySQL().Exec(`update path set pgroup = ?, ptype = ? where path_no = ?`,
 			req.Group, req.Type, req.PathNo)
@@ -848,7 +847,7 @@ func TestResourceAccess(ec miso.Rail, req TestResAccessReq) (TestResAccessResp, 
 	}
 
 	// public path type, doesn't require access to resource
-	if cur.Ptype == PtPublic {
+	if cur.Ptype == PathTypePublic {
 		return permitted, nil
 	}
 

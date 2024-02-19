@@ -24,7 +24,7 @@ func TestUpdatePath(t *testing.T) {
 
 	req := UpdatePathReq{
 		PathNo: "path_578477630062592208429",
-		Type:   PtPublic,
+		Type:   PathTypePublic,
 		Group:  "goauth",
 	}
 	e := UpdatePath(miso.EmptyRail(), req)
@@ -50,7 +50,7 @@ func TestCreatePathIfNotExist(t *testing.T) {
 	before(t)
 
 	req := CreatePathReq{
-		Type:  PtProtected,
+		Type:  PathTypeProtected,
 		Url:   "/goauth/open/api/role/resource/add",
 		Group: "goauth",
 	}

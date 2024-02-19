@@ -108,9 +108,9 @@ func RegisterInternalPathResourcesOnBootstrapped() {
 			if route.Url == "" {
 				continue
 			}
-			var routeType = PtProtected
+			var routeType = PathTypeProtected
 			if route.Scope == miso.ScopePublic {
-				routeType = PtPublic
+				routeType = PathTypePublic
 			}
 
 			url := route.Url

@@ -363,7 +363,7 @@
     - "resCode": (string)
     - "pgroup": (string)
     - "url": (string)
-    - "ptype": (PathType)
+    - "ptype": (string) path type: 'PROTECTED' - authorization required, 'PUBLIC' - publicly accessible
     - "pagingVo": (Paging)
       - "limit": (int) page limit
       - "page": (int) page number, 1-based
@@ -384,7 +384,7 @@
         - "method": (string)
         - "desc": (string)
         - "url": (string)
-        - "ptype": (PathType)
+        - "ptype": (string) path type: 'PROTECTED' - authorization required, 'PUBLIC' - publicly accessible
         - "createTime": (int64)
         - "createBy": (string)
         - "updateTime": (int64)
@@ -418,7 +418,7 @@
 - POST /open/api/path/update
   - Description: Admin update path
   - JSON Request:
-    - "type": (PathType)
+    - "type": (string) path type: 'PROTECTED' - authorization required, 'PUBLIC' - publicly accessible
     - "pathNo": (string)
     - "group": (string)
   - JSON Response:
@@ -527,7 +527,7 @@
 - POST /remote/path/add
   - Description: Report endpoint info
   - JSON Request:
-    - "type": (PathType)
+    - "type": (string) path type: 'PROTECTED' - authorization required, 'PUBLIC' - publicly accessible
     - "url": (string)
     - "group": (string)
     - "method": (string)
