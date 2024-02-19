@@ -13,7 +13,7 @@ import (
 func preTest(t *testing.T) miso.Rail {
 	logrus.SetLevel(logrus.DebugLevel)
 	rail := miso.EmptyRail()
-	miso.DefaultReadConfig([]string{"configFile=../conf.yml"}, rail)
+	miso.DefaultReadConfig([]string{"configFile=../../conf.yml"}, rail)
 	return rail
 }
 
@@ -155,4 +155,15 @@ func TestLoadUserInfoBrief(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Logf("uib: %+v", uib)
+}
+
+func TestFindUserWithRes(t *testing.T) {
+	rail := preUserTest(t)
+	u, err := FindUserWithRes(rail, miso.GetMySQL(), api.FetchUserWithResourceReq{
+		ResourceCode: "manage-resources",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("u: %+v", u)
 }

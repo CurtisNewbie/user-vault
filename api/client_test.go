@@ -66,3 +66,12 @@ func TestGetRoleInfo(t *testing.T) {
 	}
 	t.Logf("res: %+v", res)
 }
+
+func TestFetchUserWithResource(t *testing.T) {
+	rail := _apiPreTest(t)
+	res, err := FetchUsersWithResource(rail, FetchUserWithResourceReq{"basic-user"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("res: %+v", res)
+}

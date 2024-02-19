@@ -41,3 +41,7 @@ type RoleInfoResp struct {
 	RoleNo string `json:"roleNo"`
 	Name   string `json:"name"`
 }
+
+type FetchUserWithResourceReq struct {
+	ResourceCode string
+}

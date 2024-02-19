@@ -486,9 +486,28 @@
     - "data": (FetchUsernamesRes) response data
       - "userNoToUsername": (map[string]string)
 - POST /remote/user/list/with-role
-  - Description: Fetch user info of users with the role
+  - Description: Fetch users with the role_no
   - JSON Request:
     - "roleNo": (string)
+  - JSON Response:
+    - "errorCode": (string) error code
+    - "msg": (string) message
+    - "error": (bool) whether the request was successful
+    - "data": ([]api.UserInfo) response data
+      - "id": (int)
+      - "username": (string)
+      - "roleName": (string)
+      - "roleNo": (string)
+      - "userNo": (string)
+      - "isDisabled": (int)
+      - "createTime": (int64)
+      - "createBy": (string)
+      - "updateTime": (int64)
+      - "updateBy": (string)
+- POST /remote/user/list/with-resource
+  - Description: Fetch users that have access to the resource
+  - JSON Request:
+    - "resourceCode": (string)
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -542,6 +561,12 @@
   - Description: Collect prometheus metrics information
   - Header Parameter:
     - "Authorization": Basic authorization if enabled
+- GET /debug/pprof
+- GET /debug/pprof/:name
+- GET /debug/pprof/cmdline
+- GET /debug/pprof/profile
+- GET /debug/pprof/symbol
+- GET /debug/pprof/trace
 - GET /doc/api
   - Description: Serve the generated API documentation webpage
   - Expected Access Scope: PUBLIC
