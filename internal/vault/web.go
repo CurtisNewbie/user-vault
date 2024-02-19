@@ -306,10 +306,6 @@ func RegisterRoutes(rail miso.Rail) error {
 
 func UserLoginEp(gin *gin.Context, rail miso.Rail, req LoginReq) (string, error) {
 	token, user, err := UserLogin(rail, miso.GetMySQL(), PasswordLoginParam(req))
-	if err != nil {
-		return "", err
-	}
-
 	remoteAddr := RemoteAddr(gin.GetHeader(headerForwardedFor))
 	userAgent := gin.GetHeader(headerUserAgent)
 
@@ -319,11 +315,17 @@ func UserLoginEp(gin *gin.Context, rail miso.Rail, req LoginReq) (string, error)
 		UserId:     user.Id,
 		Username:   user.Username,
 		Url:        passwordLoginUrl,
+		Success:    err == nil,
 		AccessTime: miso.Now(),
 	}); er != nil {
 		rail.Errorf("Failed to sendAccessLogEvent, username: %v, remoteAddr: %v, userAgent: %v, %v",
 			req.Username, remoteAddr, userAgent, er)
 	}
+
+	if err != nil {
+		return "", err
+	}
+
 	return token, err
 }
 

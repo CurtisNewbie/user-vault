@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS user_vault.user_key (
   UNIQUE KEY `secret_key` (`secret_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT="user's key";
 
-CREATE TABLE IF NOT EXISTS user_vault.access_log (
+CREATE TABLE user_vault.access_log (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
   `access_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'when the user signed in',
   `ip_address` varchar(255) NOT NULL COMMENT 'ip address',
@@ -42,8 +42,9 @@ CREATE TABLE IF NOT EXISTS user_vault.access_log (
   `user_id` int unsigned NOT NULL COMMENT 'primary key of user',
   `url` varchar(255) DEFAULT '' COMMENT 'request url',
   `user_agent` varchar(512) NOT NULL DEFAULT '' COMMENT 'User Agent',
+  `success` tinyint(1) DEFAULT '1' COMMENT 'login was successful',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4  COMMENT='access log';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='access log';
 
 CREATE TABLE IF NOT EXISTS user_vault.path (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',

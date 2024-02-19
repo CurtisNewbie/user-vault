@@ -10,19 +10,6 @@ const (
 	accessLogEventBus = "event.bus.user-vault.access.log"
 )
 
-type AccessLogEvent struct {
-	UserAgent  string     `json:"userAgent"`
-	IpAddress  string     `json:"ipAddress"`
-	UserId     int        `json:"userId"`
-	Username   string     `json:"username"`
-	Url        string     `json:"url"`
-	AccessTime miso.ETime `json:"accessTime"`
-}
-
-func sendAccessLogEvnet(rail miso.Rail, evt AccessLogEvent) error {
-	return miso.PubEventBus(rail, evt, accessLogEventBus)
-}
-
 type AccessLog struct {
 	Id         int
 	UserAgent  string
@@ -38,8 +25,18 @@ type AccessLog struct {
 	IsDel      common.IS_DEL
 }
 
-func SaveAccessLogEvent(rail miso.Rail, tx *gorm.DB, evt AccessLogEvent) error {
-	return tx.Table("access_log").Create(&evt).Error
+type SaveAccessLogParam struct {
+	UserAgent  string
+	IpAddress  string
+	UserId     int
+	Username   string
+	Url        string
+	Success    bool
+	AccessTime miso.ETime
+}
+
+func SaveAccessLogEvent(rail miso.Rail, tx *gorm.DB, p SaveAccessLogParam) error {
+	return tx.Table("access_log").Create(&p).Error
 }
 
 type ListedAccessLog struct {
