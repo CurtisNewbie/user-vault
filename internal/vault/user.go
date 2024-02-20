@@ -69,18 +69,6 @@ type UserDetail struct {
 	Salt         string `json:"salt"`
 }
 
-func RemoteAddr(forwardedFor string) string {
-	addr := "unknown"
-
-	if forwardedFor != "" {
-		tkn := strings.Split(forwardedFor, ",")
-		if len(tkn) > 0 {
-			addr = tkn[0]
-		}
-	}
-	return addr
-}
-
 func loadUser(rail miso.Rail, tx *gorm.DB, username string) (User, error) {
 	if username == "" {
 		return User{}, miso.NewErrf("Username is required")

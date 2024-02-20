@@ -329,6 +329,18 @@ func UserLoginEp(gin *gin.Context, rail miso.Rail, req LoginReq) (string, error)
 	return token, err
 }
 
+func RemoteAddr(forwardedFor string) string {
+	addr := "unknown"
+
+	if forwardedFor != "" {
+		tkn := strings.Split(forwardedFor, ",")
+		if len(tkn) > 0 {
+			addr = tkn[0]
+		}
+	}
+	return addr
+}
+
 func UserRegisterEp(c *gin.Context, rail miso.Rail, req RegisterReq) (any, error) {
 	return nil, UserRegister(rail, miso.GetMySQL(), req)
 }
