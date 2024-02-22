@@ -61,24 +61,23 @@ type ListedUserKey struct {
 }
 
 func ListUserKeys(rail miso.Rail, tx *gorm.DB, req ListUserKeysReq, user common.User) (miso.PageRes[ListedUserKey], error) {
-	qpp := miso.QueryPageParam[ListedUserKey]{
-		ReqPage: req.Paging,
-		GetBaseQuery: func(tx *gorm.DB) *gorm.DB {
-			return tx.Table("user_key").Order("id DESC")
-		},
-		AddSelectQuery: func(tx *gorm.DB) *gorm.DB {
-			return tx.Select("id, secret_key, name, expiration_time, create_time")
-		},
-		ApplyConditions: func(tx *gorm.DB) *gorm.DB {
-			tx = tx.Where("user_id = ?", user.UserId).
+	return miso.NewPageQuery[ListedUserKey]().
+		WithPage(req.Paging).
+		WithBaseQuery(func(tx *gorm.DB) *gorm.DB {
+			tx = tx.Table("user_key").
+				Where("user_id = ?", user.UserId).
 				Where("is_del = 0")
+
 			if !miso.IsBlankStr(req.Name) {
 				tx = tx.Where("name LIKE ?", "%"+req.Name+"%")
 			}
 			return tx
-		},
-	}
-	return qpp.ExecPageQuery(rail, tx)
+		}).
+		WithSelectQuery(func(tx *gorm.DB) *gorm.DB {
+			return tx.Select("id, secret_key, name, expiration_time, create_time").
+				Order("id DESC")
+		}).
+		Exec(rail, tx)
 }
 
 type DeleteUserKeyReq struct {

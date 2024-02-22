@@ -324,12 +324,14 @@ func prepUserCred(pwd string) NewUserParam {
 }
 
 func ListUsers(rail miso.Rail, tx *gorm.DB, req ListUserReq) (miso.PageRes[api.UserInfo], error) {
-	qpp := miso.QueryPageParam[api.UserInfo]{
-		ReqPage: req.Paging,
-		AddSelectQuery: func(tx *gorm.DB) *gorm.DB {
-			return tx.Select("u.*, r.name as role_name")
-		},
-		ApplyConditions: func(tx *gorm.DB) *gorm.DB {
+	return miso.NewPageQuery[api.UserInfo]().
+		WithPage(req.Paging).
+		WithSelectQuery(func(tx *gorm.DB) *gorm.DB {
+			return tx.Select("u.*, r.name as role_name").Order("u.id DESC")
+		}).
+		WithBaseQuery(func(tx *gorm.DB) *gorm.DB {
+			tx = tx.Table("user u").Joins("LEFT JOIN role r USING(role_no)")
+
 			if req.RoleNo != nil && *req.RoleNo != "" {
 				tx = tx.Where("u.role_no = ?", *req.RoleNo)
 			}
@@ -340,12 +342,8 @@ func ListUsers(rail miso.Rail, tx *gorm.DB, req ListUserReq) (miso.PageRes[api.U
 				tx = tx.Where("u.is_disabled = ?", *req.IsDisabled)
 			}
 			return tx.Where("u.is_del = 0")
-		},
-		GetBaseQuery: func(tx *gorm.DB) *gorm.DB {
-			return tx.Table("user u").Joins("LEFT JOIN role r USING(role_no)")
-		},
-	}
-	return qpp.ExecPageQuery(rail, tx)
+		}).
+		Exec(rail, tx)
 }
 
 func AdminUpdateUser(rail miso.Rail, tx *gorm.DB, req AdminUpdateUserReq, operator common.User) error {
