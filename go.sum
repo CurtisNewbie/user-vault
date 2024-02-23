@@ -71,10 +71,10 @@ github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGX
 github.com/cncf/udpa/go v0.0.0-20200629203442-efcf912fb354/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
 github.com/cncf/udpa/go v0.0.0-20201120205902-5459f2c99403/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
-github.com/curtisnewbie/gocommon v1.1.11 h1:UomxwQ8lcGXspQCoLxnfBCwuPUcko7MaAg5q2HjTPKs=
-github.com/curtisnewbie/gocommon v1.1.11/go.mod h1:mrCaCZsyAPodaBkLiKVr4et+8JE4YTJuX3aGgRllojQ=
-github.com/curtisnewbie/miso v0.0.26-beta.1.0.20240222152704-d572ba3f5048 h1:uxRNW2iW6+z5EHV3OXeKvcuNrH7lHHNe7ol4ntYiyf4=
-github.com/curtisnewbie/miso v0.0.26-beta.1.0.20240222152704-d572ba3f5048/go.mod h1:hS8TSnvQgwLpEvMHBVVdR+rpbnt/6IvSY3ycTG/lw9Q=
+github.com/curtisnewbie/gocommon v1.1.12-0.20240223134353-f6e3789e77da h1:rRlvzUhrTQ+L2jnqgzKuD4sbjZU6cpf+WHoX3hnxJYI=
+github.com/curtisnewbie/gocommon v1.1.12-0.20240223134353-f6e3789e77da/go.mod h1:Bz5lnGcyd9I5qt5a+BIvBD+OroR3kVELb3kxgJklUIo=
+github.com/curtisnewbie/miso v0.0.26-beta.3 h1:iKywnOZOBrh5DKvdL6wjeZxsCuuwKc3TTL+Qd2bfGJ4=
+github.com/curtisnewbie/miso v0.0.26-beta.3/go.mod h1:hS8TSnvQgwLpEvMHBVVdR+rpbnt/6IvSY3ycTG/lw9Q=
 github.com/curtisnewbie/postbox v0.0.2 h1:LYbebS/09TbN0IbILcuqqKgezmnT0lxR/0Kt42RBqKs=
 github.com/curtisnewbie/postbox v0.0.2/go.mod h1:NkZLUkBybmwLrwQy9jJ82VjKD8X4Ts1PMZ+a0nb2J00=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

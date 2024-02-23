@@ -7,7 +7,6 @@ import (
 	"github.com/curtisnewbie/gocommon/common"
 	"github.com/curtisnewbie/miso/miso"
 	"github.com/curtisnewbie/user-vault/api"
-	"github.com/gin-gonic/gin"
 )
 
 const (
@@ -28,8 +27,10 @@ var (
 )
 
 type LoginReq struct {
-	Username string `json:"username" valid:"notEmpty"`
-	Password string `json:"password" valid:"notEmpty"`
+	Username      string `json:"username" valid:"notEmpty"`
+	Password      string `json:"password" valid:"notEmpty"`
+	XForwardedFor string `header:"x-forwarded-for"`
+	UserAgent     string `header:"user-agent"`
 }
 
 type AdminAddUserReq struct {
@@ -304,10 +305,12 @@ func RegisterRoutes(rail miso.Rail) error {
 	return nil
 }
 
-func UserLoginEp(gin *gin.Context, rail miso.Rail, req LoginReq) (string, error) {
-	token, user, err := UserLogin(rail, miso.GetMySQL(), PasswordLoginParam(req))
-	remoteAddr := RemoteAddr(gin.GetHeader(headerForwardedFor))
-	userAgent := gin.GetHeader(headerUserAgent)
+func UserLoginEp(inb *miso.Inbound, req LoginReq) (string, error) {
+	rail := inb.Rail()
+	token, user, err := UserLogin(rail, miso.GetMySQL(),
+		PasswordLoginParam{Username: req.Username, Password: req.Password})
+	remoteAddr := RemoteAddr(req.XForwardedFor)
+	userAgent := req.UserAgent
 
 	if er := sendAccessLogEvnet(rail, AccessLogEvent{
 		IpAddress:  remoteAddr,
@@ -341,12 +344,12 @@ func RemoteAddr(forwardedFor string) string {
 	return addr
 }
 
-func UserRegisterEp(c *gin.Context, rail miso.Rail, req RegisterReq) (any, error) {
-	return nil, UserRegister(rail, miso.GetMySQL(), req)
+func UserRegisterEp(inb *miso.Inbound, req RegisterReq) (any, error) {
+	return nil, UserRegister(inb.Rail(), miso.GetMySQL(), req)
 }
 
-func AdminAddUserEp(c *gin.Context, rail miso.Rail, req AddUserParam) (any, error) {
-	return nil, NewUser(rail, miso.GetMySQL(), CreateUserParam{
+func AdminAddUserEp(inb *miso.Inbound, req AddUserParam) (any, error) {
+	return nil, NewUser(inb.Rail(), miso.GetMySQL(), CreateUserParam{
 		Username:     req.Username,
 		Password:     req.Password,
 		RoleNo:       req.RoleNo,
@@ -354,19 +357,22 @@ func AdminAddUserEp(c *gin.Context, rail miso.Rail, req AddUserParam) (any, erro
 	})
 }
 
-func AdminListUsersEp(c *gin.Context, rail miso.Rail, req ListUserReq) (miso.PageRes[api.UserInfo], error) {
-	return ListUsers(rail, miso.GetMySQL(), req)
+func AdminListUsersEp(inb *miso.Inbound, req ListUserReq) (miso.PageRes[api.UserInfo], error) {
+	return ListUsers(inb.Rail(), miso.GetMySQL(), req)
 }
 
-func AdminUpdateUserEp(c *gin.Context, rail miso.Rail, req AdminUpdateUserReq) (any, error) {
+func AdminUpdateUserEp(inb *miso.Inbound, req AdminUpdateUserReq) (any, error) {
+	rail := inb.Rail()
 	return nil, AdminUpdateUser(rail, miso.GetMySQL(), req, common.GetUser(rail))
 }
 
-func AdminReviewUserEp(c *gin.Context, rail miso.Rail, req AdminReviewUserReq) (any, error) {
+func AdminReviewUserEp(inb *miso.Inbound, req AdminReviewUserReq) (any, error) {
+	rail := inb.Rail()
 	return nil, ReviewUserRegistration(rail, miso.GetMySQL(), req)
 }
 
-func UserGetUserInfoEp(c *gin.Context, rail miso.Rail) (UserInfoRes, error) {
+func UserGetUserInfoEp(inb *miso.Inbound) (UserInfoRes, error) {
+	rail := inb.Rail()
 	timer := miso.NewHistTimer(fetchUserInfoHisto)
 	defer timer.ObserveDuration()
 	u := common.GetUser(rail)
@@ -390,55 +396,67 @@ func UserGetUserInfoEp(c *gin.Context, rail miso.Rail) (UserInfoRes, error) {
 	}, nil
 }
 
-func UserUpdatePasswordEp(c *gin.Context, rail miso.Rail, req UpdatePasswordReq) (any, error) {
+func UserUpdatePasswordEp(inb *miso.Inbound, req UpdatePasswordReq) (any, error) {
+	rail := inb.Rail()
 	u := common.GetUser(rail)
 	return nil, UpdatePassword(rail, miso.GetMySQL(), u.Username, req)
 }
 
-func ExchangeTokenEp(c *gin.Context, rail miso.Rail, req ExchangeTokenReq) (string, error) {
+func ExchangeTokenEp(inb *miso.Inbound, req ExchangeTokenReq) (string, error) {
+	rail := inb.Rail()
 	timer := miso.NewHistTimer(tokenExchangeHisto)
 	defer timer.ObserveDuration()
 	return ExchangeToken(rail, miso.GetMySQL(), req)
 }
 
-func GetTokenUserInfoEp(c *gin.Context, rail miso.Rail, req GetTokenUserReq) (UserInfoBrief, error) {
+func GetTokenUserInfoEp(inb *miso.Inbound, req GetTokenUserReq) (UserInfoBrief, error) {
+	rail := inb.Rail()
 	return GetTokenUser(rail, miso.GetMySQL(), req.Token)
 }
 
-func UserListAccessHistoryEp(c *gin.Context, rail miso.Rail, req ListAccessLogReq) (miso.PageRes[ListedAccessLog], error) {
+func UserListAccessHistoryEp(inb *miso.Inbound, req ListAccessLogReq) (miso.PageRes[ListedAccessLog], error) {
+	rail := inb.Rail()
 	return ListAccessLogs(rail, miso.GetMySQL(), common.GetUser(rail), req)
 }
 
-func UserGenUserKeyEp(c *gin.Context, rail miso.Rail, req GenUserKeyReq) (any, error) {
+func UserGenUserKeyEp(inb *miso.Inbound, req GenUserKeyReq) (any, error) {
+	rail := inb.Rail()
 	return nil, GenUserKey(rail, miso.GetMySQL(), req, common.GetUser(rail).Username)
 }
 
-func UserListUserKeysEp(c *gin.Context, rail miso.Rail, req ListUserKeysReq) (miso.PageRes[ListedUserKey], error) {
+func UserListUserKeysEp(inb *miso.Inbound, req ListUserKeysReq) (miso.PageRes[ListedUserKey], error) {
+	rail := inb.Rail()
 	return ListUserKeys(rail, miso.GetMySQL(), req, common.GetUser(rail))
 }
 
-func UserDeleteUserKeyEp(c *gin.Context, rail miso.Rail, req DeleteUserKeyReq) (any, error) {
+func UserDeleteUserKeyEp(inb *miso.Inbound, req DeleteUserKeyReq) (any, error) {
+	rail := inb.Rail()
 	return nil, DeleteUserKey(rail, miso.GetMySQL(), req, common.GetUser(rail).UserId)
 }
 
-func AdminAddResourceEp(c *gin.Context, rail miso.Rail, req CreateResReq) (any, error) {
+func AdminAddResourceEp(inb *miso.Inbound, req CreateResReq) (any, error) {
+	rail := inb.Rail()
 	user := common.GetUser(rail)
 	return nil, CreateResourceIfNotExist(rail, req, user)
 }
 
-func AdminRemoveResourceEp(c *gin.Context, rail miso.Rail, req DeleteResourceReq) (any, error) {
+func AdminRemoveResourceEp(inb *miso.Inbound, req DeleteResourceReq) (any, error) {
+	rail := inb.Rail()
 	return nil, DeleteResource(rail, req)
 }
 
-func ListResCandidatesEp(c *gin.Context, rail miso.Rail, req ListResCandidatesReq) ([]ResBrief, error) {
+func ListResCandidatesEp(inb *miso.Inbound, req ListResCandidatesReq) ([]ResBrief, error) {
+	rail := inb.Rail()
 	return ListResourceCandidatesForRole(rail, req.RoleNo)
 }
 
-func AdminListResEp(c *gin.Context, rail miso.Rail, req ListResReq) (ListResResp, error) {
+func AdminListResEp(inb *miso.Inbound, req ListResReq) (ListResResp, error) {
+	rail := inb.Rail()
 	return ListResources(rail, req)
 }
 
-func ListUserAccessibleResEp(c *gin.Context, rail miso.Rail) ([]ResBrief, error) {
+func ListUserAccessibleResEp(inb *miso.Inbound) ([]ResBrief, error) {
+	rail := inb.Rail()
 	u := common.GetUser(rail)
 	if u.IsNil {
 		return []ResBrief{}, nil
@@ -446,93 +464,114 @@ func ListUserAccessibleResEp(c *gin.Context, rail miso.Rail) ([]ResBrief, error)
 	return ListAllResBriefsOfRole(rail, u.RoleNo)
 }
 
-func ListAllResBriefEp(c *gin.Context, rail miso.Rail) ([]ResBrief, error) {
+func ListAllResBriefEp(inb *miso.Inbound) ([]ResBrief, error) {
+	rail := inb.Rail()
 	return ListAllResBriefs(rail)
 }
 
-func AdminBindRoleResEp(c *gin.Context, rail miso.Rail, req AddRoleResReq) (any, error) {
+func AdminBindRoleResEp(inb *miso.Inbound, req AddRoleResReq) (any, error) {
+	rail := inb.Rail()
 	user := common.GetUser(rail)
 	return nil, AddResToRoleIfNotExist(rail, req, user)
 }
 
-func AdminUnbindRoleResEp(c *gin.Context, rail miso.Rail, req RemoveRoleResReq) (any, error) {
+func AdminUnbindRoleResEp(inb *miso.Inbound, req RemoveRoleResReq) (any, error) {
+	rail := inb.Rail()
 	return nil, RemoveResFromRole(rail, req)
 }
 
-func AdminAddRoleEp(c *gin.Context, rail miso.Rail, req AddRoleReq) (any, error) {
+func AdminAddRoleEp(inb *miso.Inbound, req AddRoleReq) (any, error) {
+	rail := inb.Rail()
 	user := common.GetUser(rail)
 	return nil, AddRole(rail, req, user)
 }
 
-func AdminListRolesEp(c *gin.Context, rail miso.Rail, req ListRoleReq) (ListRoleResp, error) {
+func AdminListRolesEp(inb *miso.Inbound, req ListRoleReq) (ListRoleResp, error) {
+	rail := inb.Rail()
 	return ListRoles(rail, req)
 }
 
-func AdminListRoleBriefsEp(c *gin.Context, rail miso.Rail) ([]RoleBrief, error) {
+func AdminListRoleBriefsEp(inb *miso.Inbound) ([]RoleBrief, error) {
+	rail := inb.Rail()
 	return ListAllRoleBriefs(rail)
 }
 
-func AdminListRoleResEp(c *gin.Context, rail miso.Rail, req ListRoleResReq) (ListRoleResResp, error) {
+func AdminListRoleResEp(inb *miso.Inbound, req ListRoleResReq) (ListRoleResResp, error) {
+	rail := inb.Rail()
 	return ListRoleRes(rail, req)
 }
 
-func GetRoleInfoEp(c *gin.Context, rail miso.Rail, req api.RoleInfoReq) (api.RoleInfoResp, error) {
+func GetRoleInfoEp(inb *miso.Inbound, req api.RoleInfoReq) (api.RoleInfoResp, error) {
+	rail := inb.Rail()
 	return GetRoleInfo(rail, req)
 }
 
-func AdminListPathsEp(c *gin.Context, rail miso.Rail, req ListPathReq) (ListPathResp, error) {
+func AdminListPathsEp(inb *miso.Inbound, req ListPathReq) (ListPathResp, error) {
+	rail := inb.Rail()
 	return ListPaths(rail, req)
 }
 
-func AdminBindResPathEp(c *gin.Context, rail miso.Rail, req BindPathResReq) (any, error) {
+func AdminBindResPathEp(inb *miso.Inbound, req BindPathResReq) (any, error) {
+	rail := inb.Rail()
 	return nil, BindPathRes(rail, req)
 }
 
-func AdminUnbindResPathEp(c *gin.Context, rail miso.Rail, req UnbindPathResReq) (any, error) {
+func AdminUnbindResPathEp(inb *miso.Inbound, req UnbindPathResReq) (any, error) {
+	rail := inb.Rail()
 	return nil, UnbindPathRes(rail, req)
 }
 
-func AdminDeletePathEp(c *gin.Context, rail miso.Rail, req DeletePathReq) (any, error) {
+func AdminDeletePathEp(inb *miso.Inbound, req DeletePathReq) (any, error) {
+	rail := inb.Rail()
 	return nil, DeletePath(rail, req)
 }
 
-func AdminUpdatePathEp(c *gin.Context, rail miso.Rail, req UpdatePathReq) (any, error) {
+func AdminUpdatePathEp(inb *miso.Inbound, req UpdatePathReq) (any, error) {
+	rail := inb.Rail()
 	return nil, UpdatePath(rail, req)
 }
 
-func ItnFetchUserInfoEp(c *gin.Context, rail miso.Rail, req api.FindUserReq) (api.UserInfo, error) {
+func ItnFetchUserInfoEp(inb *miso.Inbound, req api.FindUserReq) (api.UserInfo, error) {
+	rail := inb.Rail()
 	return ItnFindUserInfo(rail, miso.GetMySQL(), req)
 }
 
-func ItnFetchUserIdByNameEp(c *gin.Context, rail miso.Rail, req FetchUserIdByNameReq) (int, error) {
+func ItnFetchUserIdByNameEp(inb *miso.Inbound, req FetchUserIdByNameReq) (int, error) {
+	rail := inb.Rail()
 	u, err := LoadUserBriefThrCache(rail, miso.GetMySQL(), req.Username)
 	return u.Id, err
 }
 
-func ItnFetchUsernamesByNosEp(c *gin.Context, rail miso.Rail, req api.FetchNameByUserNoReq) (api.FetchUsernamesRes, error) {
+func ItnFetchUsernamesByNosEp(inb *miso.Inbound, req api.FetchNameByUserNoReq) (api.FetchUsernamesRes, error) {
+	rail := inb.Rail()
 	return ItnFindNameOfUserNo(rail, miso.GetMySQL(), req)
 }
 
-func ItnFindUserWithRoleEp(c *gin.Context, rail miso.Rail, req api.FetchUsersWithRoleReq) ([]api.UserInfo, error) {
+func ItnFindUserWithRoleEp(inb *miso.Inbound, req api.FetchUsersWithRoleReq) ([]api.UserInfo, error) {
+	rail := inb.Rail()
 	return ItnFindUsersWithRole(rail, miso.GetMySQL(), req)
 }
 
-func ItnReportResourceEp(c *gin.Context, rail miso.Rail, req CreateResReq) (any, error) {
+func ItnReportResourceEp(inb *miso.Inbound, req CreateResReq) (any, error) {
+	rail := inb.Rail()
 	user := common.GetUser(rail)
 	return nil, CreateResourceIfNotExist(rail, req, user)
 }
 
-func ItnCheckResourceAccessEp(c *gin.Context, rail miso.Rail, req TestResAccessReq) (TestResAccessResp, error) {
+func ItnCheckResourceAccessEp(inb *miso.Inbound, req TestResAccessReq) (TestResAccessResp, error) {
+	rail := inb.Rail()
 	timer := miso.NewHistTimer(resourceAccessCheckHisto)
 	defer timer.ObserveDuration()
 	return TestResourceAccess(rail, req)
 }
 
-func ItnReportPathEp(c *gin.Context, rail miso.Rail, req CreatePathReq) (any, error) {
+func ItnReportPathEp(inb *miso.Inbound, req CreatePathReq) (any, error) {
+	rail := inb.Rail()
 	user := common.GetUser(rail)
 	return nil, CreatePath(rail, req, user)
 }
 
-func ItnFindUserWithResourceEp(c *gin.Context, rail miso.Rail, req api.FetchUserWithResourceReq) ([]api.UserInfo, error) {
+func ItnFindUserWithResourceEp(inb *miso.Inbound, req api.FetchUserWithResourceReq) ([]api.UserInfo, error) {
+	rail := inb.Rail()
 	return FindUserWithRes(rail, miso.GetMySQL(), req)
 }
