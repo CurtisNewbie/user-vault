@@ -3,6 +3,9 @@
 - POST /open/api/user/login
   - Description: User Login using password, a JWT token is generated and returned
   - Expected Access Scope: PUBLIC
+  - Header Parameter:
+    - "x-forwarded-for":
+    - "user-agent":
   - JSON Request:
     - "username": (string)
     - "password": (string)
@@ -37,7 +40,7 @@
     - "username": (*string)
     - "roleNo": (*string)
     - "isDisabled": (*int)
-    - "pagingVo": (Paging)
+    - "paging": (Paging)
       - "limit": (int) page limit
       - "page": (int) page number, 1-based
       - "total": (int) total count
@@ -46,7 +49,7 @@
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": (PageRes[github.com/curtisnewbie/user-vault/api.UserInfo]) response data
-      - "pagingVo": (Paging) pagination parameters
+      - "paging": (Paging) pagination parameters
         - "limit": (int) page limit
         - "page": (int) page number, 1-based
         - "total": (int) total count
@@ -56,6 +59,7 @@
         - "roleName": (string)
         - "roleNo": (string)
         - "userNo": (string)
+        - "reviewStatus": (string)
         - "isDisabled": (int)
         - "createTime": (int64)
         - "createBy": (string)
@@ -82,6 +86,7 @@
     - "error": (bool) whether the request was successful
 - GET /open/api/user/info
   - Description: User get user info
+  - Expected Access Scope: PUBLIC
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -131,7 +136,7 @@
 - POST /open/api/access/history
   - Description: User list access logs
   - JSON Request:
-    - "pagingVo": (Paging)
+    - "paging": (Paging)
       - "limit": (int) page limit
       - "page": (int) page number, 1-based
       - "total": (int) total count
@@ -140,7 +145,7 @@
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": (PageRes[github.com/curtisnewbie/user-vault/internal/vault.ListedAccessLog]) response data
-      - "pagingVo": (Paging) pagination parameters
+      - "paging": (Paging) pagination parameters
         - "limit": (int) page limit
         - "page": (int) page number, 1-based
         - "total": (int) total count
@@ -151,6 +156,7 @@
         - "username": (string)
         - "url": (string)
         - "accessTime": (int64)
+        - "success": (bool)
 - POST /open/api/user/key/generate
   - Description: User generate user key
   - JSON Request:
@@ -163,7 +169,7 @@
 - POST /open/api/user/key/list
   - Description: User list user keys
   - JSON Request:
-    - "pagingVo": (Paging)
+    - "paging": (Paging)
       - "limit": (int) page limit
       - "page": (int) page number, 1-based
       - "total": (int) total count
@@ -173,7 +179,7 @@
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": (PageRes[github.com/curtisnewbie/user-vault/internal/vault.ListedUserKey]) response data
-      - "pagingVo": (Paging) pagination parameters
+      - "paging": (Paging) pagination parameters
         - "limit": (int) page limit
         - "page": (int) page number, 1-based
         - "total": (int) total count
@@ -222,7 +228,7 @@
 - POST /open/api/resource/list
   - Description: Admin list resources
   - JSON Request:
-    - "pagingVo": (Paging)
+    - "paging": (Paging)
       - "limit": (int) page limit
       - "page": (int) page number, 1-based
       - "total": (int) total count
@@ -231,7 +237,7 @@
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": (ListResResp) response data
-      - "pagingVo": (Paging)
+      - "paging": (Paging)
         - "limit": (int) page limit
         - "page": (int) page number, 1-based
         - "total": (int) total count
@@ -292,7 +298,7 @@
 - POST /open/api/role/list
   - Description: Admin list roles
   - JSON Request:
-    - "pagingVo": (Paging)
+    - "paging": (Paging)
       - "limit": (int) page limit
       - "page": (int) page number, 1-based
       - "total": (int) total count
@@ -309,7 +315,7 @@
         - "createBy": (string)
         - "updateTime": (int64)
         - "updateBy": (string)
-      - "pagingVo": (Paging)
+      - "paging": (Paging)
         - "limit": (int) page limit
         - "page": (int) page number, 1-based
         - "total": (int) total count
@@ -325,7 +331,7 @@
 - POST /open/api/role/resource/list
   - Description: Admin list resources of role
   - JSON Request:
-    - "pagingVo": (Paging)
+    - "paging": (Paging)
       - "limit": (int) page limit
       - "page": (int) page number, 1-based
       - "total": (int) total count
@@ -335,7 +341,7 @@
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": (ListRoleResResp) response data
-      - "pagingVo": (Paging)
+      - "paging": (Paging)
         - "limit": (int) page limit
         - "page": (int) page number, 1-based
         - "total": (int) total count
@@ -364,7 +370,7 @@
     - "pgroup": (string)
     - "url": (string)
     - "ptype": (string) path type: 'PROTECTED' - authorization required, 'PUBLIC' - publicly accessible
-    - "pagingVo": (Paging)
+    - "paging": (Paging)
       - "limit": (int) page limit
       - "page": (int) page number, 1-based
       - "total": (int) total count
@@ -373,7 +379,7 @@
     - "msg": (string) message
     - "error": (bool) whether the request was successful
     - "data": (ListPathResp) response data
-      - "pagingVo": (Paging)
+      - "paging": (Paging)
         - "limit": (int) page limit
         - "page": (int) page number, 1-based
         - "total": (int) total count
@@ -441,6 +447,7 @@
       - "roleName": (string)
       - "roleNo": (string)
       - "userNo": (string)
+      - "reviewStatus": (string)
       - "isDisabled": (int)
       - "createTime": (int64)
       - "createBy": (string)
@@ -479,6 +486,7 @@
       - "roleName": (string)
       - "roleNo": (string)
       - "userNo": (string)
+      - "reviewStatus": (string)
       - "isDisabled": (int)
       - "createTime": (int64)
       - "createBy": (string)
@@ -498,6 +506,7 @@
       - "roleName": (string)
       - "roleNo": (string)
       - "userNo": (string)
+      - "reviewStatus": (string)
       - "isDisabled": (int)
       - "createTime": (int64)
       - "createBy": (string)

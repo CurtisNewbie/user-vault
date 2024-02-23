@@ -10,9 +10,6 @@ import (
 )
 
 const (
-	headerForwardedFor = "X-Forwarded-For"
-	headerUserAgent    = "User-Agent"
-
 	passwordLoginUrl = "/user-vault/open/api/user/login"
 
 	ResourceManagerUser     = "manage-users"
@@ -43,7 +40,7 @@ type ListUserReq struct {
 	Username   *string     `json:"username"`
 	RoleNo     *string     `json:"roleNo"`
 	IsDisabled *int        `json:"isDisabled"`
-	Paging     miso.Paging `json:"pagingVo"`
+	Paging     miso.Paging `json:"paging"`
 }
 
 type AdminUpdateUserReq struct {

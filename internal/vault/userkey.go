@@ -48,7 +48,7 @@ func GenUserKey(rail miso.Rail, tx *gorm.DB, req GenUserKeyReq, username string)
 }
 
 type ListUserKeysReq struct {
-	Paging miso.Paging `json:"pagingVo"`
+	Paging miso.Paging `json:"paging"`
 	Name   string      `json:"name"`
 }
 

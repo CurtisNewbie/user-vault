@@ -144,12 +144,12 @@ type TestResAccessResp struct {
 }
 
 type ListRoleReq struct {
-	Paging miso.Paging `json:"pagingVo"`
+	Paging miso.Paging `json:"paging"`
 }
 
 type ListRoleResp struct {
 	Payload []WRole     `json:"payload"`
-	Paging  miso.Paging `json:"pagingVo"`
+	Paging  miso.Paging `json:"paging"`
 }
 
 type RoleBrief struct {
@@ -162,7 +162,7 @@ type ListPathReq struct {
 	Pgroup  string      `json:"pgroup"`
 	Url     string      `json:"url"`
 	Ptype   string      `json:"ptype" desc:"path type: 'PROTECTED' - authorization required, 'PUBLIC' - publicly accessible"`
-	Paging  miso.Paging `json:"pagingVo"`
+	Paging  miso.Paging `json:"paging"`
 }
 
 type WPath struct {
@@ -190,7 +190,7 @@ type WRes struct {
 }
 
 type ListPathResp struct {
-	Paging  miso.Paging `json:"pagingVo"`
+	Paging  miso.Paging `json:"paging"`
 	Payload []WPath     `json:"payload"`
 }
 
@@ -205,7 +205,7 @@ type UnbindPathResReq struct {
 }
 
 type ListRoleResReq struct {
-	Paging miso.Paging `json:"pagingVo"`
+	Paging miso.Paging `json:"paging"`
 	RoleNo string      `json:"roleNo" validation:"notEmpty"`
 }
 
@@ -220,7 +220,7 @@ type AddRoleResReq struct {
 }
 
 type ListRoleResResp struct {
-	Paging  miso.Paging     `json:"pagingVo"`
+	Paging  miso.Paging     `json:"paging"`
 	Payload []ListedRoleRes `json:"payload"`
 }
 
@@ -256,11 +256,11 @@ type DeletePathReq struct {
 }
 
 type ListResReq struct {
-	Paging miso.Paging `json:"pagingVo"`
+	Paging miso.Paging `json:"paging"`
 }
 
 type ListResResp struct {
-	Paging  miso.Paging `json:"pagingVo"`
+	Paging  miso.Paging `json:"paging"`
 	Payload []WRes      `json:"payload"`
 }
 

@@ -50,7 +50,7 @@ type ListedAccessLog struct {
 }
 
 type ListAccessLogReq struct {
-	Paging miso.Paging `json:"pagingVo"`
+	Paging miso.Paging `json:"paging"`
 }
 
 func ListAccessLogs(rail miso.Rail, tx *gorm.DB, user common.User, req ListAccessLogReq) (miso.PageRes[ListedAccessLog], error) {
