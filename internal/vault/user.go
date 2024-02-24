@@ -612,19 +612,32 @@ func GetTokenUser(rail miso.Rail, tx *gorm.DB, token string) (UserInfoBrief, err
 func ItnFindUserInfo(rail miso.Rail, tx *gorm.DB, req api.FindUserReq) (api.UserInfo, error) {
 
 	var ui api.UserInfo
-	tx = tx.Table("user")
+	tx = tx.Table("user").
+		Joins("left join role on user.role_no = role.role_no").
+		Select("user.*, role.name role_name")
+
+	if req.UserId == nil && req.UserNo == nil && req.Username == nil {
+		return ui, miso.NewErrf("Must provide at least one parameter")
+	}
 
 	if req.UserId != nil {
-		return ui, tx.Where("id = ?", *req.UserId).Scan(&ui).Error
+		tx = tx.Where("id = ?", *req.UserId)
 	}
 	if req.UserNo != nil {
-		return ui, tx.Where("user_no = ?", *req.UserNo).Scan(&ui).Error
+		tx = tx.Where("user_no = ?", *req.UserNo)
 	}
 	if req.Username != nil {
-		return ui, tx.Where("username = ?", *req.Username).Scan(&ui).Error
+		tx = tx.Where("username = ?", *req.Username)
 	}
 
-	return ui, miso.NewErrf("Must provide at least one parameter")
+	t := tx.Scan(&ui)
+	if t.Error != nil {
+		return ui, fmt.Errorf("failed to find user %w", t.Error)
+	}
+	if t.RowsAffected < 1 {
+		return ui, miso.NewErrf("User not found")
+	}
+	return ui, nil
 }
 
 func ItnFindNameOfUserNo(rail miso.Rail, tx *gorm.DB, req api.FetchNameByUserNoReq) (api.FetchUsernamesRes, error) {
