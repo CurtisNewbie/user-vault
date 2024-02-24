@@ -621,13 +621,13 @@ func ItnFindUserInfo(rail miso.Rail, tx *gorm.DB, req api.FindUserReq) (api.User
 	}
 
 	if req.UserId != nil {
-		tx = tx.Where("id = ?", *req.UserId)
+		tx = tx.Where("user.id = ?", *req.UserId)
 	}
 	if req.UserNo != nil {
-		tx = tx.Where("user_no = ?", *req.UserNo)
+		tx = tx.Where("user.user_no = ?", *req.UserNo)
 	}
 	if req.Username != nil {
-		tx = tx.Where("username = ?", *req.Username)
+		tx = tx.Where("user.username = ?", *req.Username)
 	}
 
 	t := tx.Scan(&ui)
