@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/curtisnewbie/gocommon/common"
+	"github.com/curtisnewbie/miso/middleware/user-vault/common"
 	"github.com/curtisnewbie/miso/miso"
 	"github.com/curtisnewbie/user-vault/api"
 	"github.com/sirupsen/logrus"
@@ -129,7 +129,7 @@ func TestListUsers(t *testing.T) {
 func TestAdminUpdateUser(t *testing.T) {
 	rail := preUserTest(t)
 	err := AdminUpdateUser(rail, miso.GetMySQL(), AdminUpdateUserReq{
-		Id:         1107,
+		UserNo:     "",
 		RoleNo:     "role_628043111874560208429",
 		IsDisabled: 0,
 	}, common.NilUser())

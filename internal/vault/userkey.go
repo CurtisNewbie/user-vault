@@ -3,7 +3,7 @@ package vault
 import (
 	"time"
 
-	"github.com/curtisnewbie/gocommon/common"
+	"github.com/curtisnewbie/miso/middleware/user-vault/common"
 	"github.com/curtisnewbie/miso/miso"
 	"gorm.io/gorm"
 )
@@ -65,7 +65,7 @@ func ListUserKeys(rail miso.Rail, tx *gorm.DB, req ListUserKeysReq, user common.
 		WithPage(req.Paging).
 		WithBaseQuery(func(tx *gorm.DB) *gorm.DB {
 			tx = tx.Table("user_key").
-				Where("user_id = ?", user.UserId).
+				Where("user_no = ?", user.UserNo).
 				Where("is_del = 0")
 
 			if !miso.IsBlankStr(req.Name) {
@@ -84,6 +84,6 @@ type DeleteUserKeyReq struct {
 	UserKeyId int `json:"userKeyId"`
 }
 
-func DeleteUserKey(rail miso.Rail, tx *gorm.DB, req DeleteUserKeyReq, userId int) error {
-	return tx.Exec(`UPDATE user_key SET is_del = 1 WHERE user_id = ? AND id = ? AND is_del = 0`, userId, req.UserKeyId).Error
+func DeleteUserKey(rail miso.Rail, tx *gorm.DB, req DeleteUserKeyReq, userNo string) error {
+	return tx.Exec(`UPDATE user_key SET is_del = 1 WHERE user_no = ? AND id = ? AND is_del = 0`, userNo, req.UserKeyId).Error
 }

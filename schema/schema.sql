@@ -30,9 +30,12 @@ CREATE TABLE IF NOT EXISTS user_vault.user_key (
   `update_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'when the record is updated',
   `update_by` varchar(255) NOT NULL DEFAULT '' COMMENT 'who updated this record',
   `is_del` tinyint NOT NULL DEFAULT '0' COMMENT '0-normal, 1-deleted',
+  `user_no` varchar(32) NOT NULL DEFAULT '' COMMENT 'user no',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `secret_key` (`secret_key`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT="user's key";
+  UNIQUE KEY `secret_key` (`secret_key`),
+  KEY `user_no_idx` (`user_no`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='user''s key'
+
 
 CREATE TABLE user_vault.access_log (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',

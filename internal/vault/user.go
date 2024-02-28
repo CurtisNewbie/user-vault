@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/curtisnewbie/gocommon/common"
+	"github.com/curtisnewbie/miso/middleware/user-vault/common"
 	"github.com/curtisnewbie/miso/miso"
 	postbox "github.com/curtisnewbie/postbox/api"
 	"github.com/curtisnewbie/user-vault/api"
@@ -47,11 +47,11 @@ type User struct {
 	CreateBy     string
 	UpdateTime   miso.ETime
 	UpdateBy     string
-	IsDel        common.IS_DEL
+	IsDel        bool
 }
 
 func (u *User) Deleted() bool {
-	return u.IsDel == common.IS_DEL_Y
+	return u.IsDel
 }
 
 func (u *User) CanReview() bool {
@@ -313,7 +313,7 @@ type NewUserParam struct {
 	CreateBy     string
 	UpdateTime   miso.ETime
 	UpdateBy     string
-	IsDel        common.IS_DEL
+	IsDel        bool
 }
 
 func prepUserCred(pwd string) NewUserParam {
@@ -347,7 +347,7 @@ func ListUsers(rail miso.Rail, tx *gorm.DB, req ListUserReq) (miso.PageRes[api.U
 }
 
 func AdminUpdateUser(rail miso.Rail, tx *gorm.DB, req AdminUpdateUserReq, operator common.User) error {
-	if operator.UserId == req.Id {
+	if operator.UserNo == req.UserNo {
 		return miso.NewErrf("You cannot update yourself")
 	}
 
@@ -359,8 +359,8 @@ func AdminUpdateUser(rail miso.Rail, tx *gorm.DB, req AdminUpdateUserReq, operat
 	}
 
 	return tx.Exec(
-		`UPDATE user SET is_disabled = ?, update_by = ?, role_no = ? WHERE id = ?`,
-		req.IsDisabled, operator.Username, req.RoleNo, req.Id,
+		`UPDATE user SET is_disabled = ?, update_by = ?, role_no = ? WHERE user_no = ?`,
+		req.IsDisabled, operator.Username, req.RoleNo, req.UserNo,
 	).Error
 }
 

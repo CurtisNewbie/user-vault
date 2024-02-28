@@ -3,8 +3,8 @@ package vault
 import (
 	"strings"
 
-	"github.com/curtisnewbie/gocommon/auth"
-	"github.com/curtisnewbie/gocommon/common"
+	"github.com/curtisnewbie/miso/middleware/user-vault/auth"
+	"github.com/curtisnewbie/miso/middleware/user-vault/common"
 	"github.com/curtisnewbie/miso/miso"
 	"github.com/curtisnewbie/user-vault/api"
 )
@@ -44,7 +44,7 @@ type ListUserReq struct {
 }
 
 type AdminUpdateUserReq struct {
-	Id         int    `json:"id" valid:"positive"`
+	UserNo     string `valid:"notEmpty"`
 	RoleNo     string `json:"roleNo"`
 	IsDisabled int    `json:"isDisabled"`
 }
@@ -428,7 +428,7 @@ func UserListUserKeysEp(inb *miso.Inbound, req ListUserKeysReq) (miso.PageRes[Li
 
 func UserDeleteUserKeyEp(inb *miso.Inbound, req DeleteUserKeyReq) (any, error) {
 	rail := inb.Rail()
-	return nil, DeleteUserKey(rail, miso.GetMySQL(), req, common.GetUser(rail).UserId)
+	return nil, DeleteUserKey(rail, miso.GetMySQL(), req, common.GetUser(rail).UserNo)
 }
 
 func AdminAddResourceEp(inb *miso.Inbound, req CreateResReq) (any, error) {

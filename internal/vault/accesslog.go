@@ -1,7 +1,7 @@
 package vault
 
 import (
-	"github.com/curtisnewbie/gocommon/common"
+	"github.com/curtisnewbie/miso/middleware/user-vault/common"
 	"github.com/curtisnewbie/miso/miso"
 	"gorm.io/gorm"
 )
@@ -22,7 +22,7 @@ type AccessLog struct {
 	CreateBy   string
 	UpdateTime miso.ETime
 	UpdateBy   string
-	IsDel      common.IS_DEL
+	IsDel      bool
 }
 
 type SaveAccessLogParam struct {
