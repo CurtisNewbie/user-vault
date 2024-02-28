@@ -2,7 +2,7 @@
 
 Simple authentication and authorization service written in Go.
 
-This project internally uses [miso](https://github.com/curtisnewbie/miso) and [gocommon](https://github.com/curtisnewbie/gocommon).
+This project internally uses [miso](https://github.com/curtisnewbie/miso).
 
 ## Authentication Concepts
 
