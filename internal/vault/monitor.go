@@ -90,7 +90,7 @@ func QueryResourcePathAsync(rail miso.Rail, server miso.Server, m MonitoredServi
 }
 
 func TriggerResourcePathCollection(rail miso.Rail, m MonitoredService) {
-	servers := miso.ListServers(m.Service)
+	servers := miso.GetServerList().ListServers(rail, m.Service)
 	if len(servers) < 1 {
 		return
 	}
