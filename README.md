@@ -1,6 +1,6 @@
 # user-vault
 
-> ***main branch is unstable, install miso with tags instead***
+> ***main branch is unstable***
 
 Simple authentication and authorization service written in Go.
 
