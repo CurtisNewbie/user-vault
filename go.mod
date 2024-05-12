@@ -3,7 +3,7 @@ module github.com/curtisnewbie/user-vault
 go 1.20
 
 require (
-	github.com/curtisnewbie/miso v0.0.28
+	github.com/curtisnewbie/miso v0.0.31-beta.3
 	github.com/curtisnewbie/postbox v0.0.2
 	github.com/sirupsen/logrus v1.9.0
 	gorm.io/gorm v1.23.8
