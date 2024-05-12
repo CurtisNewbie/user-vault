@@ -1,5 +1,7 @@
 # user-vault
 
+> ***main branch is unstable, install miso with tags instead***
+
 Simple authentication and authorization service written in Go.
 
 This project internally uses [miso](https://github.com/curtisnewbie/miso).
