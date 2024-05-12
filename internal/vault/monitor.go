@@ -2,10 +2,13 @@ package vault
 
 import (
 	"fmt"
+	"math"
+	"sort"
 	"time"
 
 	"github.com/curtisnewbie/miso/middleware/user-vault/common"
 	"github.com/curtisnewbie/miso/miso"
+	"github.com/spf13/cast"
 )
 
 const (
@@ -101,7 +104,21 @@ func TriggerResourcePathCollection(rail miso.Rail, m MonitoredService) {
 			QueryResourcePathAsync(rail, server, m)
 		}
 	} else {
-		server := servers[miso.RandomServerSelector(servers)]
+		sort.Slice(servers, func(i, j int) bool {
+			var irt int = math.MaxInt
+			var jrt int = math.MaxInt
+			if irts, ok := servers[i].Meta["miso-register_time"]; ok {
+				irt = cast.ToInt(irts)
+			}
+			if jrts, ok := servers[j].Meta["miso-register_time"]; ok {
+				jrt = cast.ToInt(jrts)
+			}
+			if irt > jrt {
+				return true
+			}
+			return false
+		})
+		server := servers[0] // the most recently created service
 		QueryResourcePathAsync(rail, server, m)
 	}
 }
