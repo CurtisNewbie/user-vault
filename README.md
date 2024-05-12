@@ -1,6 +1,6 @@
 # user-vault
 
-> ***main branch is unstable***
+> ***main branch is unstable, see tagged versions in releases***
 
 Simple authentication and authorization service written in Go.
 
