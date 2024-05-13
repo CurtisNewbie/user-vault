@@ -72,6 +72,7 @@ func CreateMonitoredServiceWatches(rail miso.Rail) error {
 
 func QueryResourcePathAsync(rail miso.Rail, server miso.Server, m MonitoredService) {
 	monitorPool.Go(func() {
+		rail.Infof("Polling resource path for service: %v from %#v", m.Service, server)
 		res, err := QueryResourcePath(rail, server, m.Service, m.Path)
 		if err != nil {
 			rail.Errorf("monitor service %v failed, %v", m.Service, err)
@@ -107,10 +108,10 @@ func TriggerResourcePathCollection(rail miso.Rail, m MonitoredService) {
 		sort.Slice(servers, func(i, j int) bool {
 			var irt int = math.MaxInt
 			var jrt int = math.MaxInt
-			if irts, ok := servers[i].Meta["miso-register_time"]; ok {
+			if irts, ok := servers[i].Meta[miso.ConsulMetaRegisterTime]; ok {
 				irt = cast.ToInt(irts)
 			}
-			if jrts, ok := servers[j].Meta["miso-register_time"]; ok {
+			if jrts, ok := servers[j].Meta[miso.ConsulMetaRegisterTime]; ok {
 				jrt = cast.ToInt(jrts)
 			}
 			if irt > jrt {
