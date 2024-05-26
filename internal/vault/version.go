@@ -1,5 +1,5 @@
 package vault
 
 const (
-	Version = "v0.0.20"
+	Version = "v0.0.21"
 )
