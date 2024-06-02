@@ -79,7 +79,7 @@ func FetchUsersWithResource(rail miso.Rail, req FetchUserWithResourceReq) ([]Use
 
 func CreateNotification(rail miso.Rail, req CreateNotificationReq) error {
 	var resp miso.GnResp[miso.Void]
-	err := miso.NewDynTClient(rail, "/open/api/v1/notification/create", "postbox").
+	err := miso.NewDynTClient(rail, "/open/api/v1/notification/create", ServiceName).
 		Require2xx().
 		PostJson(req).
 		Json(&resp)
