@@ -1,4 +1,4 @@
-package vault
+package server
 
 const (
 	Version = "v0.0.21"

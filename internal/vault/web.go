@@ -80,15 +80,10 @@ type FetchUserIdByNameReq struct {
 	Username string `form:"username" desc:"Username"`
 }
 
-func RegisterInternalPathResourcesOnBootstrapped() {
+func RegisterInternalPathResourcesOnBootstrapped(res []auth.Resource) {
 
 	miso.PostServerBootstrapped(func(rail miso.Rail) error {
 
-		res := []auth.Resource{
-			{Code: ResourceManageResources, Name: "Manage Resources Access"},
-			{Code: ResourceManagerUser, Name: "Admin Manage Users"},
-			{Code: ResourceBasicUser, Name: "Basic User Operation"},
-		}
 		user := common.NilUser()
 
 		app := miso.GetPropStr(miso.PropAppName)
@@ -133,8 +128,6 @@ func RegisterInternalPathResourcesOnBootstrapped() {
 }
 
 func RegisterRoutes(rail miso.Rail) error {
-
-	RegisterInternalPathResourcesOnBootstrapped()
 
 	miso.GroupRoute("/open/api",
 

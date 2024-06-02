@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
-	"github.com/curtisnewbie/user-vault/internal/vault"
+	"github.com/curtisnewbie/user-vault/internal/server"
 )
 
 func main() {
-	vault.BootstrapServer(os.Args)
+	server.BootstrapServer(os.Args)
 }

@@ -46,7 +46,7 @@
     let xForwardedFor: any | null = null;
     let userAgent: any | null = null;
     let req: LoginReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/user/login`, req,
+    this.http.post<Resp>(`/open/api/user/login`, req,
       {
         headers: {
           "x-forwarded-for": xForwardedFor
@@ -99,7 +99,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: RegisterReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/user/register/request`, req)
+    this.http.post<Resp>(`/open/api/user/register/request`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -123,7 +123,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/user/add' \
       -H 'Content-Type: application/json' \
-      -d '{"username":"","password":"","roleNo":""}'
+      -d '{"roleNo":"","username":"","password":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -147,7 +147,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: AddUserParam | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/user/add`, req)
+    this.http.post<Resp>(`/open/api/user/add`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -192,7 +192,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/user/list' \
       -H 'Content-Type: application/json' \
-      -d '{"paging":{"page":0,"total":0,"limit":0},"username":"","roleNo":"","isDisabled":0}'
+      -d '{"isDisabled":0,"paging":{"limit":0,"page":0,"total":0},"username":"","roleNo":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -245,7 +245,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: ListUserReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/user/list`, req)
+    this.http.post<Resp>(`/open/api/user/list`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -293,7 +293,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: AdminUpdateUserReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/user/info/update`, req)
+    this.http.post<Resp>(`/open/api/user/info/update`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -316,7 +316,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/user/registration/review' \
       -H 'Content-Type: application/json' \
-      -d '{"userId":0,"reviewStatus":""}'
+      -d '{"reviewStatus":"","userId":0}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -339,7 +339,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: AdminReviewUserReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/user/registration/review`, req)
+    this.http.post<Resp>(`/open/api/user/registration/review`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -388,7 +388,7 @@
 
   - Angular HttpClient Demo:
     ```ts
-    this.http.get<Resp>(`http://localhost:8089/open/api/user/info`)
+    this.http.get<Resp>(`/open/api/user/info`)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -434,7 +434,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: UpdatePasswordReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/user/password/update`, req)
+    this.http.post<Resp>(`/open/api/user/password/update`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -481,7 +481,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: ExchangeTokenReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/token/exchange`, req)
+    this.http.post<Resp>(`/open/api/token/exchange`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -533,7 +533,7 @@
   - Angular HttpClient Demo:
     ```ts
     let token: any | null = null;
-    this.http.get<Resp>(`http://localhost:8089/open/api/token/user?token=${token}`)
+    this.http.get<Resp>(`/open/api/token/user?token=${token}`)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -617,7 +617,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: ListAccessLogReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/access/history`, req)
+    this.http.post<Resp>(`/open/api/access/history`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -663,7 +663,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: GenUserKeyReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/user/key/generate`, req)
+    this.http.post<Resp>(`/open/api/user/key/generate`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -700,7 +700,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/user/key/list' \
       -H 'Content-Type: application/json' \
-      -d '{"paging":{"limit":0,"page":0,"total":0},"name":""}'
+      -d '{"paging":{"total":0,"limit":0,"page":0},"name":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -745,7 +745,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: ListUserKeysReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/user/key/list`, req)
+    this.http.post<Resp>(`/open/api/user/key/list`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -789,7 +789,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: DeleteUserKeyReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/user/key/delete`, req)
+    this.http.post<Resp>(`/open/api/user/key/delete`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -835,7 +835,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: CreateResReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/resource/add`, req)
+    this.http.post<Resp>(`/open/api/resource/add`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -879,7 +879,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: DeleteResourceReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/resource/remove`, req)
+    this.http.post<Resp>(`/open/api/resource/remove`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -922,7 +922,7 @@
   - Angular HttpClient Demo:
     ```ts
     let roleNo: any | null = null;
-    this.http.get<Resp>(`http://localhost:8089/open/api/resource/brief/candidates?roleNo=${roleNo}`)
+    this.http.get<Resp>(`/open/api/resource/brief/candidates?roleNo=${roleNo}`)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -960,7 +960,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/resource/list' \
       -H 'Content-Type: application/json' \
-      -d '{"paging":{"page":0,"total":0,"limit":0}}'
+      -d '{"paging":{"limit":0,"page":0,"total":0}}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -1006,7 +1006,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: ListResReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/resource/list`, req)
+    this.http.post<Resp>(`/open/api/resource/list`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -1047,7 +1047,7 @@
 
   - Angular HttpClient Demo:
     ```ts
-    this.http.get<Resp>(`http://localhost:8089/open/api/resource/brief/user`)
+    this.http.get<Resp>(`/open/api/resource/brief/user`)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -1088,7 +1088,7 @@
 
   - Angular HttpClient Demo:
     ```ts
-    this.http.get<Resp>(`http://localhost:8089/open/api/resource/brief/all`)
+    this.http.get<Resp>(`/open/api/resource/brief/all`)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -1134,7 +1134,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: AddRoleResReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/role/resource/add`, req)
+    this.http.post<Resp>(`/open/api/role/resource/add`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -1180,7 +1180,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: RemoveRoleResReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/role/resource/remove`, req)
+    this.http.post<Resp>(`/open/api/role/resource/remove`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -1224,7 +1224,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: AddRoleReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/role/add`, req)
+    this.http.post<Resp>(`/open/api/role/add`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -1262,7 +1262,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/role/list' \
       -H 'Content-Type: application/json' \
-      -d '{"paging":{"page":0,"total":0,"limit":0}}'
+      -d '{"paging":{"limit":0,"page":0,"total":0}}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -1308,7 +1308,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: ListRoleReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/role/list`, req)
+    this.http.post<Resp>(`/open/api/role/list`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -1348,7 +1348,7 @@
 
   - Angular HttpClient Demo:
     ```ts
-    this.http.get<Resp>(`http://localhost:8089/open/api/role/brief/all`)
+    this.http.get<Resp>(`/open/api/role/brief/all`)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -1430,7 +1430,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: ListRoleResReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/role/resource/list`, req)
+    this.http.post<Resp>(`/open/api/role/resource/list`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -1483,7 +1483,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: RoleInfoReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/role/info`, req)
+    this.http.post<Resp>(`/open/api/role/info`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -1529,7 +1529,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/path/list' \
       -H 'Content-Type: application/json' \
-      -d '{"resCode":"","pgroup":"","url":"","ptype":"","paging":{"limit":0,"page":0,"total":0}}'
+      -d '{"paging":{"limit":0,"page":0,"total":0},"resCode":"","pgroup":"","url":"","ptype":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -1583,7 +1583,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: ListPathReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/path/list`, req)
+    this.http.post<Resp>(`/open/api/path/list`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -1629,7 +1629,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: BindPathResReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/path/resource/bind`, req)
+    this.http.post<Resp>(`/open/api/path/resource/bind`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -1675,7 +1675,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: UnbindPathResReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/path/resource/unbind`, req)
+    this.http.post<Resp>(`/open/api/path/resource/unbind`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -1719,7 +1719,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: DeletePathReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/path/delete`, req)
+    this.http.post<Resp>(`/open/api/path/delete`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -1767,7 +1767,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: UpdatePathReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/open/api/path/update`, req)
+    this.http.post<Resp>(`/open/api/path/update`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -1803,7 +1803,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/remote/user/info' \
       -H 'Content-Type: application/json' \
-      -d '{"username":"","userId":0,"userNo":""}'
+      -d '{"userId":0,"userNo":"","username":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -1841,7 +1841,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: FindUserReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/remote/user/info`, req)
+    this.http.post<Resp>(`/remote/user/info`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -1878,7 +1878,7 @@
   - Angular HttpClient Demo:
     ```ts
     let username: any | null = null;
-    this.http.get<Resp>(`http://localhost:8089/remote/user/id?username=${username}`)
+    this.http.get<Resp>(`/remote/user/id?username=${username}`)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -1928,7 +1928,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: FetchNameByUserNoReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/remote/user/userno/username`, req)
+    this.http.post<Resp>(`/remote/user/userno/username`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -1998,7 +1998,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: FetchUsersWithRoleReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/remote/user/list/with-role`, req)
+    this.http.post<Resp>(`/remote/user/list/with-role`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -2068,7 +2068,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: FetchUserWithResourceReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/remote/user/list/with-resource`, req)
+    this.http.post<Resp>(`/remote/user/list/with-resource`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -2114,7 +2114,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: CreateResReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/remote/resource/add`, req)
+    this.http.post<Resp>(`/remote/resource/add`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -2140,7 +2140,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/remote/path/resource/access-test' \
       -H 'Content-Type: application/json' \
-      -d '{"url":"","method":"","roleNo":""}'
+      -d '{"method":"","roleNo":"","url":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -2168,7 +2168,7 @@
   - Angular HttpClient Demo:
     ```ts
     let req: TestResAccessReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/remote/path/resource/access-test`, req)
+    this.http.post<Resp>(`/remote/path/resource/access-test`, req)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -2195,7 +2195,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/remote/path/add' \
       -H 'Content-Type: application/json' \
-      -d '{"type":"","url":"","group":"","method":"","desc":"","resCode":""}'
+      -d '{"url":"","group":"","method":"","desc":"","resCode":"","type":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -2222,7 +2222,217 @@
   - Angular HttpClient Demo:
     ```ts
     let req: CreatePathReq | null = null;
-    this.http.post<Resp>(`http://localhost:8089/remote/path/add`, req)
+    this.http.post<Resp>(`/remote/path/add`, req)
+      .subscribe({
+        next: (resp: Resp) => {
+        },
+        error: (err) => {
+          console.log(err)
+        }
+      });
+    ```
+
+- POST /open/api/v1/notification/create
+  - Description: Create platform notification
+  - JSON Request:
+    - "title": (string)
+    - "message": (string)
+    - "receiverUserNos": ([]string)
+  - JSON Response:
+    - "errorCode": (string) error code
+    - "msg": (string) message
+    - "error": (bool) whether the request was successful
+  - cURL:
+    ```sh
+    curl -X POST 'http://localhost:8089/open/api/v1/notification/create' \
+      -H 'Content-Type: application/json' \
+      -d '{"title":"","message":"","receiverUserNos":[]}'
+    ```
+
+  - JSON Request Object In TypeScript:
+    ```ts
+    export interface CreateNotificationReq {
+      title?: string
+      message?: string
+      receiverUserNos?: string[]
+    }
+    ```
+
+  - JSON Response Object In TypeScript:
+    ```ts
+    export interface Resp {
+      errorCode?: string             // error code
+      msg?: string                   // message
+      error?: boolean                // whether the request was successful
+    }
+    ```
+
+  - Angular HttpClient Demo:
+    ```ts
+    let req: CreateNotificationReq | null = null;
+    this.http.post<Resp>(`/open/api/v1/notification/create`, req)
+      .subscribe({
+        next: (resp: Resp) => {
+        },
+        error: (err) => {
+          console.log(err)
+        }
+      });
+    ```
+
+- POST /open/api/v1/notification/query
+  - Description: Query platform notification
+  - JSON Request:
+    - "page": (Paging)
+      - "limit": (int) page limit
+      - "page": (int) page number, 1-based
+      - "total": (int) total count
+    - "status": (string)
+  - JSON Response:
+    - "errorCode": (string) error code
+    - "msg": (string) message
+    - "error": (bool) whether the request was successful
+  - cURL:
+    ```sh
+    curl -X POST 'http://localhost:8089/open/api/v1/notification/query' \
+      -H 'Content-Type: application/json' \
+      -d '{"page":{"total":0,"limit":0,"page":0},"status":""}'
+    ```
+
+  - JSON Request Object In TypeScript:
+    ```ts
+    export interface QueryNotificationReq {
+      page?: Paging
+      status?: string
+    }
+    export interface Paging {
+      limit?: number                 // page limit
+      page?: number                  // page number, 1-based
+      total?: number                 // total count
+    }
+    ```
+
+  - JSON Response Object In TypeScript:
+    ```ts
+    export interface Resp {
+      errorCode?: string             // error code
+      msg?: string                   // message
+      error?: boolean                // whether the request was successful
+    }
+    ```
+
+  - Angular HttpClient Demo:
+    ```ts
+    let req: QueryNotificationReq | null = null;
+    this.http.post<Resp>(`/open/api/v1/notification/query`, req)
+      .subscribe({
+        next: (resp: Resp) => {
+        },
+        error: (err) => {
+          console.log(err)
+        }
+      });
+    ```
+
+- GET /open/api/v1/notification/count
+  - Description: Count received platform notification
+  - JSON Response:
+    - "errorCode": (string) error code
+    - "msg": (string) message
+    - "error": (bool) whether the request was successful
+  - cURL:
+    ```sh
+    curl -X GET 'http://localhost:8089/open/api/v1/notification/count'
+    ```
+
+  - JSON Response Object In TypeScript:
+    ```ts
+    export interface Resp {
+      errorCode?: string             // error code
+      msg?: string                   // message
+      error?: boolean                // whether the request was successful
+    }
+    ```
+
+  - Angular HttpClient Demo:
+    ```ts
+    this.http.get<Resp>(`/open/api/v1/notification/count`)
+      .subscribe({
+        next: (resp: Resp) => {
+        },
+        error: (err) => {
+          console.log(err)
+        }
+      });
+    ```
+
+- POST /open/api/v1/notification/open
+  - Description: Record user opened platform notification
+  - JSON Request:
+    - "notifiNo": (string)
+  - JSON Response:
+    - "errorCode": (string) error code
+    - "msg": (string) message
+    - "error": (bool) whether the request was successful
+  - cURL:
+    ```sh
+    curl -X POST 'http://localhost:8089/open/api/v1/notification/open' \
+      -H 'Content-Type: application/json' \
+      -d '{"notifiNo":""}'
+    ```
+
+  - JSON Request Object In TypeScript:
+    ```ts
+    export interface OpenNotificationReq {
+      notifiNo?: string
+    }
+    ```
+
+  - JSON Response Object In TypeScript:
+    ```ts
+    export interface Resp {
+      errorCode?: string             // error code
+      msg?: string                   // message
+      error?: boolean                // whether the request was successful
+    }
+    ```
+
+  - Angular HttpClient Demo:
+    ```ts
+    let req: OpenNotificationReq | null = null;
+    this.http.post<Resp>(`/open/api/v1/notification/open`, req)
+      .subscribe({
+        next: (resp: Resp) => {
+        },
+        error: (err) => {
+          console.log(err)
+        }
+      });
+    ```
+
+- POST /open/api/v1/notification/open-all
+  - Description: Mark all notifications opened
+  - JSON Response:
+    - "errorCode": (string) error code
+    - "msg": (string) message
+    - "error": (bool) whether the request was successful
+  - cURL:
+    ```sh
+    curl -X POST 'http://localhost:8089/open/api/v1/notification/open-all'
+    ```
+
+  - JSON Response Object In TypeScript:
+    ```ts
+    export interface Resp {
+      errorCode?: string             // error code
+      msg?: string                   // message
+      error?: boolean                // whether the request was successful
+    }
+    ```
+
+  - Angular HttpClient Demo:
+    ```ts
+    this.http.post<Resp>(`/open/api/v1/notification/open-all`)
       .subscribe({
         next: (resp: Resp) => {
         },
@@ -2245,7 +2455,7 @@
   - Angular HttpClient Demo:
     ```ts
     let authorization: any | null = null;
-    this.http.get<any>(`http://localhost:8089/metrics`,
+    this.http.get<any>(`/metrics`,
       {
         headers: {
           "Authorization": authorization
@@ -2268,7 +2478,7 @@
 
   - Angular HttpClient Demo:
     ```ts
-    this.http.get<any>(`http://localhost:8089/debug/pprof`)
+    this.http.get<any>(`/debug/pprof`)
       .subscribe({
         next: () => {
         },
@@ -2286,7 +2496,7 @@
 
   - Angular HttpClient Demo:
     ```ts
-    this.http.get<any>(`http://localhost:8089/debug/pprof/:name`)
+    this.http.get<any>(`/debug/pprof/:name`)
       .subscribe({
         next: () => {
         },
@@ -2304,7 +2514,7 @@
 
   - Angular HttpClient Demo:
     ```ts
-    this.http.get<any>(`http://localhost:8089/debug/pprof/cmdline`)
+    this.http.get<any>(`/debug/pprof/cmdline`)
       .subscribe({
         next: () => {
         },
@@ -2322,7 +2532,7 @@
 
   - Angular HttpClient Demo:
     ```ts
-    this.http.get<any>(`http://localhost:8089/debug/pprof/profile`)
+    this.http.get<any>(`/debug/pprof/profile`)
       .subscribe({
         next: () => {
         },
@@ -2340,7 +2550,7 @@
 
   - Angular HttpClient Demo:
     ```ts
-    this.http.get<any>(`http://localhost:8089/debug/pprof/symbol`)
+    this.http.get<any>(`/debug/pprof/symbol`)
       .subscribe({
         next: () => {
         },
@@ -2358,7 +2568,7 @@
 
   - Angular HttpClient Demo:
     ```ts
-    this.http.get<any>(`http://localhost:8089/debug/pprof/trace`)
+    this.http.get<any>(`/debug/pprof/trace`)
       .subscribe({
         next: () => {
         },
@@ -2378,7 +2588,7 @@
 
   - Angular HttpClient Demo:
     ```ts
-    this.http.get<any>(`http://localhost:8089/doc/api`)
+    this.http.get<any>(`/doc/api`)
       .subscribe({
         next: () => {
         },
