@@ -42,6 +42,4 @@ jwt:
 monitor:
   - service: "logbot"
   - service: "vfm"
-  - service: "docindexer"
   - service: "fstore"
-  - service: "postbox"
