@@ -10,7 +10,6 @@ import (
 
 	"github.com/curtisnewbie/miso/middleware/user-vault/common"
 	"github.com/curtisnewbie/miso/miso"
-	postbox "github.com/curtisnewbie/postbox/api"
 	"github.com/curtisnewbie/user-vault/api"
 	"gorm.io/gorm"
 )
@@ -417,26 +416,14 @@ func UserRegister(rail miso.Rail, db *gorm.DB, req RegisterReq) error {
 		return err
 	}
 
-	commonPool.Go(func() {
-		rail = rail.NextSpan()
-		users, err := FindUserWithRes(rail, db, api.FetchUserWithResourceReq{ResourceCode: ResourceManagerUser})
-		if err != nil {
-			rail.Errorf("failed to FindUserWithRes for UserRegister, notification not created, %v", err)
-			return
-		}
-		un := make([]string, 0, len(users))
-		for _, u := range users {
-			un = append(un, u.UserNo)
-		}
-		err = postbox.CreateNotification(rail, postbox.CreateNotificationReq{
-			Title:           fmt.Sprintf("Review user %v's registration", req.Username),
-			Message:         fmt.Sprintf("Please review new user %v's registration. A role should be assigned for the new user.", req.Username),
-			ReceiverUserNos: un,
-		})
-		if err != nil {
-			rail.Errorf("failed to create notification for UserRegister, %v", err)
-		}
+	err := api.CreateNotifiByAccessPipeline.Send(rail, api.CreateNotifiByAccessEvent{
+		Title:   fmt.Sprintf("Review user %v's registration", req.Username),
+		Message: fmt.Sprintf("Please review new user %v's registration. A role should be assigned for the new user.", req.Username),
+		ResCode: ResourceManagerUser,
 	})
+	if err != nil {
+		rail.Errorf("failed to create notification for UserRegister, %v", err)
+	}
 
 	return nil
 }

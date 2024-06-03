@@ -19,7 +19,7 @@ func preAccessLogTest(t *testing.T) miso.Rail {
 
 func TestSendAccessLogEvent(t *testing.T) {
 	rail := preAccessLogTest(t)
-	er := sendAccessLogEvnet(rail, AccessLogEvent{
+	er := AccessLogPipeline.Send(rail, AccessLogEvent{
 		IpAddress:  "127.0.0.1",
 		UserAgent:  "Linux Ubuntu",
 		UserId:     0,

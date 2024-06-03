@@ -5,17 +5,13 @@ import (
 
 	"github.com/curtisnewbie/miso/middleware/user-vault/common"
 	"github.com/curtisnewbie/miso/miso"
-	"github.com/curtisnewbie/postbox/api"
+	"github.com/curtisnewbie/user-vault/api"
 	"gorm.io/gorm"
 )
 
 const (
 	StatusInit   = "INIT"
 	StatusOpened = "OPENED"
-)
-
-var (
-	ErrUserNotFound = miso.NewErrf("User not found").WithCode(api.CodeUserNotFound)
 )
 
 func CreateNotification(rail miso.Rail, db *gorm.DB, req api.CreateNotificationReq, user common.User) error {
@@ -25,27 +21,6 @@ func CreateNotification(rail miso.Rail, db *gorm.DB, req api.CreateNotificationR
 
 	// check whether the userNos are leegal
 	req.ReceiverUserNos = miso.Distinct(req.ReceiverUserNos)
-
-	// aw := miso.NewAwaitFutures[string](PostboxPool)
-	// for i := range req.ReceiverUserNos {
-	// 	userNo := req.ReceiverUserNos[i]
-	// aw.SubmitAsync(func() (string, error) {
-	// 	_, err := uservault.FindUser(rail.NextSpan(), uservault.FindUserReq{
-	// 		UserNo: &userNo,
-	// 	})
-	// 	if err != nil {
-	// 		rail.Errorf("failed to FindUser, %v", err)
-	// 		return userNo, err
-	// 	}
-	// 	return userNo, err
-	// })
-	// }
-	// futures := aw.Await()
-	// for _, f := range futures {
-	// 	if userNo, err := f.Get(); err != nil {
-	// 		return ErrUserNotFound.WithInternalMsg("failed to FindUser, userNo: %v, %v", userNo, err)
-	// 	}
-	// }
 
 	for _, u := range req.ReceiverUserNos {
 		sr := SaveNotifiReq{

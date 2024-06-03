@@ -3,7 +3,7 @@ package postbox
 import (
 	"github.com/curtisnewbie/miso/middleware/user-vault/common"
 	"github.com/curtisnewbie/miso/miso"
-	"github.com/curtisnewbie/postbox/api"
+	"github.com/curtisnewbie/user-vault/api"
 )
 
 const (

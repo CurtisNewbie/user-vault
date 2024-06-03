@@ -20,7 +20,7 @@
       -H 'x-forwarded-for: ' \
       -H 'user-agent: ' \
       -H 'Content-Type: application/json' \
-      -d '{"password":"","username":""}'
+      -d '{"username":"","password":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -123,7 +123,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/user/add' \
       -H 'Content-Type: application/json' \
-      -d '{"roleNo":"","username":"","password":""}'
+      -d '{"username":"","password":"","roleNo":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -192,7 +192,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/user/list' \
       -H 'Content-Type: application/json' \
-      -d '{"isDisabled":0,"paging":{"limit":0,"page":0,"total":0},"username":"","roleNo":""}'
+      -d '{"username":"","roleNo":"","isDisabled":0,"paging":{"total":0,"limit":0,"page":0}}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -269,7 +269,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/user/info/update' \
       -H 'Content-Type: application/json' \
-      -d '{"isDisabled":0,"userNo":"","roleNo":""}'
+      -d '{"userNo":"","roleNo":"","isDisabled":0}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -316,7 +316,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/user/registration/review' \
       -H 'Content-Type: application/json' \
-      -d '{"reviewStatus":"","userId":0}'
+      -d '{"userId":0,"reviewStatus":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -700,7 +700,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/user/key/list' \
       -H 'Content-Type: application/json' \
-      -d '{"paging":{"total":0,"limit":0,"page":0},"name":""}'
+      -d '{"name":"","paging":{"total":0,"limit":0,"page":0}}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -812,7 +812,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/resource/add' \
       -H 'Content-Type: application/json' \
-      -d '{"code":"","name":""}'
+      -d '{"name":"","code":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -1529,7 +1529,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/path/list' \
       -H 'Content-Type: application/json' \
-      -d '{"paging":{"limit":0,"page":0,"total":0},"resCode":"","pgroup":"","url":"","ptype":""}'
+      -d '{"pgroup":"","url":"","ptype":"","paging":{"limit":0,"page":0,"total":0},"resCode":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -2140,7 +2140,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/remote/path/resource/access-test' \
       -H 'Content-Type: application/json' \
-      -d '{"method":"","roleNo":"","url":""}'
+      -d '{"roleNo":"","url":"","method":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -2195,7 +2195,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/remote/path/add' \
       -H 'Content-Type: application/json' \
-      -d '{"url":"","group":"","method":"","desc":"","resCode":"","type":""}'
+      -d '{"type":"","url":"","group":"","method":"","desc":"","resCode":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -2296,7 +2296,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/v1/notification/query' \
       -H 'Content-Type: application/json' \
-      -d '{"page":{"total":0,"limit":0,"page":0},"status":""}'
+      -d '{"status":"","page":{"limit":0,"page":0,"total":0}}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -2597,3 +2597,25 @@
         }
       });
     ```
+
+# Event Pipelines
+
+- CreateNotifiPipeline
+  - Description: Pipeline that creates notifications to the specified list of users
+  - RabbitMQ Queue: `pieline.user-vault.create-notifi`
+  - RabbitMQ Exchange: `pieline.user-vault.create-notifi`
+  - RabbitMQ RoutingKey: `#`
+  - Event Payload:
+    - "title": (string) notification title
+    - "message": (string) notification content
+    - "receiverUserNos": ([]string) user_no of receivers
+
+- CreateNotifiByAccessPipeline
+  - Description: Pipeline that creates notifications to users who have access to the specified resource
+  - RabbitMQ Queue: `pieline.user-vault.create-notifi.by-access`
+  - RabbitMQ Exchange: `pieline.user-vault.create-notifi.by-access`
+  - RabbitMQ RoutingKey: `#`
+  - Event Payload:
+    - "title": (string) notification title
+    - "message": (string) notification content
+    - "resCode": (string) resource code

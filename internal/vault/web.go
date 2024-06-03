@@ -302,7 +302,7 @@ func UserLoginEp(inb *miso.Inbound, req LoginReq) (string, error) {
 	remoteAddr := RemoteAddr(req.XForwardedFor)
 	userAgent := req.UserAgent
 
-	if er := sendAccessLogEvnet(rail, AccessLogEvent{
+	if er := AccessLogPipeline.Send(rail, AccessLogEvent{
 		IpAddress:  remoteAddr,
 		UserAgent:  userAgent,
 		UserId:     user.Id,

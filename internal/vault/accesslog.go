@@ -6,10 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	accessLogEventBus = "event.bus.user-vault.access.log"
-)
-
 type AccessLog struct {
 	Id         int
 	UserAgent  string
