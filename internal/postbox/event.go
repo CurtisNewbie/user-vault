@@ -1,13 +1,22 @@
 package postbox
 
 import (
+	"time"
+
 	"github.com/curtisnewbie/miso/middleware/user-vault/common"
 	"github.com/curtisnewbie/miso/miso"
 	"github.com/curtisnewbie/user-vault/api"
 	"github.com/curtisnewbie/user-vault/internal/vault"
 )
 
+var (
+	UserWithResCache = miso.NewRCache[[]api.UserInfo]("user-vault:users-with-res:cache", miso.RCacheConfig{
+		Exp: time.Second * 30,
+	})
+)
+
 func InitPipeline(rail miso.Rail) error {
+
 	api.CreateNotifiPipeline.Listen(3, func(rail miso.Rail, evt api.CreateNotifiEvent) error {
 		if err := miso.Validate(evt); err != nil {
 			rail.Errorf("Invalid event, %#v, %v", evt, err)
@@ -22,9 +31,15 @@ func InitPipeline(rail miso.Rail) error {
 			return nil
 		}
 
-		users, err := vault.FindUserWithRes(rail, miso.GetMySQL(), api.FetchUserWithResourceReq{ResourceCode: evt.ResCode})
+		users, err := UserWithResCache.Get(rail, evt.ResCode, func() ([]api.UserInfo, error) {
+			users, err := vault.FindUserWithRes(rail, miso.GetMySQL(), api.FetchUserWithResourceReq{ResourceCode: evt.ResCode})
+			if err != nil {
+				rail.Errorf("failed to FindUserWithRes, %v", err)
+				return nil, err
+			}
+			return users, err
+		})
 		if err != nil {
-			rail.Errorf("failed to FindUserWithRes, %v", err)
 			return err
 		}
 
