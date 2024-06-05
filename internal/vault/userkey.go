@@ -23,6 +23,7 @@ type NewUserKey struct {
 	SecretKey      string
 	ExpirationTime miso.ETime
 	UserId         int
+	UserNo         string
 }
 
 func GenUserKey(rail miso.Rail, tx *gorm.DB, req GenUserKeyReq, username string) error {
@@ -43,6 +44,7 @@ func GenUserKey(rail miso.Rail, tx *gorm.DB, req GenUserKeyReq, username string)
 			SecretKey:      key,
 			ExpirationTime: miso.ETime(time.Now().Add(userKeyExpDur)),
 			UserId:         user.Id,
+			UserNo:         user.UserNo,
 		}).
 		Error
 }
@@ -66,6 +68,7 @@ func ListUserKeys(rail miso.Rail, tx *gorm.DB, req ListUserKeysReq, user common.
 		WithBaseQuery(func(tx *gorm.DB) *gorm.DB {
 			tx = tx.Table("user_key").
 				Where("user_no = ?", user.UserNo).
+				Where("expiration_time > ?", miso.Now()).
 				Where("is_del = 0")
 
 			if !miso.IsBlankStr(req.Name) {

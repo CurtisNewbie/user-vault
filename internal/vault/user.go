@@ -165,7 +165,7 @@ func userLogin(rail miso.Rail, tx *gorm.DB, username string, password string) (U
 	}
 
 	// if the password is incorrect, maybe a user_key is used instead
-	ok, err := checkUserKey(rail, tx, user.Id, password)
+	ok, err := checkUserKey(rail, tx, user.UserNo, password)
 	if err != nil {
 		return User{}, err
 	}
@@ -176,19 +176,19 @@ func userLogin(rail miso.Rail, tx *gorm.DB, username string, password string) (U
 	return User{}, miso.NewErrf("Password incorrect").WithInternalMsg("User %v login failed, password incorrect", username)
 }
 
-func checkUserKey(rail miso.Rail, tx *gorm.DB, userId int, password string) (bool, error) {
+func checkUserKey(rail miso.Rail, tx *gorm.DB, userNo string, password string) (bool, error) {
 	if password == "" {
 		return false, nil
 	}
 
 	var id int
 	t := tx.Raw(
-		`SELECT id FROM user_key WHERE user_id = ? AND secret_key = ? AND expiration_time > ? AND is_del = '0' LIMIT 1`,
-		userId, password, miso.Now(),
+		`SELECT id FROM user_key WHERE user_no = ? AND secret_key = ? AND expiration_time > ? AND is_del = '0' LIMIT 1`,
+		userNo, password, miso.Now(),
 	).
 		Scan(&id)
 	if t.Error != nil {
-		rail.Errorf("failed to checkUserKey, userId: %v, %v", userId, t.Error)
+		rail.Errorf("failed to checkUserKey, userNo: %v, %v", userNo, t.Error)
 	}
 	return id > 0, nil
 }

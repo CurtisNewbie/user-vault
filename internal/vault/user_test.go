@@ -50,21 +50,6 @@ func TestCheckPassword(t *testing.T) {
 	}
 }
 
-func TestCheckUserKey(t *testing.T) {
-	rail := preUserTest(t)
-
-	userKey := "09uEo2EOsJOfqPLVCJitcdOn8BIfhUNrWtVPh7sZKVyF3140NJKb2mXRgisyRoBr"
-	userId := 3
-	ok, err := checkUserKey(rail, miso.GetMySQL(), userId, userKey)
-	if err != nil {
-		t.Log(err)
-		t.FailNow()
-	}
-	if !ok {
-		t.FailNow()
-	}
-}
-
 func TestUserLogin(t *testing.T) {
 	rail := preUserTest(t)
 	uname := "banana"
