@@ -1,11 +1,12 @@
 package vault
 
 import (
+	"github.com/curtisnewbie/miso/middleware/rabbit"
 	"github.com/curtisnewbie/miso/miso"
 )
 
 var (
-	AccessLogPipeline = miso.NewEventPipeline[AccessLogEvent]("event.bus.user-vault.access.log").
+	AccessLogPipeline = rabbit.NewEventPipeline[AccessLogEvent]("event.bus.user-vault.access.log").
 		LogPayload().
 		MaxRetry(2).
 		Listen(2, func(rail miso.Rail, evt AccessLogEvent) error {

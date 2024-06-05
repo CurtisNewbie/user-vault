@@ -1,14 +1,14 @@
 package api
 
-import "github.com/curtisnewbie/miso/miso"
+import "github.com/curtisnewbie/miso/middleware/rabbit"
 
 var (
-	CreateNotifiPipeline = miso.NewEventPipeline[CreateNotifiEvent]("pieline.user-vault.create-notifi").
+	CreateNotifiPipeline = rabbit.NewEventPipeline[CreateNotifiEvent]("pieline.user-vault.create-notifi").
 				LogPayload().
 				MaxRetry(3).
 				Document("CreateNotifiPipeline", "Pipeline that creates notifications to the specified list of users", "user-vault")
 
-	CreateNotifiByAccessPipeline = miso.NewEventPipeline[CreateNotifiByAccessEvent]("pieline.user-vault.create-notifi.by-access").
+	CreateNotifiByAccessPipeline = rabbit.NewEventPipeline[CreateNotifiByAccessEvent]("pieline.user-vault.create-notifi.by-access").
 					LogPayload().
 					MaxRetry(3).
 					Document("CreateNotifiByAccessPipeline", "Pipeline that creates notifications to users who have access to the specified resource", "user-vault")

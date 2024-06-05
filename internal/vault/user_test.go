@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/curtisnewbie/miso/middleware/crypto"
 	"github.com/curtisnewbie/miso/middleware/user-vault/common"
 	"github.com/curtisnewbie/miso/miso"
 	"github.com/curtisnewbie/user-vault/api"
@@ -89,7 +90,7 @@ func TestUserLogin(t *testing.T) {
 	}
 	t.Logf("tkn: %+v", tkn)
 
-	decoded, err := miso.JwtDecode(tkn)
+	decoded, err := crypto.JwtDecode(tkn)
 	if err != nil {
 		t.Log(err)
 		t.FailNow()

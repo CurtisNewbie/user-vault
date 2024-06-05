@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/curtisnewbie/miso/middleware/crypto"
 	"github.com/curtisnewbie/miso/middleware/user-vault/common"
 	"github.com/curtisnewbie/miso/miso"
 	"github.com/curtisnewbie/user-vault/api"
@@ -130,7 +131,7 @@ func buildToken(user TokenUser, exp time.Duration) (string, error) {
 		"roleno":   user.RoleNo,
 	}
 
-	return miso.JwtEncode(claims, exp)
+	return crypto.JwtEncode(claims, exp)
 }
 
 func userLogin(rail miso.Rail, tx *gorm.DB, username string, password string) (User, error) {
@@ -527,7 +528,7 @@ type ExchangeTokenReq struct {
 
 func DecodeTokenUser(rail miso.Rail, token string) (TokenUser, error) {
 	tu := TokenUser{}
-	decoded, err := miso.JwtDecode(token)
+	decoded, err := crypto.JwtDecode(token)
 	if err != nil || !decoded.Valid {
 		return TokenUser{}, miso.NewErrf("Illegal token").WithInternalMsg("Failed to decode jwt token, %v", err)
 	}
@@ -543,7 +544,7 @@ func DecodeTokenUser(rail miso.Rail, token string) (TokenUser, error) {
 }
 
 func DecodeTokenUsername(rail miso.Rail, token string) (string, error) {
-	decoded, err := miso.JwtDecode(token)
+	decoded, err := crypto.JwtDecode(token)
 	if err != nil || !decoded.Valid {
 		return "", miso.NewErrf("Illegal token").WithInternalMsg("Failed to decode jwt token, %v", err)
 	}

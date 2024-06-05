@@ -3,6 +3,7 @@ package vault
 import (
 	"testing"
 
+	"github.com/curtisnewbie/miso/middleware/rabbit"
 	"github.com/curtisnewbie/miso/miso"
 )
 
@@ -11,7 +12,7 @@ func preAccessLogTest(t *testing.T) miso.Rail {
 	if e := miso.InitMySQLFromProp(rail); e != nil {
 		t.Fatal(e)
 	}
-	if e := miso.StartRabbitMqClient(rail); e != nil {
+	if e := rabbit.StartRabbitMqClient(rail); e != nil {
 		t.Fatal(e)
 	}
 	return rail
