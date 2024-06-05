@@ -10,7 +10,6 @@ var (
 		LogPayload().
 		MaxRetry(2).
 		Listen(2, func(rail miso.Rail, evt AccessLogEvent) error {
-			rail.Infof("Received AccessLogEvent: %+v", evt)
 			return SaveAccessLogEvent(rail, miso.GetMySQL(), SaveAccessLogParam(evt))
 		})
 )
