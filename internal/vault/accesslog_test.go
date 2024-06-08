@@ -5,6 +5,7 @@ import (
 
 	"github.com/curtisnewbie/miso/middleware/rabbit"
 	"github.com/curtisnewbie/miso/miso"
+	"github.com/curtisnewbie/miso/util"
 )
 
 func preAccessLogTest(t *testing.T) miso.Rail {
@@ -26,7 +27,7 @@ func TestSendAccessLogEvent(t *testing.T) {
 		UserId:     0,
 		Username:   "yongj.zhuang",
 		Url:        passwordLoginUrl,
-		AccessTime: miso.Now(),
+		AccessTime: util.Now(),
 		Success:    true,
 	})
 

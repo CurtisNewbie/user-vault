@@ -1,11 +1,11 @@
 package postbox
 
-import "github.com/curtisnewbie/miso/miso"
+import "github.com/curtisnewbie/miso/util"
 
 var (
-	PostboxPool *miso.AsyncPool
+	PostboxPool *util.AsyncPool
 )
 
 func init() {
-	PostboxPool = miso.NewAsyncPool(500, 10)
+	PostboxPool = util.NewAsyncPool(500, 10)
 }

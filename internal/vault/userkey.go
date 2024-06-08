@@ -5,6 +5,7 @@ import (
 
 	"github.com/curtisnewbie/miso/middleware/user-vault/common"
 	"github.com/curtisnewbie/miso/miso"
+	"github.com/curtisnewbie/miso/util"
 	"gorm.io/gorm"
 )
 
@@ -21,7 +22,7 @@ type GenUserKeyReq struct {
 type NewUserKey struct {
 	Name           string
 	SecretKey      string
-	ExpirationTime miso.ETime
+	ExpirationTime util.ETime
 	UserId         int
 	UserNo         string
 }
@@ -37,12 +38,12 @@ func GenUserKey(rail miso.Rail, tx *gorm.DB, req GenUserKeyReq, username string)
 		return miso.NewErrf("Password incorrect, unable to generate user secret key")
 	}
 
-	key := miso.RandStr(userKeyLen)
+	key := util.RandStr(userKeyLen)
 	return tx.Table("user_key").
 		Create(NewUserKey{
 			Name:           req.KeyName,
 			SecretKey:      key,
-			ExpirationTime: miso.ETime(time.Now().Add(userKeyExpDur)),
+			ExpirationTime: util.ETime(time.Now().Add(userKeyExpDur)),
 			UserId:         user.Id,
 			UserNo:         user.UserNo,
 		}).
@@ -58,8 +59,8 @@ type ListedUserKey struct {
 	Id             int        `json:"id"`
 	SecretKey      string     `json:"secretKey"`
 	Name           string     `json:"name"`
-	ExpirationTime miso.ETime `json:"expirationTime"`
-	CreateTime     miso.ETime `json:"createTime"`
+	ExpirationTime util.ETime `json:"expirationTime"`
+	CreateTime     util.ETime `json:"createTime"`
 }
 
 func ListUserKeys(rail miso.Rail, tx *gorm.DB, req ListUserKeysReq, user common.User) (miso.PageRes[ListedUserKey], error) {
@@ -68,10 +69,10 @@ func ListUserKeys(rail miso.Rail, tx *gorm.DB, req ListUserKeysReq, user common.
 		WithBaseQuery(func(tx *gorm.DB) *gorm.DB {
 			tx = tx.Table("user_key").
 				Where("user_no = ?", user.UserNo).
-				Where("expiration_time > ?", miso.Now()).
+				Where("expiration_time > ?", util.Now()).
 				Where("is_del = 0")
 
-			if !miso.IsBlankStr(req.Name) {
+			if !util.IsBlankStr(req.Name) {
 				tx = tx.Where("name LIKE ?", "%"+req.Name+"%")
 			}
 			return tx

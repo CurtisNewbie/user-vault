@@ -3,6 +3,7 @@ package vault
 import (
 	"github.com/curtisnewbie/miso/middleware/rabbit"
 	"github.com/curtisnewbie/miso/miso"
+	"github.com/curtisnewbie/miso/util"
 )
 
 var (
@@ -21,5 +22,5 @@ type AccessLogEvent struct {
 	Username   string
 	Url        string
 	Success    bool
-	AccessTime miso.ETime
+	AccessTime util.ETime
 }

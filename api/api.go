@@ -1,6 +1,6 @@
 package api
 
-import "github.com/curtisnewbie/miso/miso"
+import "github.com/curtisnewbie/miso/util"
 
 type FindUserReq struct {
 	UserId   *int    `json:"userId"`
@@ -16,9 +16,9 @@ type UserInfo struct {
 	UserNo       string
 	ReviewStatus string
 	IsDisabled   int
-	CreateTime   miso.ETime
+	CreateTime   util.ETime
 	CreateBy     string
-	UpdateTime   miso.ETime
+	UpdateTime   util.ETime
 	UpdateBy     string
 }
 

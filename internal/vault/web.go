@@ -6,6 +6,7 @@ import (
 	"github.com/curtisnewbie/miso/middleware/user-vault/auth"
 	"github.com/curtisnewbie/miso/middleware/user-vault/common"
 	"github.com/curtisnewbie/miso/miso"
+	"github.com/curtisnewbie/miso/util"
 	"github.com/curtisnewbie/user-vault/api"
 )
 
@@ -309,7 +310,7 @@ func UserLoginEp(inb *miso.Inbound, req LoginReq) (string, error) {
 		Username:   req.Username,
 		Url:        passwordLoginUrl,
 		Success:    err == nil,
-		AccessTime: miso.Now(),
+		AccessTime: util.Now(),
 	}); er != nil {
 		rail.Errorf("Failed to sendAccessLogEvent, username: %v, remoteAddr: %v, userAgent: %v, %v",
 			req.Username, remoteAddr, userAgent, er)

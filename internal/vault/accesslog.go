@@ -3,6 +3,7 @@ package vault
 import (
 	"github.com/curtisnewbie/miso/middleware/user-vault/common"
 	"github.com/curtisnewbie/miso/miso"
+	"github.com/curtisnewbie/miso/util"
 	"gorm.io/gorm"
 )
 
@@ -13,10 +14,10 @@ type AccessLog struct {
 	UserId     int
 	Username   string
 	Url        string
-	AccessTime miso.ETime
-	CreateTime miso.ETime
+	AccessTime util.ETime
+	CreateTime util.ETime
 	CreateBy   string
-	UpdateTime miso.ETime
+	UpdateTime util.ETime
 	UpdateBy   string
 	IsDel      bool
 }
@@ -28,7 +29,7 @@ type SaveAccessLogParam struct {
 	Username   string
 	Url        string
 	Success    bool
-	AccessTime miso.ETime
+	AccessTime util.ETime
 }
 
 func SaveAccessLogEvent(rail miso.Rail, tx *gorm.DB, p SaveAccessLogParam) error {
@@ -41,7 +42,7 @@ type ListedAccessLog struct {
 	IpAddress  string     `json:"ipAddress"`
 	Username   string     `json:"username"`
 	Url        string     `json:"url"`
-	AccessTime miso.ETime `json:"accessTime"`
+	AccessTime util.ETime `json:"accessTime"`
 	Success    bool
 }
 

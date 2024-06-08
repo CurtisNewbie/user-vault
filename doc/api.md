@@ -20,7 +20,7 @@
       -H 'x-forwarded-for: ' \
       -H 'user-agent: ' \
       -H 'Content-Type: application/json' \
-      -d '{"password":"","username":""}'
+      -d '{"username":"","password":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -43,10 +43,18 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let xForwardedFor: any | null = null;
     let userAgent: any | null = null;
     let req: LoginReq | null = null;
-    this.http.post<Resp>(`/open/api/user/login`, req,
+    this.http.post<any>(`/open/api/user/login`, req,
       {
         headers: {
           "x-forwarded-for": xForwardedFor
@@ -54,10 +62,16 @@
         }
       })
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: string = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -98,19 +112,33 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: RegisterReq | null = null;
-    this.http.post<Resp>(`/open/api/user/register/request`, req)
+    this.http.post<any>(`/open/api/user/register/request`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/user/add
   - Description: Admin create new user
+  - Bound to Resource: `"manage-users"`
   - JSON Request:
     - "username": (string)
     - "password": (string)
@@ -146,19 +174,33 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: AddUserParam | null = null;
-    this.http.post<Resp>(`/open/api/user/add`, req)
+    this.http.post<any>(`/open/api/user/add`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/user/list
   - Description: Admin list users
+  - Bound to Resource: `"manage-users"`
   - JSON Request:
     - "username": (*string)
     - "roleNo": (*string)
@@ -192,7 +234,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/user/list' \
       -H 'Content-Type: application/json' \
-      -d '{"roleNo":"","isDisabled":0,"paging":{"total":0,"limit":0,"page":0},"username":""}'
+      -d '{"username":"","roleNo":"","isDisabled":0,"paging":{"limit":0,"page":0,"total":0}}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -244,19 +286,34 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: ListUserReq | null = null;
-    this.http.post<Resp>(`/open/api/user/list`, req)
+    this.http.post<any>(`/open/api/user/list`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: PageRes = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/user/info/update
   - Description: Admin update user info
+  - Bound to Resource: `"manage-users"`
   - JSON Request:
     - "userNo": (string)
     - "roleNo": (string)
@@ -269,7 +326,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/user/info/update' \
       -H 'Content-Type: application/json' \
-      -d '{"roleNo":"","isDisabled":0,"userNo":""}'
+      -d '{"userNo":"","roleNo":"","isDisabled":0}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -292,19 +349,33 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: AdminUpdateUserReq | null = null;
-    this.http.post<Resp>(`/open/api/user/info/update`, req)
+    this.http.post<any>(`/open/api/user/info/update`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/user/registration/review
   - Description: Admin review user registration
+  - Bound to Resource: `"manage-users"`
   - JSON Request:
     - "userId": (int)
     - "reviewStatus": (string)
@@ -338,13 +409,26 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: AdminReviewUserReq | null = null;
-    this.http.post<Resp>(`/open/api/user/registration/review`, req)
+    this.http.post<any>(`/open/api/user/registration/review`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -388,18 +472,33 @@
 
   - Angular HttpClient Demo:
     ```ts
-    this.http.get<Resp>(`/open/api/user/info`)
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
+    this.http.get<any>(`/open/api/user/info`)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: UserInfoRes = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/user/password/update
   - Description: User update password
+  - Bound to Resource: `"basic-user"`
   - JSON Request:
     - "prevPassword": (string)
     - "newPassword": (string)
@@ -433,13 +532,26 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: UpdatePasswordReq | null = null;
-    this.http.post<Resp>(`/open/api/user/password/update`, req)
+    this.http.post<any>(`/open/api/user/password/update`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -480,13 +592,27 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: ExchangeTokenReq | null = null;
-    this.http.post<Resp>(`/open/api/token/exchange`, req)
+    this.http.post<any>(`/open/api/token/exchange`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: string = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -532,19 +658,34 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let token: any | null = null;
-    this.http.get<Resp>(`/open/api/token/user?token=${token}`)
+    this.http.get<any>(`/open/api/token/user?token=${token}`)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: UserInfoBrief = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/access/history
   - Description: User list access logs
+  - Bound to Resource: `"basic-user"`
   - JSON Request:
     - "paging": (Paging)
       - "limit": (int) page limit
@@ -571,7 +712,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/access/history' \
       -H 'Content-Type: application/json' \
-      -d '{"paging":{"page":0,"total":0,"limit":0}}'
+      -d '{"paging":{"limit":0,"page":0,"total":0}}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -616,19 +757,34 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: ListAccessLogReq | null = null;
-    this.http.post<Resp>(`/open/api/access/history`, req)
+    this.http.post<any>(`/open/api/access/history`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: PageRes = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/user/key/generate
   - Description: User generate user key
+  - Bound to Resource: `"basic-user"`
   - JSON Request:
     - "password": (string)
     - "keyName": (string)
@@ -662,19 +818,33 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: GenUserKeyReq | null = null;
-    this.http.post<Resp>(`/open/api/user/key/generate`, req)
+    this.http.post<any>(`/open/api/user/key/generate`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/user/key/list
   - Description: User list user keys
+  - Bound to Resource: `"basic-user"`
   - JSON Request:
     - "paging": (Paging)
       - "limit": (int) page limit
@@ -700,7 +870,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/user/key/list' \
       -H 'Content-Type: application/json' \
-      -d '{"paging":{"page":0,"total":0,"limit":0},"name":""}'
+      -d '{"paging":{"limit":0,"page":0,"total":0},"name":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -744,19 +914,34 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: ListUserKeysReq | null = null;
-    this.http.post<Resp>(`/open/api/user/key/list`, req)
+    this.http.post<any>(`/open/api/user/key/list`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: PageRes = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/user/key/delete
   - Description: User delete user key
+  - Bound to Resource: `"basic-user"`
   - JSON Request:
     - "userKeyId": (int)
   - JSON Response:
@@ -788,19 +973,33 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: DeleteUserKeyReq | null = null;
-    this.http.post<Resp>(`/open/api/user/key/delete`, req)
+    this.http.post<any>(`/open/api/user/key/delete`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/resource/add
   - Description: Admin add resource
+  - Bound to Resource: `"manage-resources"`
   - JSON Request:
     - "name": (string)
     - "code": (string)
@@ -834,19 +1033,33 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: CreateResReq | null = null;
-    this.http.post<Resp>(`/open/api/resource/add`, req)
+    this.http.post<any>(`/open/api/resource/add`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/resource/remove
   - Description: Admin remove resource
+  - Bound to Resource: `"manage-resources"`
   - JSON Request:
     - "resCode": (string)
   - JSON Response:
@@ -878,19 +1091,33 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: DeleteResourceReq | null = null;
-    this.http.post<Resp>(`/open/api/resource/remove`, req)
+    this.http.post<any>(`/open/api/resource/remove`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - GET /open/api/resource/brief/candidates
   - Description: List all resource candidates for role
+  - Bound to Resource: `"manage-resources"`
   - Query Parameter:
     - "roleNo": Role No
   - JSON Response:
@@ -921,19 +1148,34 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let roleNo: any | null = null;
-    this.http.get<Resp>(`/open/api/resource/brief/candidates?roleNo=${roleNo}`)
+    this.http.get<any>(`/open/api/resource/brief/candidates?roleNo=${roleNo}`)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: ResBrief[] = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/resource/list
   - Description: Admin list resources
+  - Bound to Resource: `"manage-resources"`
   - JSON Request:
     - "paging": (Paging)
       - "limit": (int) page limit
@@ -1005,13 +1247,27 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: ListResReq | null = null;
-    this.http.post<Resp>(`/open/api/resource/list`, req)
+    this.http.post<any>(`/open/api/resource/list`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: ListResResp = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -1047,12 +1303,26 @@
 
   - Angular HttpClient Demo:
     ```ts
-    this.http.get<Resp>(`/open/api/resource/brief/user`)
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
+    this.http.get<any>(`/open/api/resource/brief/user`)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: ResBrief[] = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -1088,18 +1358,33 @@
 
   - Angular HttpClient Demo:
     ```ts
-    this.http.get<Resp>(`/open/api/resource/brief/all`)
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
+    this.http.get<any>(`/open/api/resource/brief/all`)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: ResBrief[] = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/role/resource/add
   - Description: Admin add resource to role
+  - Bound to Resource: `"manage-resources"`
   - JSON Request:
     - "roleNo": (string)
     - "resCode": (string)
@@ -1133,19 +1418,33 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: AddRoleResReq | null = null;
-    this.http.post<Resp>(`/open/api/role/resource/add`, req)
+    this.http.post<any>(`/open/api/role/resource/add`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/role/resource/remove
   - Description: Admin remove resource from role
+  - Bound to Resource: `"manage-resources"`
   - JSON Request:
     - "roleNo": (string)
     - "resCode": (string)
@@ -1179,19 +1478,33 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: RemoveRoleResReq | null = null;
-    this.http.post<Resp>(`/open/api/role/resource/remove`, req)
+    this.http.post<any>(`/open/api/role/resource/remove`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/role/add
   - Description: Admin add role
+  - Bound to Resource: `"manage-resources"`
   - JSON Request:
     - "name": (string)
   - JSON Response:
@@ -1223,19 +1536,33 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: AddRoleReq | null = null;
-    this.http.post<Resp>(`/open/api/role/add`, req)
+    this.http.post<any>(`/open/api/role/add`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/role/list
   - Description: Admin list roles
+  - Bound to Resource: `"manage-resources"`
   - JSON Request:
     - "paging": (Paging)
       - "limit": (int) page limit
@@ -1262,7 +1589,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/role/list' \
       -H 'Content-Type: application/json' \
-      -d '{"paging":{"limit":0,"page":0,"total":0}}'
+      -d '{"paging":{"total":0,"limit":0,"page":0}}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -1307,19 +1634,34 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: ListRoleReq | null = null;
-    this.http.post<Resp>(`/open/api/role/list`, req)
+    this.http.post<any>(`/open/api/role/list`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: ListRoleResp = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - GET /open/api/role/brief/all
   - Description: Admin list role brief info
+  - Bound to Resource: `"manage-resources"`
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -1348,18 +1690,33 @@
 
   - Angular HttpClient Demo:
     ```ts
-    this.http.get<Resp>(`/open/api/role/brief/all`)
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
+    this.http.get<any>(`/open/api/role/brief/all`)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: RoleBrief[] = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/role/resource/list
   - Description: Admin list resources of role
+  - Bound to Resource: `"manage-resources"`
   - JSON Request:
     - "paging": (Paging)
       - "limit": (int) page limit
@@ -1429,13 +1786,27 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: ListRoleResReq | null = null;
-    this.http.post<Resp>(`/open/api/role/resource/list`, req)
+    this.http.post<any>(`/open/api/role/resource/list`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: ListRoleResResp = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -1482,19 +1853,34 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: RoleInfoReq | null = null;
-    this.http.post<Resp>(`/open/api/role/info`, req)
+    this.http.post<any>(`/open/api/role/info`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: RoleInfoResp = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/path/list
   - Description: Admin list paths
+  - Bound to Resource: `"manage-resources"`
   - JSON Request:
     - "resCode": (string)
     - "pgroup": (string)
@@ -1529,7 +1915,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/path/list' \
       -H 'Content-Type: application/json' \
-      -d '{"url":"","ptype":"","paging":{"limit":0,"page":0,"total":0},"resCode":"","pgroup":""}'
+      -d '{"ptype":"","paging":{"limit":0,"page":0,"total":0},"resCode":"","pgroup":"","url":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -1582,19 +1968,34 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: ListPathReq | null = null;
-    this.http.post<Resp>(`/open/api/path/list`, req)
+    this.http.post<any>(`/open/api/path/list`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: ListPathResp = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/path/resource/bind
   - Description: Admin bind resource to path
+  - Bound to Resource: `"manage-resources"`
   - JSON Request:
     - "pathNo": (string)
     - "resCode": (string)
@@ -1628,19 +2029,33 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: BindPathResReq | null = null;
-    this.http.post<Resp>(`/open/api/path/resource/bind`, req)
+    this.http.post<any>(`/open/api/path/resource/bind`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/path/resource/unbind
   - Description: Admin unbind resource and path
+  - Bound to Resource: `"manage-resources"`
   - JSON Request:
     - "pathNo": (string)
     - "resCode": (string)
@@ -1674,19 +2089,33 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: UnbindPathResReq | null = null;
-    this.http.post<Resp>(`/open/api/path/resource/unbind`, req)
+    this.http.post<any>(`/open/api/path/resource/unbind`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/path/delete
   - Description: Admin delete path
+  - Bound to Resource: `"manage-resources"`
   - JSON Request:
     - "pathNo": (string)
   - JSON Response:
@@ -1718,19 +2147,33 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: DeletePathReq | null = null;
-    this.http.post<Resp>(`/open/api/path/delete`, req)
+    this.http.post<any>(`/open/api/path/delete`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/path/update
   - Description: Admin update path
+  - Bound to Resource: `"manage-resources"`
   - JSON Request:
     - "type": (string) path type: 'PROTECTED' - authorization required, 'PUBLIC' - publicly accessible
     - "pathNo": (string)
@@ -1743,7 +2186,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/path/update' \
       -H 'Content-Type: application/json' \
-      -d '{"type":"","pathNo":"","group":""}'
+      -d '{"pathNo":"","group":"","type":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -1766,13 +2209,26 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: UpdatePathReq | null = null;
-    this.http.post<Resp>(`/open/api/path/update`, req)
+    this.http.post<any>(`/open/api/path/update`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -1840,13 +2296,27 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: FindUserReq | null = null;
-    this.http.post<Resp>(`/remote/user/info`, req)
+    this.http.post<any>(`/remote/user/info`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: UserInfo = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -1877,13 +2347,27 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let username: any | null = null;
-    this.http.get<Resp>(`/remote/user/id?username=${username}`)
+    this.http.get<any>(`/remote/user/id?username=${username}`)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: number = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -1927,13 +2411,27 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: FetchNameByUserNoReq | null = null;
-    this.http.post<Resp>(`/remote/user/userno/username`, req)
+    this.http.post<any>(`/remote/user/userno/username`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: FetchUsernamesRes = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -1997,13 +2495,27 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: FetchUsersWithRoleReq | null = null;
-    this.http.post<Resp>(`/remote/user/list/with-role`, req)
+    this.http.post<any>(`/remote/user/list/with-role`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: UserInfo[] = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -2067,13 +2579,27 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: FetchUserWithResourceReq | null = null;
-    this.http.post<Resp>(`/remote/user/list/with-resource`, req)
+    this.http.post<any>(`/remote/user/list/with-resource`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: UserInfo[] = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -2113,13 +2639,26 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: CreateResReq | null = null;
-    this.http.post<Resp>(`/remote/resource/add`, req)
+    this.http.post<any>(`/remote/resource/add`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -2140,7 +2679,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/remote/path/resource/access-test' \
       -H 'Content-Type: application/json' \
-      -d '{"roleNo":"","url":"","method":""}'
+      -d '{"url":"","method":"","roleNo":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -2167,13 +2706,27 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: TestResAccessReq | null = null;
-    this.http.post<Resp>(`/remote/path/resource/access-test`, req)
+    this.http.post<any>(`/remote/path/resource/access-test`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: TestResAccessResp = resp.data;
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -2195,7 +2748,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/remote/path/add' \
       -H 'Content-Type: application/json' \
-      -d '{"type":"","url":"","group":"","method":"","desc":"","resCode":""}'
+      -d '{"desc":"","resCode":"","type":"","url":"","group":"","method":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -2221,19 +2774,33 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: CreatePathReq | null = null;
-    this.http.post<Resp>(`/remote/path/add`, req)
+    this.http.post<any>(`/remote/path/add`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/v1/notification/create
   - Description: Create platform notification
+  - Bound to Resource: `"postbox:notification:create"`
   - JSON Request:
     - "title": (string)
     - "message": (string)
@@ -2246,7 +2813,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/v1/notification/create' \
       -H 'Content-Type: application/json' \
-      -d '{"title":"","message":"","receiverUserNos":[]}'
+      -d '{"receiverUserNos":[],"title":"","message":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -2269,19 +2836,33 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: CreateNotificationReq | null = null;
-    this.http.post<Resp>(`/open/api/v1/notification/create`, req)
+    this.http.post<any>(`/open/api/v1/notification/create`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/v1/notification/query
   - Description: Query platform notification
+  - Bound to Resource: `"postbox:notification:query"`
   - JSON Request:
     - "page": (Paging)
       - "limit": (int) page limit
@@ -2296,7 +2877,7 @@
     ```sh
     curl -X POST 'http://localhost:8089/open/api/v1/notification/query' \
       -H 'Content-Type: application/json' \
-      -d '{"page":{"total":0,"limit":0,"page":0},"status":""}'
+      -d '{"page":{"limit":0,"page":0,"total":0},"status":""}'
     ```
 
   - JSON Request Object In TypeScript:
@@ -2323,19 +2904,33 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: QueryNotificationReq | null = null;
-    this.http.post<Resp>(`/open/api/v1/notification/query`, req)
+    this.http.post<any>(`/open/api/v1/notification/query`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - GET /open/api/v1/notification/count
   - Description: Count received platform notification
+  - Bound to Resource: `"postbox:notification:query"`
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -2356,18 +2951,32 @@
 
   - Angular HttpClient Demo:
     ```ts
-    this.http.get<Resp>(`/open/api/v1/notification/count`)
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
+    this.http.get<any>(`/open/api/v1/notification/count`)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/v1/notification/open
   - Description: Record user opened platform notification
+  - Bound to Resource: `"postbox:notification:query"`
   - JSON Request:
     - "notifiNo": (string)
   - JSON Response:
@@ -2399,19 +3008,33 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let req: OpenNotificationReq | null = null;
-    this.http.post<Resp>(`/open/api/v1/notification/open`, req)
+    this.http.post<any>(`/open/api/v1/notification/open`, req)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 - POST /open/api/v1/notification/open-all
   - Description: Mark all notifications opened
+  - Bound to Resource: `"postbox:notification:query"`
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
@@ -2432,12 +3055,25 @@
 
   - Angular HttpClient Demo:
     ```ts
-    this.http.post<Resp>(`/open/api/v1/notification/open-all`)
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
+    this.http.post<any>(`/open/api/v1/notification/open-all`)
       .subscribe({
-        next: (resp: Resp) => {
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -2454,6 +3090,14 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     let authorization: any | null = null;
     this.http.get<any>(`/metrics`,
       {
@@ -2466,6 +3110,7 @@
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -2478,12 +3123,21 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     this.http.get<any>(`/debug/pprof`)
       .subscribe({
         next: () => {
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -2496,12 +3150,21 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     this.http.get<any>(`/debug/pprof/:name`)
       .subscribe({
         next: () => {
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -2514,12 +3177,21 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     this.http.get<any>(`/debug/pprof/cmdline`)
       .subscribe({
         next: () => {
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -2532,12 +3204,21 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     this.http.get<any>(`/debug/pprof/profile`)
       .subscribe({
         next: () => {
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -2550,12 +3231,21 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     this.http.get<any>(`/debug/pprof/symbol`)
       .subscribe({
         next: () => {
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -2568,12 +3258,21 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     this.http.get<any>(`/debug/pprof/trace`)
       .subscribe({
         next: () => {
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
@@ -2588,27 +3287,26 @@
 
   - Angular HttpClient Demo:
     ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
     this.http.get<any>(`/doc/api`)
       .subscribe({
         next: () => {
         },
         error: (err) => {
           console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
         }
       });
     ```
 
 # Event Pipelines
-
-- CreateNotifiByAccessPipeline
-  - Description: Pipeline that creates notifications to users who have access to the specified resource
-  - RabbitMQ Queue: `pieline.user-vault.create-notifi.by-access`
-  - RabbitMQ Exchange: `pieline.user-vault.create-notifi.by-access`
-  - RabbitMQ RoutingKey: `#`
-  - Event Payload:
-    - "title": (string) notification title
-    - "message": (string) notification content
-    - "resCode": (string) resource code
 
 - CreateNotifiPipeline
   - Description: Pipeline that creates notifications to the specified list of users
@@ -2619,3 +3317,13 @@
     - "title": (string) notification title
     - "message": (string) notification content
     - "receiverUserNos": ([]string) user_no of receivers
+
+- CreateNotifiByAccessPipeline
+  - Description: Pipeline that creates notifications to users who have access to the specified resource
+  - RabbitMQ Queue: `pieline.user-vault.create-notifi.by-access`
+  - RabbitMQ Exchange: `pieline.user-vault.create-notifi.by-access`
+  - RabbitMQ RoutingKey: `#`
+  - Event Payload:
+    - "title": (string) notification title
+    - "message": (string) notification content
+    - "resCode": (string) resource code

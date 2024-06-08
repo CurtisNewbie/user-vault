@@ -11,6 +11,7 @@ import (
 	"github.com/curtisnewbie/miso/middleware/crypto"
 	"github.com/curtisnewbie/miso/middleware/user-vault/common"
 	"github.com/curtisnewbie/miso/miso"
+	"github.com/curtisnewbie/miso/util"
 	"github.com/curtisnewbie/user-vault/api"
 	"gorm.io/gorm"
 )
@@ -43,9 +44,9 @@ type User struct {
 	RoleNo       string
 	RoleName     string
 	IsDisabled   int
-	CreateTime   miso.ETime
+	CreateTime   util.ETime
 	CreateBy     string
-	UpdateTime   miso.ETime
+	UpdateTime   util.ETime
 	UpdateBy     string
 	IsDel        bool
 }
@@ -135,11 +136,11 @@ func buildToken(user TokenUser, exp time.Duration) (string, error) {
 }
 
 func userLogin(rail miso.Rail, tx *gorm.DB, username string, password string) (User, error) {
-	if miso.IsBlankStr(username) {
+	if util.IsBlankStr(username) {
 		return User{}, miso.NewErrf("Username is required")
 	}
 
-	if miso.IsBlankStr(password) {
+	if util.IsBlankStr(password) {
 		return User{}, miso.NewErrf("Password is required")
 	}
 
@@ -184,7 +185,7 @@ func checkUserKey(rail miso.Rail, tx *gorm.DB, userNo string, password string) (
 	var id int
 	t := tx.Raw(
 		`SELECT id FROM user_key WHERE user_no = ? AND secret_key = ? AND expiration_time > ? AND is_del = '0' LIMIT 1`,
-		userNo, password, miso.Now(),
+		userNo, password, util.Now(),
 	).
 		Scan(&id)
 	if t.Error != nil {
@@ -283,11 +284,11 @@ func NewUser(rail miso.Rail, tx *gorm.DB, req CreateUserParam) error {
 	}
 
 	user := prepUserCred(req.Password)
-	user.UserNo = miso.GenIdP("UE")
+	user.UserNo = util.GenIdP("UE")
 	user.Username = req.Username
 	user.RoleNo = req.RoleNo
 	user.CreateBy = req.Operator
-	user.CreateTime = miso.Now()
+	user.CreateTime = util.Now()
 	user.IsDisabled = api.UserNormal
 	user.ReviewStatus = req.ReviewStatus
 
@@ -309,16 +310,16 @@ type NewUserParam struct {
 	ReviewStatus string
 	RoleNo       string
 	IsDisabled   int
-	CreateTime   miso.ETime
+	CreateTime   util.ETime
 	CreateBy     string
-	UpdateTime   miso.ETime
+	UpdateTime   util.ETime
 	UpdateBy     string
 	IsDel        bool
 }
 
 func prepUserCred(pwd string) NewUserParam {
 	u := NewUserParam{}
-	u.Salt = miso.RandStr(6)
+	u.Salt = util.RandStr(6)
 	u.Password = encodePasswordSalt(pwd, u.Salt)
 	return u
 }
@@ -574,7 +575,7 @@ func ExchangeToken(rail miso.Rail, tx *gorm.DB, req ExchangeTokenReq) (string, e
 }
 
 func GetTokenUser(rail miso.Rail, tx *gorm.DB, token string) (UserInfoBrief, error) {
-	if miso.IsBlankStr(token) {
+	if util.IsBlankStr(token) {
 		return UserInfoBrief{}, miso.NewErrf("Invalid token").WithInternalMsg("Token is blank")
 	}
 	username, err := DecodeTokenUsername(rail, token)
@@ -641,14 +642,14 @@ func ItnFindNameOfUserNo(rail miso.Rail, tx *gorm.DB, req api.FetchNameByUserNoR
 	var queried []UserNoToName
 	err := tx.Table("user").
 		Select("username", "user_no").
-		Where("user_no in ?", miso.Distinct(req.UserNos)).
+		Where("user_no in ?", util.Distinct(req.UserNos)).
 		Scan(&queried).
 		Error
 	if err != nil {
 		return api.FetchUsernamesRes{}, err
 	}
 
-	mapping := miso.StrMap(queried,
+	mapping := util.StrMap(queried,
 		func(un UserNoToName) string {
 			return un.UserNo
 		},

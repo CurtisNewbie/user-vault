@@ -1,8 +1,8 @@
 package vault
 
-import "github.com/curtisnewbie/miso/miso"
+import "github.com/curtisnewbie/miso/util"
 
 var (
-	monitorPool = miso.NewAsyncPool(500, 10)
-	commonPool  = miso.NewAsyncPool(500, 10)
+	monitorPool = util.NewAsyncPool(500, 10)
+	commonPool  = util.NewAsyncPool(500, 10)
 )

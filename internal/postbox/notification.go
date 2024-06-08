@@ -5,6 +5,7 @@ import (
 
 	"github.com/curtisnewbie/miso/middleware/user-vault/common"
 	"github.com/curtisnewbie/miso/miso"
+	"github.com/curtisnewbie/miso/util"
 	"github.com/curtisnewbie/user-vault/api"
 	"gorm.io/gorm"
 )
@@ -20,7 +21,7 @@ func CreateNotification(rail miso.Rail, db *gorm.DB, req api.CreateNotificationR
 	}
 
 	// check whether the userNos are leegal
-	req.ReceiverUserNos = miso.Distinct(req.ReceiverUserNos)
+	req.ReceiverUserNos = util.Distinct(req.ReceiverUserNos)
 
 	for _, u := range req.ReceiverUserNos {
 		sr := SaveNotifiReq{
@@ -53,7 +54,7 @@ func SaveNotification(rail miso.Rail, db *gorm.DB, req SaveNotifiReq, user commo
 }
 
 func NotifiNo() string {
-	return miso.GenIdP("notif_")
+	return util.GenIdP("notif_")
 }
 
 type ListedNotification struct {
@@ -62,7 +63,7 @@ type ListedNotification struct {
 	Title      string
 	Message    string
 	Status     string
-	CreateTime miso.ETime
+	CreateTime util.ETime
 }
 
 func QueryNotification(rail miso.Rail, db *gorm.DB, req QueryNotificationReq, user common.User) (miso.PageRes[ListedNotification], error) {

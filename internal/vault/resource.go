@@ -10,6 +10,7 @@ import (
 
 	"github.com/curtisnewbie/miso/middleware/user-vault/common"
 	"github.com/curtisnewbie/miso/miso"
+	"github.com/curtisnewbie/miso/util"
 	"github.com/curtisnewbie/user-vault/api"
 	"gorm.io/gorm"
 )
@@ -39,9 +40,9 @@ type PathRes struct {
 	Id         int    // id
 	PathNo     string // path no
 	ResCode    string // resource code
-	CreateTime miso.ETime
+	CreateTime util.ETime
 	CreateBy   string
-	UpdateTime miso.ETime
+	UpdateTime util.ETime
 	UpdateBy   string
 }
 
@@ -54,9 +55,9 @@ type ExtendedPathRes struct {
 	Url        string // url
 	Method     string // http method
 	Ptype      string // path type: PROTECTED, PUBLIC
-	CreateTime miso.ETime
+	CreateTime util.ETime
 	CreateBy   string
-	UpdateTime miso.ETime
+	UpdateTime util.ETime
 	UpdateBy   string
 }
 
@@ -68,9 +69,9 @@ type EPath struct {
 	Url        string // url
 	Method     string // method
 	Ptype      string // path type: PROTECTED, PUBLIC
-	CreateTime miso.ETime
+	CreateTime util.ETime
 	CreateBy   string
-	UpdateTime miso.ETime
+	UpdateTime util.ETime
 	UpdateBy   string
 }
 
@@ -78,9 +79,9 @@ type ERes struct {
 	Id         int    // id
 	Code       string // resource code
 	Name       string // resource name
-	CreateTime miso.ETime
+	CreateTime util.ETime
 	CreateBy   string
-	UpdateTime miso.ETime
+	UpdateTime util.ETime
 	UpdateBy   string
 }
 
@@ -88,9 +89,9 @@ type ERoleRes struct {
 	Id         int    // id
 	RoleNo     string // role no
 	ResCode    string // resource code
-	CreateTime miso.ETime
+	CreateTime util.ETime
 	CreateBy   string
-	UpdateTime miso.ETime
+	UpdateTime util.ETime
 	UpdateBy   string
 }
 
@@ -98,9 +99,9 @@ type ERole struct {
 	Id         int
 	RoleNo     string
 	Name       string
-	CreateTime miso.ETime
+	CreateTime util.ETime
 	CreateBy   string
-	UpdateTime miso.ETime
+	UpdateTime util.ETime
 	UpdateBy   string
 }
 
@@ -108,9 +109,9 @@ type WRole struct {
 	Id         int        `json:"id"`
 	RoleNo     string     `json:"roleNo"`
 	Name       string     `json:"name"`
-	CreateTime miso.ETime `json:"createTime"`
+	CreateTime util.ETime `json:"createTime"`
 	CreateBy   string     `json:"createBy"`
-	UpdateTime miso.ETime `json:"updateTime"`
+	UpdateTime util.ETime `json:"updateTime"`
 	UpdateBy   string     `json:"updateBy"`
 }
 
@@ -173,9 +174,9 @@ type WPath struct {
 	Desc       string     `json:"desc"`
 	Url        string     `json:"url"`
 	Ptype      string     `json:"ptype" desc:"path type: 'PROTECTED' - authorization required, 'PUBLIC' - publicly accessible"`
-	CreateTime miso.ETime `json:"createTime"`
+	CreateTime util.ETime `json:"createTime"`
 	CreateBy   string     `json:"createBy"`
-	UpdateTime miso.ETime `json:"updateTime"`
+	UpdateTime util.ETime `json:"updateTime"`
 	UpdateBy   string     `json:"updateBy"`
 }
 
@@ -183,9 +184,9 @@ type WRes struct {
 	Id         int        `json:"id"`
 	Code       string     `json:"code"`
 	Name       string     `json:"name"`
-	CreateTime miso.ETime `json:"createTime"`
+	CreateTime util.ETime `json:"createTime"`
 	CreateBy   string     `json:"createBy"`
-	UpdateTime miso.ETime `json:"updateTime"`
+	UpdateTime util.ETime `json:"updateTime"`
 	UpdateBy   string     `json:"updateBy"`
 }
 
@@ -228,7 +229,7 @@ type ListedRoleRes struct {
 	Id         int        `json:"id"`
 	ResCode    string     `json:"resCode"`
 	ResName    string     `json:"resName"`
-	CreateTime miso.ETime `json:"createTime"`
+	CreateTime util.ETime `json:"createTime"`
 	CreateBy   string     `json:"createBy"`
 }
 
@@ -660,7 +661,7 @@ func ListPaths(ec miso.Rail, req ListPathReq) (ListPathResp, error) {
 func AddRole(ec miso.Rail, req AddRoleReq, user common.User) error {
 	_, e := miso.RLockRun(ec, "user-vault:role:add"+req.Name, func() (any, error) {
 		r := ERole{
-			RoleNo:   miso.GenIdP("role_"),
+			RoleNo:   util.GenIdP("role_"),
 			Name:     req.Name,
 			CreateBy: user.Username,
 			UpdateBy: user.Username,
