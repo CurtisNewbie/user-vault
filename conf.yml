@@ -43,3 +43,4 @@ monitor:
   - service: "logbot"
   - service: "vfm"
   - service: "fstore"
+  - service: "acct"
