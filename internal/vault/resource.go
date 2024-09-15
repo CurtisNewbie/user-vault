@@ -240,7 +240,7 @@ type GenResScriptReq struct {
 }
 
 type UpdatePathReq struct {
-	Type   string `json:"type" validation:"notEmpty" desc:"path type: 'PROTECTED' - authorization required, 'PUBLIC' - publicly accessible"`
+	Type   string `json:"type" validation:"notEmpty,member:PROTECTED|PUBLIC" desc:"path type: 'PROTECTED' - authorization required, 'PUBLIC' - publicly accessible"`
 	PathNo string `json:"pathNo" validation:"notEmpty"`
 	Group  string `json:"group" validation:"notEmpty,maxLen:20"`
 }
@@ -386,7 +386,6 @@ func ListResources(ec miso.Rail, req ListResReq) (ListResResp, error) {
 }
 
 func UpdatePath(ec miso.Rail, req UpdatePathReq) error {
-	// TODO: validate the ptype value
 	_, e := lockPath(ec, req.PathNo, func() (any, error) {
 		tx := mysql.GetMySQL().Exec(`update path set pgroup = ?, ptype = ? where path_no = ?`,
 			req.Group, req.Type, req.PathNo)

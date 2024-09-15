@@ -28,6 +28,8 @@ rabbitmq:
 server:
   host: localhost
   port: 8089
+  generate-endpoint-doc:
+    file: "./doc/api.md"
 
 consul:
   enabled: true
