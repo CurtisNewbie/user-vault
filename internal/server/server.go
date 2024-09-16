@@ -12,6 +12,7 @@ import (
 func BootstrapServer(args []string) {
 	common.LoadBuiltinPropagationKeys()
 	logbot.EnableLogbotErrLogReport()
+	vault.SubscribeBinlogEvent()
 
 	miso.PreServerBootstrap(func(rail miso.Rail) error {
 		vault.RegisterInternalPathResourcesOnBootstrapped([]auth.Resource{
@@ -29,7 +30,6 @@ func BootstrapServer(args []string) {
 	miso.PreServerBootstrap(vault.ScheduleTasks)
 	miso.PreServerBootstrap(postbox.RegisterRoutes)
 	miso.PreServerBootstrap(postbox.InitPipeline)
-	miso.PostServerBootstrapped(vault.SubscribeBinlogEvent)
 	miso.PostServerBootstrapped(vault.CreateMonitoredServiceWatches)
 	miso.BootstrapServer(args)
 }
