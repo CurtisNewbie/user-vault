@@ -27,9 +27,10 @@ func BootstrapServer(args []string) {
 	miso.PreServerBootstrap(printVersion)
 	miso.PreServerBootstrap(vault.RegisterRoutes)
 	miso.PreServerBootstrap(vault.ScheduleTasks)
-	miso.PostServerBootstrapped(vault.CreateMonitoredServiceWatches)
 	miso.PreServerBootstrap(postbox.RegisterRoutes)
 	miso.PreServerBootstrap(postbox.InitPipeline)
+	miso.PostServerBootstrapped(vault.SubscribeBinlogEvent)
+	miso.PostServerBootstrapped(vault.CreateMonitoredServiceWatches)
 	miso.BootstrapServer(args)
 }
 

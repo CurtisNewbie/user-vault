@@ -419,16 +419,6 @@ func UserRegister(rail miso.Rail, db *gorm.DB, req RegisterReq) error {
 	}); err != nil {
 		return err
 	}
-
-	err := api.CreateNotifiByAccessPipeline.Send(rail, api.CreateNotifiByAccessEvent{
-		Title:   fmt.Sprintf("Review user %v's registration", req.Username),
-		Message: fmt.Sprintf("Please review new user %v's registration. A role should be assigned for the new user.", req.Username),
-		ResCode: ResourceManagerUser,
-	})
-	if err != nil {
-		rail.Errorf("failed to create notification for UserRegister, %v", err)
-	}
-
 	return nil
 }
 
