@@ -2798,6 +2798,298 @@
       });
     ```
 
+- POST /open/api/password/list-site-passwords
+  - Description: List site password records
+  - Bound to Resource: `"basic-user"`
+  - JSON Request:
+    - "alias": (string) 
+    - "site": (string) 
+    - "username": (string) 
+    - "paging": (Paging) 
+      - "limit": (int) page limit
+      - "page": (int) page number, 1-based
+      - "total": (int) total count
+  - JSON Response:
+    - "errorCode": (string) error code
+    - "msg": (string) message
+    - "error": (bool) whether the request was successful
+    - "data": (PageRes[github.com/curtisnewbie/user-vault/internal/vault.ListSitePasswordRes]) response data
+      - "paging": (Paging) pagination parameters
+        - "limit": (int) page limit
+        - "page": (int) page number, 1-based
+        - "total": (int) total count
+      - "payload": ([]vault.ListSitePasswordRes) payload values in current page
+        - "recordId": (string) 
+        - "site": (string) 
+        - "alias": (string) 
+        - "username": (string) 
+        - "createTime": (int64) 
+  - cURL:
+    ```sh
+    curl -X POST 'http://localhost:8089/open/api/password/list-site-passwords' \
+      -H 'Content-Type: application/json' \
+      -d '{"alias":"","paging":{"limit":0,"page":0,"total":0},"site":"","username":""}'
+    ```
+
+  - JSON Request Object In TypeScript:
+    ```ts
+    export interface ListSitePasswordReq {
+      alias?: string
+      site?: string
+      username?: string
+      paging?: Paging
+    }
+    export interface Paging {
+      limit?: number                 // page limit
+      page?: number                  // page number, 1-based
+      total?: number                 // total count
+    }
+    ```
+
+  - JSON Response Object In TypeScript:
+    ```ts
+    export interface Resp {
+      errorCode?: string             // error code
+      msg?: string                   // message
+      error?: boolean                // whether the request was successful
+      data?: PageRes
+    }
+    export interface PageRes {
+      paging?: Paging
+      payload?: ListSitePasswordRes[]
+    }
+    export interface Paging {
+      limit?: number                 // page limit
+      page?: number                  // page number, 1-based
+      total?: number                 // total count
+    }
+    export interface ListSitePasswordRes {
+      recordId?: string
+      site?: string
+      alias?: string
+      username?: string
+      createTime?: number
+    }
+    ```
+
+  - Angular HttpClient Demo:
+    ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
+    let req: ListSitePasswordReq | null = null;
+    this.http.post<any>(`/user-vault/open/api/password/list-site-passwords`, req)
+      .subscribe({
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: PageRes = resp.data;
+        },
+        error: (err) => {
+          console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
+        }
+      });
+    ```
+
+- POST /open/api/password/add-site-password
+  - Description: Add site password record
+  - Bound to Resource: `"basic-user"`
+  - JSON Request:
+    - "site": (string) 
+    - "alias": (string) 
+    - "username": (string) 
+    - "sitePassword": (string) 
+    - "loginPassword": (string) 
+  - JSON Response:
+    - "errorCode": (string) error code
+    - "msg": (string) message
+    - "error": (bool) whether the request was successful
+  - cURL:
+    ```sh
+    curl -X POST 'http://localhost:8089/open/api/password/add-site-password' \
+      -H 'Content-Type: application/json' \
+      -d '{"alias":"","loginPassword":"","site":"","sitePassword":"","username":""}'
+    ```
+
+  - JSON Request Object In TypeScript:
+    ```ts
+    export interface AddSitePasswordReq {
+      site?: string
+      alias?: string
+      username?: string
+      sitePassword?: string
+      loginPassword?: string
+    }
+    ```
+
+  - JSON Response Object In TypeScript:
+    ```ts
+    export interface Resp {
+      errorCode?: string             // error code
+      msg?: string                   // message
+      error?: boolean                // whether the request was successful
+    }
+    ```
+
+  - Angular HttpClient Demo:
+    ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
+    let req: AddSitePasswordReq | null = null;
+    this.http.post<any>(`/user-vault/open/api/password/add-site-password`, req)
+      .subscribe({
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+        },
+        error: (err) => {
+          console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
+        }
+      });
+    ```
+
+- POST /open/api/password/remove-site-password
+  - Description: Remove site password record
+  - Bound to Resource: `"basic-user"`
+  - JSON Request:
+    - "recordId": (string) 
+  - JSON Response:
+    - "errorCode": (string) error code
+    - "msg": (string) message
+    - "error": (bool) whether the request was successful
+  - cURL:
+    ```sh
+    curl -X POST 'http://localhost:8089/open/api/password/remove-site-password' \
+      -H 'Content-Type: application/json' \
+      -d '{"recordId":""}'
+    ```
+
+  - JSON Request Object In TypeScript:
+    ```ts
+    export interface RemoveSitePasswordRes {
+      recordId?: string
+    }
+    ```
+
+  - JSON Response Object In TypeScript:
+    ```ts
+    export interface Resp {
+      errorCode?: string             // error code
+      msg?: string                   // message
+      error?: boolean                // whether the request was successful
+    }
+    ```
+
+  - Angular HttpClient Demo:
+    ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
+    let req: RemoveSitePasswordRes | null = null;
+    this.http.post<any>(`/user-vault/open/api/password/remove-site-password`, req)
+      .subscribe({
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+        },
+        error: (err) => {
+          console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
+        }
+      });
+    ```
+
+- POST /open/api/password/decrypt-site-password
+  - Description: Decrypt site password
+  - Bound to Resource: `"basic-user"`
+  - JSON Request:
+    - "loginPassword": (string) 
+    - "recordId": (string) 
+  - JSON Response:
+    - "errorCode": (string) error code
+    - "msg": (string) message
+    - "error": (bool) whether the request was successful
+    - "data": (DecryptSitePasswordRes) response data
+      - "decrypted": (string) 
+  - cURL:
+    ```sh
+    curl -X POST 'http://localhost:8089/open/api/password/decrypt-site-password' \
+      -H 'Content-Type: application/json' \
+      -d '{"loginPassword":"","recordId":""}'
+    ```
+
+  - JSON Request Object In TypeScript:
+    ```ts
+    export interface DecryptSitePasswordReq {
+      loginPassword?: string
+      recordId?: string
+    }
+    ```
+
+  - JSON Response Object In TypeScript:
+    ```ts
+    export interface Resp {
+      errorCode?: string             // error code
+      msg?: string                   // message
+      error?: boolean                // whether the request was successful
+      data?: DecryptSitePasswordRes
+    }
+    export interface DecryptSitePasswordRes {
+      decrypted?: string
+    }
+    ```
+
+  - Angular HttpClient Demo:
+    ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
+    let req: DecryptSitePasswordReq | null = null;
+    this.http.post<any>(`/user-vault/open/api/password/decrypt-site-password`, req)
+      .subscribe({
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+          let dat: DecryptSitePasswordRes = resp.data;
+        },
+        error: (err) => {
+          console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
+        }
+      });
+    ```
+
 - POST /open/api/v1/notification/create
   - Description: Create platform notification
   - Bound to Resource: `"postbox:notification:create"`

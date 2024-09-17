@@ -9,6 +9,7 @@ import (
 	"github.com/curtisnewbie/miso/miso"
 	"github.com/curtisnewbie/miso/util"
 	"github.com/curtisnewbie/user-vault/api"
+	"gorm.io/gorm"
 )
 
 const (
@@ -510,4 +511,68 @@ func ItnReportPathEp(inb *miso.Inbound, req CreatePathReq) (any, error) {
 	rail := inb.Rail()
 	user := common.GetUser(rail)
 	return nil, CreatePath(rail, req, user)
+}
+
+type ListSitePasswordReq struct {
+	Alias    string
+	Site     string
+	Username string
+	Paging   miso.Paging
+}
+
+type ListSitePasswordRes struct {
+	RecordId   string
+	Site       string
+	Alias      string
+	Username   string
+	CreateTime util.ETime
+}
+
+// misoapi-http: POST /open/api/password/list-site-passwords
+// misoapi-desc: List site password records
+// misoapi-resource: ref(ResourceBasicUser)
+func ApiListSitePasswords(rail miso.Rail, req ListSitePasswordReq, user common.User, db *gorm.DB) (miso.PageRes[ListSitePasswordRes], error) {
+	return ListSitePasswords(rail, req, user, db)
+}
+
+type AddSitePasswordReq struct {
+	Site          string
+	Alias         string
+	Username      string `valid:"notEmpty"`
+	SitePassword  string `valid:"notEmpty"`
+	LoginPassword string `valid:"notEmpty"`
+}
+
+// misoapi-http: POST /open/api/password/add-site-password
+// misoapi-desc: Add site password record
+// misoapi-resource: ref(ResourceBasicUser)
+func ApiAddSitePassword(rail miso.Rail, req AddSitePasswordReq, user common.User, db *gorm.DB) (any, error) {
+	return nil, AddSitePassword(rail, req, user, db)
+}
+
+type RemoveSitePasswordRes struct {
+	RecordId string `valid:"notEmpty"`
+}
+
+// misoapi-http: POST /open/api/password/remove-site-password
+// misoapi-desc: Remove site password record
+// misoapi-resource: ref(ResourceBasicUser)
+func ApiRemoveSitePassword(rail miso.Rail, req RemoveSitePasswordRes, user common.User, db *gorm.DB) (any, error) {
+	return nil, RemoveSitePassword(rail, req, user, db)
+}
+
+type DecryptSitePasswordReq struct {
+	LoginPassword string `valid:"notEmpty"`
+	RecordId      string `valid:"notEmpty"`
+}
+
+type DecryptSitePasswordRes struct {
+	Decrypted string
+}
+
+// misoapi-http: POST /open/api/password/decrypt-site-password
+// misoapi-desc: Decrypt site password
+// misoapi-resource: ref(ResourceBasicUser)
+func ApiDecryptSitePassword(rail miso.Rail, req DecryptSitePasswordReq, user common.User, db *gorm.DB) (DecryptSitePasswordRes, error) {
+	return DecryptSitePassword(rail, req, user, db)
 }
