@@ -3090,6 +3090,68 @@
       });
     ```
 
+- POST /open/api/password/edit-site-password
+  - Description: Edit site password
+  - Bound to Resource: `"basic-user"`
+  - JSON Request:
+    - "recordId": (string) 
+    - "site": (string) 
+    - "alias": (string) 
+  - JSON Response:
+    - "errorCode": (string) error code
+    - "msg": (string) message
+    - "error": (bool) whether the request was successful
+  - cURL:
+    ```sh
+    curl -X POST 'http://localhost:8089/open/api/password/edit-site-password' \
+      -H 'Content-Type: application/json' \
+      -d '{"alias":"","recordId":"","site":""}'
+    ```
+
+  - JSON Request Object In TypeScript:
+    ```ts
+    export interface EditSitePasswordReq {
+      recordId?: string
+      site?: string
+      alias?: string
+    }
+    ```
+
+  - JSON Response Object In TypeScript:
+    ```ts
+    export interface Resp {
+      errorCode?: string             // error code
+      msg?: string                   // message
+      error?: boolean                // whether the request was successful
+    }
+    ```
+
+  - Angular HttpClient Demo:
+    ```ts
+    import { MatSnackBar } from "@angular/material/snack-bar";
+    import { HttpClient } from "@angular/common/http";
+
+    constructor(
+      private snackBar: MatSnackBar,
+      private http: HttpClient
+    ) {}
+
+    let req: EditSitePasswordReq | null = null;
+    this.http.post<any>(`/user-vault/open/api/password/edit-site-password`, req)
+      .subscribe({
+        next: (resp) => {
+          if (resp.error) {
+            this.snackBar.open(resp.msg, "ok", { duration: 6000 })
+            return;
+          }
+        },
+        error: (err) => {
+          console.log(err)
+          this.snackBar.open("Request failed, unknown error", "ok", { duration: 3000 })
+        }
+      });
+    ```
+
 - POST /open/api/v1/notification/create
   - Description: Create platform notification
   - Bound to Resource: `"postbox:notification:create"`

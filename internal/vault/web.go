@@ -576,3 +576,16 @@ type DecryptSitePasswordRes struct {
 func ApiDecryptSitePassword(rail miso.Rail, req DecryptSitePasswordReq, user common.User, db *gorm.DB) (DecryptSitePasswordRes, error) {
 	return DecryptSitePassword(rail, req, user, db)
 }
+
+type EditSitePasswordReq struct {
+	RecordId string
+	Site     string
+	Alias    string
+}
+
+// misoapi-http: POST /open/api/password/edit-site-password
+// misoapi-desc: Edit site password
+// misoapi-resource: ref(ResourceBasicUser)
+func ApiEditSitePassword(rail miso.Rail, req EditSitePasswordReq, user common.User, db *gorm.DB) (any, error) {
+	return nil, EditSitePassword(rail, req, user, db)
+}

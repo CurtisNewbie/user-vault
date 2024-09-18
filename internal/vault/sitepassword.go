@@ -114,3 +114,12 @@ func pad256(b []byte) []byte {
 	}
 	return b
 }
+
+func EditSitePassword(rail miso.Rail, req EditSitePasswordReq, user common.User, db *gorm.DB) error {
+	_, err := loadBasicSitePassword(rail, db, user.UserNo, req.RecordId)
+	if err != nil {
+		return err
+	}
+	return db.Exec(`UPDATE site_password SET site = ?, alias = ?,update_by = ? WHERE record_id = ?`,
+		req.Site, req.Alias, user.Username, req.RecordId).Error
+}
