@@ -3389,13 +3389,24 @@
 - POST /open/api/v1/notification/open-all
   - Description: Mark all notifications opened
   - Bound to Resource: `"postbox:notification:query"`
+  - JSON Request:
+    - "notifiNo": (string) 
   - JSON Response:
     - "errorCode": (string) error code
     - "msg": (string) message
     - "error": (bool) whether the request was successful
   - cURL:
     ```sh
-    curl -X POST 'http://localhost:8089/open/api/v1/notification/open-all'
+    curl -X POST 'http://localhost:8089/open/api/v1/notification/open-all' \
+      -H 'Content-Type: application/json' \
+      -d '{"notifiNo":""}'
+    ```
+
+  - JSON Request Object In TypeScript:
+    ```ts
+    export interface OpenNotificationReq {
+      notifiNo?: string
+    }
     ```
 
   - JSON Response Object In TypeScript:
@@ -3417,7 +3428,8 @@
       private http: HttpClient
     ) {}
 
-    this.http.post<any>(`/user-vault/open/api/v1/notification/open-all`)
+    let req: OpenNotificationReq | null = null;
+    this.http.post<any>(`/user-vault/open/api/v1/notification/open-all`, req)
       .subscribe({
         next: (resp) => {
           if (resp.error) {
