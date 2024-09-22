@@ -14,7 +14,7 @@ const (
 	BinlogStreamUserCreated = "user-vault:binlog:user-created"
 )
 
-func SubscribeBinlogEvent() {
+func SubscribeBinlogEvent(rail miso.Rail) error {
 	binlog.SubscribeBinlogEventsOnBootstrapV2(
 		binlog.SubscribeBinlogOption{
 			ContinueOnErr: true,
@@ -43,4 +43,5 @@ func SubscribeBinlogEvent() {
 			},
 		},
 	)
+	return nil
 }
