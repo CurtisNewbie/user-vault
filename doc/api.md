@@ -245,6 +245,7 @@
       isDisabled?: number
       paging?: Paging
     }
+
     export interface Paging {
       limit?: number                 // page limit
       page?: number                  // page number, 1-based
@@ -260,15 +261,18 @@
       error?: boolean                // whether the request was successful
       data?: PageRes
     }
+
     export interface PageRes {
       paging?: Paging
       payload?: UserInfo[]
     }
+
     export interface Paging {
       limit?: number                 // page limit
       page?: number                  // page number, 1-based
       total?: number                 // total count
     }
+
     export interface UserInfo {
       id?: number
       username?: string
@@ -460,6 +464,7 @@
       error?: boolean                // whether the request was successful
       data?: UserInfoRes
     }
+
     export interface UserInfoRes {
       id?: number
       username?: string
@@ -646,6 +651,7 @@
       error?: boolean                // whether the request was successful
       data?: UserInfoBrief
     }
+
     export interface UserInfoBrief {
       id?: number
       username?: string
@@ -720,6 +726,7 @@
     export interface ListAccessLogReq {
       paging?: Paging
     }
+
     export interface Paging {
       limit?: number                 // page limit
       page?: number                  // page number, 1-based
@@ -735,15 +742,18 @@
       error?: boolean                // whether the request was successful
       data?: PageRes
     }
+
     export interface PageRes {
       paging?: Paging
       payload?: ListedAccessLog[]
     }
+
     export interface Paging {
       limit?: number                 // page limit
       page?: number                  // page number, 1-based
       total?: number                 // total count
     }
+
     export interface ListedAccessLog {
       id?: number
       userAgent?: string
@@ -879,6 +889,7 @@
       paging?: Paging
       name?: string
     }
+
     export interface Paging {
       limit?: number                 // page limit
       page?: number                  // page number, 1-based
@@ -894,15 +905,18 @@
       error?: boolean                // whether the request was successful
       data?: PageRes
     }
+
     export interface PageRes {
       paging?: Paging
       payload?: ListedUserKey[]
     }
+
     export interface Paging {
       limit?: number                 // page limit
       page?: number                  // page number, 1-based
       total?: number                 // total count
     }
+
     export interface ListedUserKey {
       id?: number
       secretKey?: string
@@ -1140,6 +1154,7 @@
       error?: boolean                // whether the request was successful
       data?: ResBrief[]
     }
+
     export interface ResBrief {
       code?: string
       name?: string
@@ -1210,6 +1225,7 @@
     export interface ListResReq {
       paging?: Paging
     }
+
     export interface Paging {
       limit?: number                 // page limit
       page?: number                  // page number, 1-based
@@ -1225,15 +1241,18 @@
       error?: boolean                // whether the request was successful
       data?: ListResResp
     }
+
     export interface ListResResp {
       paging?: Paging
       payload?: WRes[]
     }
+
     export interface Paging {
       limit?: number                 // page limit
       page?: number                  // page number, 1-based
       total?: number                 // total count
     }
+
     export interface WRes {
       id?: number
       code?: string
@@ -1295,6 +1314,7 @@
       error?: boolean                // whether the request was successful
       data?: ResBrief[]
     }
+
     export interface ResBrief {
       code?: string
       name?: string
@@ -1350,6 +1370,7 @@
       error?: boolean                // whether the request was successful
       data?: ResBrief[]
     }
+
     export interface ResBrief {
       code?: string
       name?: string
@@ -1597,6 +1618,7 @@
     export interface ListRoleReq {
       paging?: Paging
     }
+
     export interface Paging {
       limit?: number                 // page limit
       page?: number                  // page number, 1-based
@@ -1612,10 +1634,12 @@
       error?: boolean                // whether the request was successful
       data?: ListRoleResp
     }
+
     export interface ListRoleResp {
       payload?: WRole[]
       paging?: Paging
     }
+
     export interface WRole {
       id?: number
       roleNo?: string
@@ -1625,6 +1649,7 @@
       updateTime?: number
       updateBy?: string
     }
+
     export interface Paging {
       limit?: number                 // page limit
       page?: number                  // page number, 1-based
@@ -1682,6 +1707,7 @@
       error?: boolean                // whether the request was successful
       data?: RoleBrief[]
     }
+
     export interface RoleBrief {
       roleNo?: string
       name?: string
@@ -1751,6 +1777,7 @@
       paging?: Paging
       roleNo?: string
     }
+
     export interface Paging {
       limit?: number                 // page limit
       page?: number                  // page number, 1-based
@@ -1766,15 +1793,18 @@
       error?: boolean                // whether the request was successful
       data?: ListRoleResResp
     }
+
     export interface ListRoleResResp {
       paging?: Paging
       payload?: ListedRoleRes[]
     }
+
     export interface Paging {
       limit?: number                 // page limit
       page?: number                  // page number, 1-based
       total?: number                 // total count
     }
+
     export interface ListedRoleRes {
       id?: number
       resCode?: string
@@ -1845,6 +1875,7 @@
       error?: boolean                // whether the request was successful
       data?: RoleInfoResp
     }
+
     export interface RoleInfoResp {
       roleNo?: string
       name?: string
@@ -1927,6 +1958,7 @@
       ptype?: string                 // path type: 'PROTECTED' - authorization required, 'PUBLIC' - publicly accessible
       paging?: Paging
     }
+
     export interface Paging {
       limit?: number                 // page limit
       page?: number                  // page number, 1-based
@@ -1942,15 +1974,18 @@
       error?: boolean                // whether the request was successful
       data?: ListPathResp
     }
+
     export interface ListPathResp {
       paging?: Paging
       payload?: WPath[]
     }
+
     export interface Paging {
       limit?: number                 // page limit
       page?: number                  // page number, 1-based
       total?: number                 // total count
     }
+
     export interface WPath {
       id?: number
       pgroup?: string
@@ -2279,6 +2314,7 @@
       error?: boolean                // whether the request was successful
       data?: UserInfo
     }
+
     export interface UserInfo {
       id?: number
       username?: string
@@ -2404,6 +2440,7 @@
       error?: boolean                // whether the request was successful
       data?: FetchUsernamesRes
     }
+
     export interface FetchUsernamesRes {
       userNoToUsername?: map[string]string
     }
@@ -2478,6 +2515,7 @@
       error?: boolean                // whether the request was successful
       data?: UserInfo[]
     }
+
     export interface UserInfo {
       id?: number
       username?: string
@@ -2562,6 +2600,7 @@
       error?: boolean                // whether the request was successful
       data?: UserInfo[]
     }
+
     export interface UserInfo {
       id?: number
       username?: string
@@ -2699,6 +2738,7 @@
       error?: boolean                // whether the request was successful
       data?: TestResAccessResp
     }
+
     export interface TestResAccessResp {
       valid?: boolean
     }
@@ -2839,6 +2879,7 @@
       username?: string
       paging?: Paging
     }
+
     export interface Paging {
       limit?: number                 // page limit
       page?: number                  // page number, 1-based
@@ -2854,15 +2895,18 @@
       error?: boolean                // whether the request was successful
       data?: PageRes
     }
+
     export interface PageRes {
       paging?: Paging
       payload?: ListSitePasswordRes[]
     }
+
     export interface Paging {
       limit?: number                 // page limit
       page?: number                  // page number, 1-based
       total?: number                 // total count
     }
+
     export interface ListSitePasswordRes {
       recordId?: string
       site?: string
@@ -3058,6 +3102,7 @@
       error?: boolean                // whether the request was successful
       data?: DecryptSitePasswordRes
     }
+
     export interface DecryptSitePasswordRes {
       decrypted?: string
     }
@@ -3240,6 +3285,7 @@
       page?: Paging
       status?: string
     }
+
     export interface Paging {
       limit?: number                 // page limit
       page?: number                  // page number, 1-based
